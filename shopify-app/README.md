@@ -5,6 +5,16 @@ that mounts the configurator widget on any storefront page. The widget runtime i
 one level up in `../src`; `npm run build:extension` (run from the repo root) copies the built
 assets into `extensions/bundle-configurator/assets/`.
 
+## Two apps: dev and production
+
+- `shopify.app.toml`: **bundle-configurator**, the app merchants install. Its URL is the Netlify
+  site. Released with `npm run deploy`. Never run `shopify app dev` against it.
+- `shopify.app.dev.toml`: **bundle-configurator-dev**, for local work. `npm run dev` uses it,
+  rewrites its URL to the tunnel each run, and puts the dev store into dev preview. Nothing
+  it does reaches production.
+
+`npm run deploy:web` pushes the app server to Netlify (`netlify deploy --build --prod`).
+
 ## Run it against the dev store
 
 ```sh

@@ -3,10 +3,10 @@
   "private": true,
   "scripts": {
     "build": "prisma generate && react-router build",
-    "dev": "shopify app dev",
+    "dev": "shopify app dev --config shopify.app.dev.toml",
     "config:link": "shopify app config link",
     "generate": "shopify app generate",
-    "deploy": "shopify app deploy",
+    "deploy": "shopify app deploy --config shopify.app.toml",
     "config:use": "shopify app config use",
     "env": "shopify app env",
     "start": "react-router-serve ./build/server/index.js",
@@ -21,7 +21,9 @@
     "predev": "node ../scripts/build-extension.js",
     "predeploy": "node ../scripts/build-extension.js",
     "netlify:build": "node ../scripts/build-extension.js && prisma generate && prisma migrate deploy && react-router build",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "deploy:dev": "shopify app deploy --config shopify.app.dev.toml",
+    "deploy:web": "netlify deploy --build --prod"
   },
   "type": "module",
   "engines": {

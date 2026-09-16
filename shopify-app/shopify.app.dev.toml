@@ -1,0 +1,36 @@
+# Development app: "bundle-configurator-dev". Used by `npm run dev` only.
+# `shopify app dev` rewrites application_url and redirect_urls to its tunnel
+# on every run; that is fine here and never touches production
+# (shopify.app.toml, the app merchants install).
+# Learn more at https://shopify.dev/docs/apps/tools/cli/configuration
+
+client_id = "487b5fd43471c47572350053f16164eb"
+application_url = "https://example.com"
+embedded = true
+name = "bundle-configurator-dev"
+
+[webhooks]
+api_version = "2026-10"
+
+  [[webhooks.subscriptions]]
+  topics = [ "app/uninstalled" ]
+  uri = "/webhooks/app/uninstalled"
+
+  [[webhooks.subscriptions]]
+  topics = [ "app/scopes_update" ]
+  uri = "/webhooks/app/scopes_update"
+
+  [[webhooks.subscriptions]]
+  compliance_topics = [ "customers/data_request", "customers/redact", "shop/redact" ]
+  uri = "/webhooks/compliance"
+
+[access_scopes]
+scopes = "read_products,read_themes"
+
+[auth]
+redirect_urls = [ "https://example.com/api/auth" ]
+
+[build]
+include_config_on_deploy = true
+automatically_update_urls_on_dev = true
+dev_store_url = "mysuperstore-ehtodjg8.myshopify.com"

@@ -56,7 +56,7 @@ export const action = async ({ request }) => {
         config.brand.inherited = look.tokens;
         config.brand.appearance = look.readings.appearance || "auto";
       }
-      config.brand.matched = { theme: look.theme, confidence: look.confidence, at: new Date().toISOString() };
+      config.brand.matched = { theme: look.theme, confidence: look.confidence, readings: look.readings || null, at: new Date().toISOString() };
       await saveConfig(admin, shopId, config);
       return { ok: true, intent, matched: config.brand.matched };
     }
@@ -107,6 +107,18 @@ function ConfidenceBadge({ matched }) {
         <s-badge tone={tone}>{`${word}${matched.theme ? ` to ${matched.theme}` : ""}`}</s-badge>
       </s-stack>
       {c.reasons?.length ? <s-paragraph color="subdued">{c.reasons.join(". ")}.</s-paragraph> : <s-paragraph color="subdued">Colours, type and corners read cleanly. Your choices below win over the match.</s-paragraph>}
+      {matched.readings ? (
+        <s-stack direction="inline" gap="base" alignItems="center">
+          {[["Accent", matched.readings.accent], ["Text", matched.readings.ink], ["Background", matched.readings.paper]].map(([k, v]) => (
+            <s-stack key={k} direction="inline" gap="small-200" alignItems="center">
+              <span style={{ display: "inline-block", width: 18, height: 18, borderRadius: 6, border: "1px solid rgba(0,0,0,.15)", background: v || "transparent" }} />
+              <s-text color="subdued">{`${k} ${v || "none"}`}</s-text>
+            </s-stack>
+          ))}
+          {matched.readings.font ? <s-text color="subdued">{`Type ${matched.readings.font.split(",")[0].replace(/"/g, "")}`}</s-text> : null}
+          <s-text color="subdued">{`Corners ${matched.readings.radius}px`}</s-text>
+        </s-stack>
+      ) : null}
     </s-stack>
   );
 }

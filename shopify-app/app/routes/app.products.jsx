@@ -1,9 +1,9 @@
 /* ============================================================
    Setup step 4: Products. The only step that gates a real checkout.
    Every bundle and add-on is linked to a Shopify variant through the
-   resource picker; nobody types an ID. Title, price and image come from the
-   variant so the preview matches the store. Prices stay a preview until
-   Storefront API sync (v1.3); checkout always charges the live price.
+   resource picker; nobody types an ID. Products with several variants get
+   a variant dropdown. A sample catalogue (CSV generated from this template)
+   covers stores that have nothing to link yet.
    ============================================================ */
 import { useEffect, useState } from "react";
 import { redirect, useFetcher, useLoaderData, useRouteError } from "react-router";
@@ -11,13 +11,14 @@ import { useAppBridge } from "@shopify/app-bridge-react";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { authenticate } from "../shopify.server";
 import { readConfig, saveConfig } from "../config.server";
+import { linkSamples } from "../samples.server";
 import { SetupRail, doneSteps } from "../components/SetupRail";
 
 export const loader = async ({ request }) => {
   const { admin } = await authenticate.admin(request);
-  const { config } = await readConfig(admin);
+  const { config, domain } = await readConfig(admin);
   if (!config) return redirect("/app");
-  return { config, done: doneSteps(config) };
+  return { config, done: doneSteps(config), importUrl: `https://${domain}/admin/products?modal=import` };
 };
 
 const gidTail = (gid) => String(gid || "").split("/").pop();
@@ -25,54 +26,77 @@ const gidTail = (gid) => String(gid || "").split("/").pop();
 export const action = async ({ request }) => {
   const { admin } = await authenticate.admin(request);
   const form = await request.formData();
+  const intent = String(form.get("intent") || "save");
   const { shopId, config } = await readConfig(admin);
   if (!config) return { ok: false, error: "No configuration yet" };
-  let links = {};
-  try { links = JSON.parse(String(form.get("links") || "{}")); } catch (e) { return { ok: false, error: "Could not read the product links" }; }
-  const apply = (target, link) => {
-    if (!target || !link) return;
-    if (link.clear) { target.variantId = ""; delete target.productTitle; return; }
-    if (!/^\d+$/.test(String(link.variantId || ""))) return;
-    target.variantId = String(link.variantId);
-    if (Number.isFinite(Number(link.price))) target.price = Number(link.price);
-    if (typeof link.image === "string") target.image = link.image;
-    if (typeof link.productTitle === "string") target.productTitle = link.productTitle.slice(0, 120);
-    if (typeof link.title === "string" && link.title) target.title = link.title.slice(0, 120);
-  };
   try {
+    if (intent === "link-samples") {
+      const r = await linkSamples(admin, config);
+      if (!r.found) return { ok: false, intent, error: "No imported samples found yet. Import the CSV first, then try again." };
+      await saveConfig(admin, shopId, config);
+      return { ok: true, intent, linked: r.linked, found: r.found };
+    }
+    let links = {};
+    try { links = JSON.parse(String(form.get("links") || "{}")); } catch (e) { return { ok: false, error: "Could not read the product links" }; }
+    const apply = (target, link) => {
+      if (!target || !link) return;
+      if (link.clear) { target.variantId = ""; delete target.productTitle; return; }
+      if (!/^\d+$/.test(String(link.variantId || ""))) return;
+      target.variantId = String(link.variantId);
+      if (Number.isFinite(Number(link.price))) target.price = Number(link.price);
+      if (typeof link.image === "string") target.image = link.image;
+      if (typeof link.productTitle === "string") target.productTitle = link.productTitle.slice(0, 120);
+    };
     (config.bundles || []).forEach((b) => apply(b, links.bundles && links.bundles[b.id]));
     Object.keys(config.accessories || {}).forEach((k) => apply(config.accessories[k], links.accessories && links.accessories[k]));
     await saveConfig(admin, shopId, config);
-  } catch (e) { return { ok: false, error: e.message }; }
+  } catch (e) { return { ok: false, intent, error: e.message }; }
   if (form.get("continue") === "1") return redirect("/app/live");
-  return { ok: true };
+  return { ok: true, intent };
 };
 
-function ProductRow({ item, kind, link, onPick, onClear }) {
-  const variantId = link ? (link.clear ? "" : link.variantId) : item.variantId;
-  const title = link && !link.clear ? link.productTitle : item.productTitle;
-  const price = link && !link.clear && link.price != null ? link.price : item.price;
-  const image = link && !link.clear ? link.image : item.image;
+function ProductRow({ item, kind, link, onPick, onClear, onVariant }) {
+  const cleared = link && link.clear;
+  const variantId = cleared ? "" : link ? link.variantId : item.variantId;
+  const productTitle = cleared ? "" : link ? link.productTitle : item.productTitle;
+  const price = cleared ? item.price : link && link.price != null ? link.price : item.price;
+  const image = cleared ? "" : link ? link.image : item.image;
+  const variants = link && link.variants && link.variants.length > 1 ? link.variants : null;
   return (
-    <s-box padding="base" borderWidth="base" borderRadius="base">
-      <s-stack direction="inline" gap="base" alignItems="center">
-        {image ? <s-thumbnail src={image} alt="" size="small" /> : null}
-        <s-stack direction="block" gap="small-200">
-          <s-heading>{item.title}</s-heading>
-          <s-text color="subdued">{kind === "bundle" ? (item.subtitle || "Bundle") : "Add-on"}{price != null ? ` · £${Number(price).toFixed(2)}` : ""}</s-text>
-          {variantId ? <s-badge tone="success">{title ? `Linked: ${title}` : `Linked to variant ${variantId}`}</s-badge> : <s-badge tone="warning">Not linked yet</s-badge>}
-        </s-stack>
-        <s-stack direction="inline" gap="small" style={{ marginLeft: "auto" }}>
-          <s-button variant={variantId ? "secondary" : "primary"} onClick={onPick}>{variantId ? "Change" : "Choose product"}</s-button>
-          {variantId ? <s-button variant="tertiary" onClick={onClear}>Unlink</s-button> : null}
-        </s-stack>
-      </s-stack>
+    <s-box padding="base" borderWidth="base" borderRadius="base" background={variantId ? "base" : "subdued"}>
+      <s-grid gridTemplateColumns="56px 1fr auto" gap="base" alignItems="center">
+        <s-grid-item>
+          {image ? <s-thumbnail src={image} alt="" size="base" /> : <s-box inlineSize="56px" blockSize="56px" borderWidth="base" borderRadius="base" background="subdued" />}
+        </s-grid-item>
+        <s-grid-item>
+          <s-stack direction="block" gap="small-200">
+            <s-stack direction="inline" gap="small" alignItems="center">
+              <s-heading>{item.title || item.productTitle}</s-heading>
+              {variantId ? <s-badge tone="success">Linked</s-badge> : <s-badge tone="warning">Needs a product</s-badge>}
+            </s-stack>
+            <s-text color="subdued">
+              {kind === "bundle" ? (item.subtitle || "Bundle") : "Add-on"}{price != null ? ` · £${Number(price).toFixed(2)}` : ""}{productTitle ? ` · ${productTitle}` : ""}
+            </s-text>
+            {variants ? (
+              <s-select label="Variant" labelAccessibilityVisibility="exclusive" value={variantId} onChange={(e) => onVariant(e.currentTarget.value)}>
+                {variants.map((v) => <s-option key={v.id} value={v.id}>{`${v.title} · £${Number(v.price).toFixed(2)}`}</s-option>)}
+              </s-select>
+            ) : null}
+          </s-stack>
+        </s-grid-item>
+        <s-grid-item>
+          <s-stack direction="inline" gap="small">
+            <s-button variant={variantId ? "secondary" : "primary"} onClick={onPick}>{variantId ? "Change" : "Choose product"}</s-button>
+            {variantId ? <s-button variant="tertiary" onClick={onClear}>Unlink</s-button> : null}
+          </s-stack>
+        </s-grid-item>
+      </s-grid>
     </s-box>
   );
 }
 
 export default function Products() {
-  const { config, done } = useLoaderData();
+  const { config, done, importUrl } = useLoaderData();
   const fetcher = useFetcher();
   const shopify = useAppBridge();
   const [links, setLinks] = useState({ bundles: {}, accessories: {} });
@@ -80,7 +104,8 @@ export default function Products() {
 
   useEffect(() => {
     if (!fetcher.data) return;
-    if (fetcher.data.ok) { shopify.toast.show("Products saved"); setLinks({ bundles: {}, accessories: {} }); }
+    if (fetcher.data.ok && fetcher.data.intent === "link-samples") shopify.toast.show(`Linked ${fetcher.data.linked} sample product${fetcher.data.linked === 1 ? "" : "s"}`);
+    else if (fetcher.data.ok) { shopify.toast.show("Products saved"); setLinks({ bundles: {}, accessories: {} }); }
     else shopify.toast.show(fetcher.data.error || "Something went wrong", { isError: true });
   }, [fetcher.data, shopify]);
 
@@ -98,16 +123,23 @@ export default function Products() {
     } catch (e) { return; }
     const product = selected && selected[0];
     if (!product) return;
-    const variants = product.variants || [];
+    const variants = (product.variants || []).map((v) => ({
+      id: gidTail(v.id), title: v.title || "Default", price: Number(v.price),
+      image: (v.image && v.image.originalSrc) || (product.images && product.images[0] && product.images[0].originalSrc) || "",
+    }));
     const v = variants[0];
     if (!v) { shopify.toast.show("That product has no variants", { isError: true }); return; }
-    const image = (v.image && v.image.originalSrc) || (product.images && product.images[0] && product.images[0].originalSrc) || "";
-    const link = { variantId: gidTail(v.id), price: Number(v.price), image, productTitle: product.title + (variants.length > 1 && v.title && v.title !== "Default Title" ? ` (${v.title})` : "") };
-    if (variants.length > 1) shopify.toast.show(`Linked the first of ${variants.length} variants. Variant choice per option comes in the full editor.`);
-    setLinks((l) => ({ ...l, [kind]: { ...l[kind], [key]: link } }));
+    const label = (vv) => product.title + (variants.length > 1 && vv.title && vv.title !== "Default Title" ? ` (${vv.title})` : "");
+    setLinks((l) => ({ ...l, [kind]: { ...l[kind], [key]: { variantId: v.id, price: v.price, image: v.image, productTitle: label(v), variants, product: product.title } } }));
   };
+  const setVariant = (kind, key, id) => setLinks((l) => {
+    const cur = l[kind][key]; if (!cur || !cur.variants) return l;
+    const v = cur.variants.find((x) => x.id === id); if (!v) return l;
+    const title = cur.product + (v.title && v.title !== "Default Title" ? ` (${v.title})` : "");
+    return { ...l, [kind]: { ...l[kind], [key]: { ...cur, variantId: v.id, price: v.price, image: v.image, productTitle: title } } };
+  });
   const clear = (kind, key) => setLinks((l) => ({ ...l, [kind]: { ...l[kind], [key]: { clear: true } } }));
-  const submit = (cont) => fetcher.submit({ links: JSON.stringify(links), continue: cont ? "1" : "0" }, { method: "POST" });
+  const submit = (cont) => fetcher.submit({ intent: "save", links: JSON.stringify(links), continue: cont ? "1" : "0" }, { method: "POST" });
 
   return (
     <s-page heading="Connect your products.">
@@ -123,22 +155,44 @@ export default function Products() {
         </s-stack>
       </s-section>
 
-      <s-section heading="Bundles">
+      {linked < all.length ? (
+        <s-section heading="No matching products yet?">
+          <s-paragraph>Import a sample catalogue made from this template: one product per bundle and add-on, with the prices shown here and placeholder images. Good for trying the widget before your real products are ready.</s-paragraph>
+          <s-stack direction="block" gap="small">
+            <s-ordered-list>
+              <s-list-item>Download the CSV.</s-list-item>
+              <s-list-item>In Shopify, open Products, Import, and upload it.</s-list-item>
+              <s-list-item>Come back here and press Link imported samples.</s-list-item>
+            </s-ordered-list>
+            <s-stack direction="inline" gap="base">
+              <s-button href="/app/samples.csv" target="_blank" variant="secondary">Download sample CSV</s-button>
+              <s-button href={importUrl} target="_blank" variant="tertiary">Open Products import</s-button>
+              <s-button onClick={() => fetcher.submit({ intent: "link-samples" }, { method: "POST" })} {...(busy ? { loading: true } : {})}>Link imported samples</s-button>
+            </s-stack>
+            <s-text color="subdued">Samples are tagged bundle-configurator-sample so you can find and delete them later.</s-text>
+          </s-stack>
+        </s-section>
+      ) : null}
+
+      <s-section heading={`Bundles (${bundles.length})`}>
         <s-paragraph color="subdued">The base sets a shopper can be recommended. The first matching one wins; the last is the fallback.</s-paragraph>
         <s-stack direction="block" gap="small">
-          {bundles.map((b) => <ProductRow key={b.id} item={b} kind="bundle" link={links.bundles[b.id]} onPick={() => pick("bundles", b.id)} onClear={() => clear("bundles", b.id)} />)}
+          {bundles.map((b) => <ProductRow key={b.id} item={b} kind="bundle" link={links.bundles[b.id]} onPick={() => pick("bundles", b.id)} onClear={() => clear("bundles", b.id)} onVariant={(id) => setVariant("bundles", b.id, id)} />)}
         </s-stack>
       </s-section>
 
-      <s-section heading="Add-ons">
+      <s-section heading={`Add-ons (${accessories.length})`}>
         <s-paragraph color="subdued">Products the rules add on top of the bundle, one per rule.</s-paragraph>
         <s-stack direction="block" gap="small">
-          {accessories.map(([k, a]) => <ProductRow key={k} item={a} kind="accessory" link={links.accessories[k]} onPick={() => pick("accessories", k)} onClear={() => clear("accessories", k)} />)}
+          {accessories.map(([k, a]) => <ProductRow key={k} item={a} kind="accessory" link={links.accessories[k]} onPick={() => pick("accessories", k)} onClear={() => clear("accessories", k)} onVariant={(id) => setVariant("accessories", k, id)} />)}
         </s-stack>
       </s-section>
 
       <s-section>
-        <s-button variant="secondary" onClick={() => submit(false)} {...(busy ? { loading: true } : {})} {...(!pendingCount ? { disabled: true } : {})}>Save</s-button>
+        <s-stack direction="inline" gap="base" alignItems="center">
+          <s-button variant="secondary" onClick={() => submit(false)} {...(busy ? { loading: true } : {})} {...(!pendingCount ? { disabled: true } : {})}>Save</s-button>
+          {pendingCount ? <s-text color="subdued">Unsaved links are lost if you leave this page.</s-text> : null}
+        </s-stack>
       </s-section>
     </s-page>
   );

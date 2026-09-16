@@ -15,6 +15,14 @@ import { WidgetPreview } from "../components/WidgetPreview";
 
 const TYPES = ["choice", "boolean", "counters", "toggles", "multi"];
 
+/* Templates for "Add a question". Ids get a suffix so two of a kind can coexist. */
+const NEW_STEPS = [
+  { type: "choice", label: "Single choice", make: (n) => ({ _new: true, id: `choice${n}`, type: "choice", field: `choice${n}`, required: true, question: "Which of these fits best?", sub: "Pick one.", options: [{ value: "a", label: "First option" }, { value: "b", label: "Second option" }, { value: "c", label: "Third option" }] }) },
+  { type: "multi", label: "Multiple choice", make: (n) => ({ _new: true, id: `multi${n}`, type: "multi", field: `multi${n}`, required: false, question: "Which of these matter to you?", sub: "Pick any that apply.", options: [{ value: "a", label: "First option" }, { value: "b", label: "Second option" }, { value: "c", label: "Third option" }, { value: "d", label: "Fourth option" }] }) },
+  { type: "counters", label: "Numbers", make: (n) => ({ _new: true, id: `count${n}`, type: "counters", question: "How many?", sub: "This sizes the bundle.", counters: [{ field: `qty${n}`, label: "Quantity", min: 1, max: 10, defaultValue: 1 }] }) },
+  { type: "boolean", label: "Yes or no", make: (n) => ({ _new: true, id: `yesno${n}`, type: "boolean", field: `yesno${n}`, required: true, question: "Do you need this?", sub: "", options: [{ value: true, label: "Yes" }, { value: false, label: "No" }] }) },
+];
+
 export const loader = async ({ request }) => {
   const { admin } = await authenticate.admin(request);
   const { config } = await readConfig(admin);
@@ -24,12 +32,29 @@ export const loader = async ({ request }) => {
 
 /* Merge the client's edits onto the saved steps by id. Order and removal
    come from the client; everything not editable here stays as saved. */
+/* New questions arrive whole from the client (built from NEW_STEP templates);
+   only their shape is trusted, every string is clipped. */
+function sanitizeNew(inc) {
+  if (!inc || !TYPES.includes(inc.type) || typeof inc.id !== "string") return null;
+  const id = inc.id.replace(/[^a-z0-9_-]/gi, "").slice(0, 40) || null;
+  if (!id) return null;
+  const field = String(inc.field || id).replace(/[^a-z0-9_]/gi, "").slice(0, 40) || id;
+  const st = { id, type: inc.type, question: String(inc.question || "").slice(0, 160), sub: String(inc.sub || "").slice(0, 240) };
+  const opt = (o, i) => ({ value: String(o.value ?? i).slice(0, 40), label: String(o.label || "").slice(0, 80), icon: typeof o.icon === "string" ? o.icon.slice(0, 200) : "" });
+  if (inc.type === "choice" || inc.type === "multi") { st.field = field; st.required = !!inc.required; st.options = (inc.options || []).slice(0, 12).map(opt); if (inc.type === "multi") st.columns = 2; }
+  if (inc.type === "boolean") { st.field = field; st.required = !!inc.required; st.layout = "grid"; st.options = [{ value: true, label: String(inc.options?.[0]?.label || "Yes").slice(0, 80) }, { value: false, label: String(inc.options?.[1]?.label || "No").slice(0, 80) }]; }
+  if (inc.type === "counters") st.counters = (inc.counters || []).slice(0, 4).map((c, i) => ({ field: String(c.field || `${field}_${i}`).replace(/[^a-z0-9_]/gi, "").slice(0, 40), label: String(c.label || "").slice(0, 80), min: Number(c.min) || 0, max: Number(c.max) || 10, defaultValue: Number(c.defaultValue) || 0 }));
+  if (inc.type === "toggles") st.toggles = (inc.toggles || []).slice(0, 8).map((t, i) => ({ field: String(t.field || `${field}_${i}`).replace(/[^a-z0-9_]/gi, "").slice(0, 40), label: String(t.label || "").slice(0, 80), icon: typeof t.icon === "string" ? t.icon.slice(0, 200) : "" }));
+  return st;
+}
+
 function mergeSteps(saved, incoming) {
   const byId = new Map((saved || []).map((s) => [s.id, s]));
   const out = [];
   for (const inc of incoming) {
     const base = byId.get(inc.id);
-    if (!base || !TYPES.includes(base.type)) continue;
+    if (!base) { const fresh = inc._new ? sanitizeNew(inc) : null; if (fresh) out.push(fresh); continue; }
+    if (!TYPES.includes(base.type)) continue;
     const st = JSON.parse(JSON.stringify(base));
     if (typeof inc.question === "string") st.question = inc.question.slice(0, 160);
     if (typeof inc.sub === "string") st.sub = inc.sub.slice(0, 240);
@@ -76,6 +101,10 @@ export default function Questions() {
   const updateKid = (i, kind, j, label) => setSteps((s) => s.map((st, k) => k !== i ? st : { ...st, [kind]: st[kind].map((o, m) => (m === j ? { ...o, label } : o)) }));
   const move = (i, d) => setSteps((s) => { const a = s.slice(); const t = a[i]; a[i] = a[i + d]; a[i + d] = t; return a; });
   const remove = (i) => setSteps((s) => s.filter((_, j) => j !== i));
+  const addStep = (t) => setSteps((s) => {
+    let n = 1; while (s.some((st) => st.id === `${t.type === "counters" ? "count" : t.type === "boolean" ? "yesno" : t.type}${n}`)) n++;
+    return s.concat([t.make(n)]);
+  });
   const submit = (cont) => fetcher.submit({ steps: JSON.stringify(steps), continue: cont ? "1" : "0" }, { method: "POST" });
 
   const n = steps.length;
@@ -122,6 +151,13 @@ export default function Questions() {
           </s-section>
         );
       })}
+
+      <s-section heading="Add a question">
+        <s-paragraph color="subdued">Starts with placeholder options you can rename here. Rules that use the answer are set in the full editor.</s-paragraph>
+        <s-stack direction="inline" gap="small">
+          {NEW_STEPS.map((t) => <s-button key={t.type} variant="secondary" onClick={() => addStep(t)}>{t.label}</s-button>)}
+        </s-stack>
+      </s-section>
 
       <s-section>
         <s-button variant="secondary" onClick={() => submit(false)} {...(busy ? { loading: true } : {})}>Save</s-button>

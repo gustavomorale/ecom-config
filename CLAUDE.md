@@ -17,7 +17,7 @@ and analytics endpoint are mocked in the harness and not built.
 | `src/theme-inherit.js` | Reads the host storefront's computed styles and derives the token set. Never imports merchant CSS. |
 | `src/scenes/summary.js`, `src/scenes/house.js` | Scenes: neutral answer-stack preview, and the property illustration. De-branded; colours come from `--bcfg-scene-*`. |
 | `configs/categories.js` | Category registry. The merchant's first decision. Adding a category = adding one object to the array. |
-| `configs/templates/*.js` | Full templates (house accessories, subscription boxes). Other categories are expanded by `starter()`. |
+| `configs/templates/*.js` | Full templates (house accessories, subscription boxes, cosmetics). The UK niche categories are expanded by `starter()`. |
 | `demo/index.html` + `harness.*` | The MVP harness: Storefront, Merchant admin (mock), Theme sync, Analytics (mock), MVP model tabs. `demo/bundle-configurator.mvp.html` is the single-file build of the same thing. |
 | `shopify-app/extensions/bundle-configurator/` | Theme app extension: app block + assets. Assets are copied from `src/` by `npm run build:extension` and are gitignored. |
 | `scripts/` | Build helpers. |
@@ -45,6 +45,12 @@ commands: `/check`, `/build-extension`, `/sync-mvp`, `/next-blocker [n]`. Person
    widget for configured check out*. Illustrations carry no palette of their own.
 5. **Icons are per-option config**, edited in the admin: `icon` (emoji or inline SVG) or
    `image` (URL to the merchant's asset). Real admin gets the Shopify asset picker.
+6. **First access is a five-step setup, then the full editor.** Category, Look ("Match my
+   store" runs theme sync), Questions, Products (variant IDs; the only step that gates a
+   real checkout), Go live. One decision per step, one sentence of why, one primary
+   action, always a "Skip for now". Progress and the config in progress persist, so a
+   refresh resumes. The mock in `demo/harness.js` (`Setup`) is the spec for the Remix +
+   Polaris admin. The bar is a top-tier Shopify App Store listing.
 
 ## Conventions
 
@@ -73,9 +79,17 @@ commands: `/check`, `/build-extension`, `/sync-mvp`, `/next-blocker [n]`. Person
 
 ## Blocking a public listing (work these first)
 
-1. **Accessibility.** Options are `div`s with click handlers. Need real `button`/`radio`
-   semantics, keyboard nav, focus management, visible focus rings. Every glass token pair
-   needs a 4.5:1 audit.
+1. **Accessibility. Resolved (2026-09-16).** Answer controls are `<button>`s: single
+   choice is a `radiogroup` with roving tabindex and arrow keys, tiles use `aria-pressed`,
+   the scene toggle `aria-expanded`. `render()` restores focus by data-* identity; step
+   changes focus the question and announce "Step x of y" through a `role="status"` region.
+   Focus rings are `:focus-visible` only, via `--bcfg-focus`, `--bcfg-focus-halo`,
+   `--bcfg-focus-width` (glass draws ink plus an opaque halo so blur cannot eat it).
+   Default text tokens were re-measured to 4.5:1 or better on their own surfaces (accent
+   `#3d5ee6`, muted `#6b6b6b`, faint `#6f6f6f`, good `#1f7a45`, warn `#7a5c00`; glass
+   `--g-ink-3` at 60% light / 62% dark). Copy keys added: `requiredHint`, `decreaseLabel`,
+   `increaseLabel`, `removeAddonLabel`, `removedNote`. Still open: a merchant's own theme
+   colours can break contrast; that warning belongs in the admin (see 5).
 2. **Price drift.** Prices live in config and in Shopify. Show "preview, checkout is the
    source of truth" until Storefront API sync lands.
 3. **Persistence.** Answers are lost on refresh.

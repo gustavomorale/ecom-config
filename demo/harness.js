@@ -60,6 +60,15 @@ var Store = {
     var cfg = withPreset(buildCategory(this.category), this.preset, this.appearance);
     this.inst = BundleConfigurator.mount($('#store-mount'), cfg);
     Stats.attach(this.inst, 'live');
+  },
+  /* Show the merchant's own config, as a shopper would see it. */
+  mountConfig: function (cfg) {
+    if (this.inst) this.inst.destroy();
+    this.inst = BundleConfigurator.mount($('#store-mount'), clone(cfg));
+    Stats.attach(this.inst, 'live');
+    $$('.tabs button').forEach(function (b) { b.setAttribute('aria-selected', b.getAttribute('data-tab') === 'store' ? 'true' : 'false'); });
+    $$('.tab-panel').forEach(function (p) { p.hidden = p.getAttribute('data-panel') !== 'store'; });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 };
 $('#store-category').innerHTML = CATS.map(function (c) {
@@ -139,8 +148,11 @@ var Admin = {
       $('#cat-grid').addEventListener('click', function (e) {
         var b = e.target.closest('[data-cat]'); if (!b) return;
         self.boot(b.getAttribute('data-cat'));
+        Setup.go(Setup.active ? 2 : null);
       });
       $('#cat-change').addEventListener('click', function () { self.showChooser(); });
+      $('#setup-again').addEventListener('click', function () { Setup.start(true); });
+      $('#setup-skip-all').addEventListener('click', function (e) { e.preventDefault(); Setup.skipAll(); });
     }
   },
 
@@ -148,6 +160,7 @@ var Admin = {
     $('#cat-screen').hidden = false;
     $('#cat-bar').hidden = true;
     $('#admin-editors').hidden = true;
+    if (Setup.active) Setup.paint(1);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   },
 
@@ -163,6 +176,7 @@ var Admin = {
     $('#admin-editors').hidden = false;
     this.renderEditors();
     this.remount();
+    Setup.save();
   },
 
   /* Debounced so dragging a colour picker doesn't remount 60x a second. */
@@ -170,7 +184,7 @@ var Admin = {
     var self = this;
     $('#ad-live').textContent = 'saving…'; $('#ad-live').className = 'pill warn';
     clearTimeout(this.timer);
-    this.timer = setTimeout(function () { self.remount(); self.dumpJson(); }, 180);
+    this.timer = setTimeout(function () { self.remount(); self.dumpJson(); Setup.save(); Setup.refreshHint(); }, 180);
   },
 
   remount: function () {
@@ -219,8 +233,8 @@ var Admin = {
           return '<button data-a="' + a + '" aria-pressed="' + ((b.appearance || 'auto') === a) + '">' + a + '</button>';
         }).join('') + '</div><div class="hint">Auto follows the shopper\'s own OS setting.</div></div>' +
       '<div class="ctl"><label>Brand colour</label><div class="row">' +
-        '<input type="color" id="ad-accent" value="' + esc(t.accent || '#4a6cf7') + '">' +
-        '<input type="text" id="ad-accent-hex" value="' + esc(t.accent || '#4a6cf7') + '"></div>' +
+        '<input type="color" id="ad-accent" value="' + esc(t.accent || '#3d5ee6') + '">' +
+        '<input type="text" id="ad-accent-hex" value="' + esc(t.accent || '#3d5ee6') + '"></div>' +
         '<div class="hint">Everything else &mdash; hover washes, selected states, glows, the button gradient &mdash; is derived from this one value.</div></div>' +
       '<div class="ctl"><label>Corner radius <span class="mono" id="ad-r-val">' + parseInt(t.radius || 22, 10) + 'px</span></label>' +
         '<input type="range" id="ad-radius" min="0" max="28" value="' + parseInt(t.radius || 22, 10) + '"></div>' +
@@ -341,6 +355,27 @@ var Admin = {
     });
   },
 
+  /* ---- add-on products (the accessory catalogue) ---- */
+  renderProducts: function () {
+    var self = this, acc = this.cfg.accessories = this.cfg.accessories || {};
+    var keys = Object.keys(acc);
+    $('#ad-products').innerHTML = keys.map(function (k) {
+      var a = acc[k];
+      return '<div class="iconrow prodrow">' +
+        '<input type="text" data-p="' + esc(k) + '" data-k="title" value="' + esc(a.title || k) + '" placeholder="Product">' +
+        '<input type="number" step="0.01" data-p="' + esc(k) + '" data-k="price" value="' + (a.price || 0) + '" style="max-width:84px">' +
+        '<input type="text" data-p="' + esc(k) + '" data-k="variantId" value="' + esc(a.variantId || '') + '" placeholder="Variant ID" class="mono" style="max-width:130px">' +
+        '</div>';
+    }).join('') || '<p class="note">This template has no add-on products.</p>';
+    if (this._productsBound) return; this._productsBound = true;
+    $('#ad-products').addEventListener('input', function (e) {
+      var el = e.target, a = acc[el.getAttribute('data-p')]; if (!a) return;
+      var k = el.getAttribute('data-k');
+      a[k] = k === 'price' ? Number(el.value) : el.value;
+      self.touch();
+    });
+  },
+
   /* ---- add-on rules ---- */
   renderRules: function () {
     var self = this, rs = this.cfg.addonRules || [], acc = this.cfg.accessories || {};
@@ -392,7 +427,189 @@ var Admin = {
   },
 
   renderEditors: function () {
-    this.renderBrand(); this.renderAppearance(); this.renderSteps(); this.renderBundles(); this.renderRules(); this.renderCopy(); this.dumpJson();
+    this.renderBrand(); this.renderAppearance(); this.renderSteps(); this.renderBundles(); this.renderProducts(); this.renderRules(); this.renderCopy(); this.dumpJson();
+  }
+};
+
+/* ============================================================
+   First access — five steps, one decision each.
+   Reuses the editor panels one at a time; nothing is duplicated. Progress and
+   the config in progress live in localStorage so a refresh resumes. In the
+   real app this state is the merchant's metafield plus an onboarding flag.
+   ============================================================ */
+var Setup = {
+  KEY: 'bcfg.setup', active: false, step: 1, matched: null,
+
+  STEPS: {
+    2: { title: 'Make it look like your store.',
+         why: 'One colour does most of the work. Match your store in a click, or pick your brand colour below. Everything can be changed later.' },
+    3: { title: 'Check the questions.',
+         why: 'Retitle, reorder or remove. Shoppers finish more often with 4 to 6 questions.' },
+    4: { title: 'Connect your products.',
+         why: 'Each bundle and add-on needs the Shopify variant it puts in the cart. Prices here are for the preview; checkout always charges the live price.' },
+    5: { title: 'You are ready to go live.',
+         why: 'Add the Bundle Configurator block to any page in the theme editor. It picks up this setup automatically, and you can keep editing here.' }
+  },
+
+  load: function () { try { return JSON.parse(localStorage.getItem(this.KEY) || 'null'); } catch (e) { return null; } },
+  save: function () {
+    if (!Admin.cfg) return;
+    try { localStorage.setItem(this.KEY, JSON.stringify({ active: this.active, step: this.step, category: Admin.category, cfg: Admin.cfg, matched: this.matched })); } catch (e) { }
+  },
+
+  /* Decide where a merchant lands. */
+  init: function () {
+    var s = this.load();
+    Admin.renderChooser();
+    if (s && s.cfg && s.category) {
+      Admin.category = s.category; Admin.cfg = s.cfg; this.matched = s.matched || null;
+      var c = category(s.category);
+      $('#cat-bar-icon').innerHTML = c.icon; $('#cat-bar-label').textContent = c.label; $('#cat-bar-blurb').textContent = c.blurb;
+      $('#cat-screen').hidden = true; $('#cat-bar').hidden = false; $('#admin-editors').hidden = false;
+      Admin.renderEditors(); Admin.remount();
+      if (s.active) { this.active = true; this.go(s.step || 2); } else this.finish(false);
+      return;
+    }
+    this.start(false);
+  },
+
+  start: function (reset) {
+    this.active = true; this.step = 1;
+    if (reset) { this.matched = null; }
+    Admin.showChooser();
+    this.paint(1);
+    this.save();
+  },
+
+  skipAll: function () {
+    this.active = false;
+    Admin.boot(Admin.category || (CATS[0] || {}).id);
+    this.finish(true);
+  },
+
+  go: function (n) {
+    if (n === null) { this.finish(true); return; }        // category changed outside setup
+    this.step = n;
+    if (n === 1) { Admin.showChooser(); return; }
+    $('#cat-screen').hidden = true; $('#cat-bar').hidden = false; $('#admin-editors').hidden = false;
+    this.paint(n);
+    this.save();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  },
+
+  finish: function (announce) {
+    this.active = false;
+    $('#setup-rail').hidden = true;
+    $('#setup-card').hidden = true;
+    $('#admin-editors').removeAttribute('data-setup');
+    $('#setup-again').hidden = false;
+    this.save();
+    if (announce) { $('#ad-live').textContent = 'setup complete'; $('#ad-live').className = 'pill ok'; }
+  },
+
+  /* Draw the rail and the step card for step n. */
+  paint: function (n) {
+    var self = this;
+    $('#setup-rail').hidden = false;
+    $('#setup-again').hidden = true;
+    $$('#setup-rail li').forEach(function (li) {
+      var k = Number(li.getAttribute('data-rail'));
+      li.setAttribute('data-state', k < n ? 'done' : k === n ? 'current' : '');
+    });
+    if (n === 1) { $('#setup-card').hidden = true; $('#admin-editors').removeAttribute('data-setup'); return; }
+    var st = this.STEPS[n];
+    $('#admin-editors').setAttribute('data-setup', n);
+    $('#setup-card').hidden = false;
+    $('#setup-eyebrow').textContent = 'Step ' + n + ' of 5';
+    $('#setup-title').textContent = st.title;
+    $('#setup-why').textContent = st.why;
+    var actions = '<button class="btn sm ghost" data-go="' + (n - 1) + '">Back</button><span class="spacer"></span>';
+    if (n === 2) actions += '<button class="btn sm" id="setup-match">Match my store</button>';
+    if (n === 5) {
+      actions = '<button class="btn sm ghost" data-go="4">Back</button><span class="spacer"></span>' +
+        '<button class="btn sm ghost" id="setup-copy">Copy config</button>' +
+        '<button class="btn sm" id="setup-preview">Preview as a shopper</button>' +
+        '<button class="btn sm primary" id="setup-done">Open the full editor</button>';
+    } else {
+      actions += '<button class="btn sm ghost" data-go="' + (n + 1) + '">Skip for now</button>' +
+        '<button class="btn sm primary" data-go="' + (n + 1) + '">Continue</button>';
+    }
+    $('#setup-actions').innerHTML = actions;
+    $$('#setup-actions [data-go]').forEach(function (b) { b.addEventListener('click', function () { self.go(Number(b.getAttribute('data-go'))); }); });
+    if (n === 2) $('#setup-match').addEventListener('click', function () { self.matchStore(this); });
+    if (n === 5) {
+      $('#setup-preview').addEventListener('click', function () { Store.mountConfig(Admin.cfg); });
+      $('#setup-done').addEventListener('click', function () { self.finish(true); });
+      $('#setup-copy').addEventListener('click', function () {
+        var b = this, t = JSON.stringify(Admin.cfg, null, 2);
+        (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject())
+          .then(function () { b.textContent = 'Copied'; setTimeout(function () { b.textContent = 'Copy config'; }, 1600); })
+          .catch(function () { b.textContent = 'Use Saved config below'; setTimeout(function () { b.textContent = 'Copy config'; }, 1600); });
+      });
+    }
+    this.refreshHint();
+  },
+
+  /* Count what still blocks a real checkout. */
+  products: function () {
+    var cfg = Admin.cfg || {}, total = 0, missing = 0;
+    (cfg.bundles || []).forEach(function (b) { total++; if (!b.variantId) missing++; });
+    Object.keys(cfg.accessories || {}).forEach(function (k) { total++; if (!cfg.accessories[k].variantId) missing++; });
+    return { total: total, missing: missing };
+  },
+
+  refreshHint: function () {
+    if (!this.active || this.step < 2) return;
+    var n = this.step, cfg = Admin.cfg || {}, h = '';
+    if (n === 2) {
+      h = this.matched ? '<span class="pill ok">Matched to ' + esc(this.matched) + '</span> Change anything below; your choices win over the match.'
+                       : 'Or leave the defaults. The widget already fits most themes.';
+    }
+    if (n === 3) {
+      var q = (cfg.steps || []).length;
+      h = '<span class="pill ' + (q >= 4 && q <= 6 ? 'ok' : 'warn') + '">' + q + ' question' + (q === 1 ? '' : 's') + '</span>' +
+          (q > 6 ? 'Consider removing one or two. Every extra step loses some shoppers.' : q < 4 ? 'Short is fine. Add a question only if it changes what goes in the cart.' : 'Good length.');
+    }
+    if (n === 4) {
+      var p = this.products();
+      h = p.missing ? '<span class="pill warn">' + p.missing + ' of ' + p.total + ' need a variant ID</span> Checkout works once they are set. You can finish setup and come back.'
+                    : '<span class="pill ok">All ' + p.total + ' products connected</span> Checkout is ready.';
+    }
+    if (n === 5) {
+      var pp = this.products(), b = cfg.brand || {}, c = category(Admin.category);
+      h = '<div class="setup-summary">' +
+        '<div><small>Category</small><b>' + esc(c.label) + '</b></div>' +
+        '<div><small>Look</small><b>' + esc((b.preset || 'glass') + (this.matched ? ', matched' : '') + (b.theme && b.theme.accent ? ', ' + b.theme.accent : '')) + '</b></div>' +
+        '<div><small>Questions</small><b>' + (cfg.steps || []).length + '</b></div>' +
+        '<div><small>Products</small><b>' + (pp.total - pp.missing) + ' of ' + pp.total + ' connected</b></div></div>' +
+        (pp.missing ? '<span class="pill warn">' + pp.missing + ' product' + (pp.missing === 1 ? '' : 's') + ' still need a variant ID</span> The widget works now; checkout adds those once set.' : '');
+    }
+    $('#setup-hint').innerHTML = h;
+  },
+
+  /* "Match my store": read the storefront's computed styles and apply them as the
+     inherited layer. The mock sniffs the first simulated shop; the real app sniffs
+     the merchant's own theme preview. */
+  matchStore: function (btn) {
+    var self = this;
+    btn.textContent = 'Reading your theme…'; btn.disabled = true;
+    Theme.ensure();
+    var frame = $('#store-sims iframe'), tries = 0;
+    (function attempt() {
+      var doc = null;
+      try { doc = frame && frame.contentDocument; } catch (e) { }
+      if (!doc || !doc.body || !doc.body.children.length) {
+        if (++tries < 20) return setTimeout(attempt, 100);
+        btn.textContent = 'Could not read the theme'; btn.disabled = false; return;
+      }
+      var p = BundleConfigurator.sniffHost(doc), tokens = BundleConfigurator.tokensFrom(p);
+      Admin.cfg.brand.inherited = tokens;
+      Admin.cfg.brand.appearance = p.appearance || 'auto';
+      self.matched = (STORES[0] || {}).label || 'your store';
+      Admin.renderAppearance(); Admin.touch();
+      btn.textContent = 'Matched'; btn.disabled = false;
+      self.refreshHint();
+    })();
   }
 };
 
@@ -621,7 +838,6 @@ $('#ev-clear').addEventListener('click', function () { Stats.sessions = []; Stat
 
 /* ---------- go ---------- */
 Store.mount();
-Admin.renderChooser();
-Admin.showChooser();
+Setup.init();
 Stats.render();
 })();

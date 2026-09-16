@@ -1,97 +1,97 @@
 /* ============================================================
-   Home. First access: step 1 of setup, "What are you selling?".
-   Picking a category seeds a complete working template and saves it to the
-   shop metafield; from that moment the theme block shows a real questionnaire.
-   With a config saved, this page is the status overview. The remaining setup
-   steps (Look, Questions, Products, Go live) land here next.
+   Home.
+   No configuration yet: the welcome. What the app does, how the five-step
+   setup goes, what it can access, and that this is a beta. One button.
+   Configuration saved: the status overview, with every step editable.
    ============================================================ */
 import { useEffect } from "react";
 import { useFetcher, useLoaderData, useRouteError } from "react-router";
 import { useAppBridge } from "@shopify/app-bridge-react";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { authenticate } from "../shopify.server";
-import { listCategories, buildCategory, readConfig, saveConfig, deleteConfig, themeEditorUrl } from "../config.server";
-import { SetupRail, doneSteps } from "../components/SetupRail";
+import { listCategories, readConfig, themeEditorUrl } from "../config.server";
+import { SetupRail, doneSteps, BETA, SUPPORT_EMAIL } from "../components/SetupRail";
 
 export const loader = async ({ request }) => {
   const { admin } = await authenticate.admin(request);
   const { config, domain } = await readConfig(admin);
   const categories = listCategories();
   const current = config ? categories.find((c) => c.id === config.meta?.category) || null : null;
-  return { categories, config, current, editorUrl: themeEditorUrl(domain), done: doneSteps(config) };
+  return { config, current, editorUrl: themeEditorUrl(domain), storeUrl: `https://${domain}/`, done: doneSteps(config) };
 };
 
-export const action = async ({ request }) => {
-  const { admin } = await authenticate.admin(request);
-  const form = await request.formData();
-  const intent = form.get("intent");
-  const { shopId } = await readConfig(admin);
-  try {
-    if (intent === "choose") {
-      const cfg = buildCategory(String(form.get("category")));
-      await saveConfig(admin, shopId, cfg);
-      return { ok: true, intent, category: cfg.meta.category };
-    }
-    if (intent === "reset") {
-      await deleteConfig(admin, shopId);
-      return { ok: true, intent };
-    }
-  } catch (e) {
-    return { ok: false, intent, error: e.message };
-  }
-  return { ok: false, intent, error: "Unknown action" };
-};
+function Welcome() {
+  return (
+    <s-page heading="Welcome to Bundle Configurator">
+      <s-button slot="primary-action" href="/app/category">Start setup</s-button>
+
+      <s-section>
+        <s-stack direction="block" gap="base">
+          <s-stack direction="inline" gap="small" alignItems="center">
+            <s-badge tone="info">Beta</s-badge>
+            <s-text color="subdued">{`Version ${BETA.version}. Free while in beta.`}</s-text>
+          </s-stack>
+          <s-paragraph>
+            A short questionnaire on your storefront that turns a shopper's answers into a ready-made cart: the right bundle, the right add-ons, one click to checkout. You choose what to ask, the rules decide what goes in the basket, and the widget wears your store's colours.
+          </s-paragraph>
+        </s-stack>
+      </s-section>
+
+      <s-section heading="How it works">
+        <s-grid gridTemplateColumns="repeat(auto-fit, minmax(220px, 1fr))" gap="base">
+          {[
+            ["1. Shoppers answer", "Four to six quick questions in a block you place on any page. Answers survive a refresh and can be shared as a link."],
+            ["2. Rules build the bundle", "Each answer picks a base set and adds the products that fit. Every product is one of yours, linked in setup."],
+            ["3. Cart is ready", "The result screen shows what's in the set and why, then opens checkout with everything pre-loaded."],
+          ].map(([h, p]) => (
+            <s-box key={h} padding="base" borderWidth="base" borderRadius="base">
+              <s-stack direction="block" gap="small-200">
+                <s-heading>{h}</s-heading>
+                <s-paragraph color="subdued">{p}</s-paragraph>
+              </s-stack>
+            </s-box>
+          ))}
+        </s-grid>
+      </s-section>
+
+      <s-section heading="Setup takes about five minutes">
+        <s-ordered-list>
+          <s-list-item><s-text>Category.</s-text> Pick what you sell; you get a working questionnaire immediately.</s-list-item>
+          <s-list-item><s-text>Look.</s-text> Match your store's colours in one click, or set your own.</s-list-item>
+          <s-list-item><s-text>Questions.</s-text> Rename, reorder, add or remove.</s-list-item>
+          <s-list-item><s-text>Products.</s-text> Link each bundle and add-on to one of your products. No products yet? Import a sample set.</s-list-item>
+          <s-list-item><s-text>Go live.</s-text> Add the block to your theme.</s-list-item>
+        </s-ordered-list>
+        <s-paragraph color="subdued">Every step can be skipped and revisited. Nothing shows on your storefront until you add the block.</s-paragraph>
+      </s-section>
+
+      <s-section slot="aside" heading="What the app can access">
+        <s-unordered-list>
+          <s-list-item>Read your products, to link them in setup.</s-list-item>
+          <s-list-item>Read your theme's settings, to match its look.</s-list-item>
+          <s-list-item>Write one setting on your shop that holds your configuration.</s-list-item>
+        </s-unordered-list>
+        <s-paragraph color="subdued">It never edits your theme, your products or your orders, and it stores no customer data. Shoppers' answers stay in their own browser.</s-paragraph>
+      </s-section>
+
+      <s-section slot="aside" heading="This is a beta">
+        <s-paragraph>You are among the first stores using it. Things may change between updates, and some editing (rules, icons, copy) is not in the app yet.</s-paragraph>
+        <s-paragraph>Found something broken or missing? <s-link href={`mailto:${SUPPORT_EMAIL}?subject=Bundle%20Configurator%20beta`}>{SUPPORT_EMAIL}</s-link>. Replies within a working day.</s-paragraph>
+      </s-section>
+    </s-page>
+  );
+}
 
 export default function Index() {
-  const { categories, config, current, editorUrl, done } = useLoaderData();
+  const { config, current, editorUrl, storeUrl, done } = useLoaderData();
   const fetcher = useFetcher();
   const shopify = useAppBridge();
-  const busy = fetcher.state !== "idle";
-  const pending = busy ? fetcher.formData?.get("category") : null;
 
   useEffect(() => {
-    if (!fetcher.data) return;
-    if (fetcher.data.ok && fetcher.data.intent === "choose") shopify.toast.show("Template saved. Your questionnaire is live in the theme block.");
-    if (fetcher.data.ok && fetcher.data.intent === "reset") shopify.toast.show("Reset. Pick a category to start again.");
-    if (!fetcher.data.ok) shopify.toast.show(fetcher.data.error || "Something went wrong", { isError: true });
+    if (fetcher.data && fetcher.data.ok === false) shopify.toast.show(fetcher.data.error || "Something went wrong", { isError: true });
   }, [fetcher.data, shopify]);
 
-  const choose = (id) => fetcher.submit({ intent: "choose", category: id }, { method: "POST" });
-  const reset = () => fetcher.submit({ intent: "reset" }, { method: "POST" });
-
-  if (!config) {
-    return (
-      <s-page heading="What are you selling?">
-        <s-section>
-          <s-paragraph>
-            Pick the closest match. You get a working questionnaire straight away and edit it from there. Nothing here is final.
-          </s-paragraph>
-          <s-grid gridTemplateColumns="repeat(auto-fill, minmax(260px, 1fr))" gap="base">
-            {categories.map((c) => (
-              <s-box key={c.id} padding="base" borderWidth="base" borderRadius="base" background="base">
-                <s-stack direction="block" gap="small-200">
-                  <s-text>{c.icon}</s-text>
-                  <s-heading>{c.label}</s-heading>
-                  <s-paragraph color="subdued">{c.blurb}</s-paragraph>
-                  <s-button
-                    variant={c.id === "blank" ? "tertiary" : "secondary"}
-                    onClick={() => choose(c.id)}
-                    {...(pending === c.id ? { loading: true } : {})}
-                    {...(busy && pending !== c.id ? { disabled: true } : {})}
-                  >
-                    {c.id === "blank" ? "Start from blank" : "Use this"}
-                  </s-button>
-                </s-stack>
-              </s-box>
-            ))}
-          </s-grid>
-        </s-section>
-        <s-section slot="aside" heading="Setup, step 1 of 5">
-          <s-paragraph>Category, then Look, Questions, Products, Go live. One decision per step, about five minutes in all.</s-paragraph>
-        </s-section>
-      </s-page>
-    );
-  }
+  if (!config) return <Welcome />;
 
   const steps = (config.steps || []).length;
   const products = [...(config.bundles || []), ...Object.values(config.accessories || {})];
@@ -100,38 +100,39 @@ export default function Index() {
 
   return (
     <s-page heading="Bundle Configurator">
-      <s-button slot="primary-action" href={editorUrl} target="_blank">Add the block to your theme</s-button>
+      <s-button slot="primary-action" href={editorUrl} target="_blank">Open theme editor</s-button>
+      <s-button slot="secondary-actions" href={storeUrl} target="_blank" variant="tertiary">View storefront</s-button>
+
       <s-section>
         <SetupRail current="category" done={done} />
       </s-section>
+
       <s-section heading={current ? `${current.icon} ${current.label}` : "Your configurator"}>
         <s-paragraph>{current ? current.blurb : "A saved configuration."}</s-paragraph>
         <s-stack direction="inline" gap="base">
           <s-badge tone="success">{`${steps} question${steps === 1 ? "" : "s"}`}</s-badge>
           <s-badge tone={missing ? "warning" : "success"}>
-            {missing ? `${missing} of ${products.length} products need a variant` : `All ${products.length} products connected`}
+            {missing ? `${missing} of ${products.length} products need linking` : `All ${products.length} products connected`}
           </s-badge>
+          {finished ? <s-badge tone="success">Setup complete</s-badge> : <s-badge tone="info">Setup in progress</s-badge>}
         </s-stack>
       </s-section>
+
       <s-section heading={finished ? "Edit any step" : "Next steps"}>
         {finished ? (
           <s-paragraph>Setup is complete and the theme block shows this questionnaire. Use the steps above to change the look, the questions or the products at any time.</s-paragraph>
         ) : (
-          <s-paragraph>
-            The theme block now shows this questionnaire. Continue setup to match your store's look, check the questions and connect your products.
-          </s-paragraph>
+          <s-paragraph>The theme block now shows this questionnaire. Continue setup to match your store's look, check the questions and connect your products.</s-paragraph>
         )}
-        {finished ? (missing ? <s-button href="/app/products" variant="primary">Connect products</s-button> : null) : <s-button href="/app/look" variant="primary">Continue setup</s-button>}
         <s-paragraph color="subdued">
-          If the block is not added for you, in the theme editor choose a section, then Add block, Apps, Bundle Configurator.
+          To place it: in the theme editor choose a section, then Add block, Apps, Bundle Configurator. Or Add section, Apps, for a full-width one.
         </s-paragraph>
         <s-stack direction="inline" gap="base">
-          <s-button href={editorUrl} target="_blank">Open theme editor</s-button>
-          <s-button variant="tertiary" tone="critical" onClick={reset} {...(busy ? { loading: true } : {})}>
-            Change category
-          </s-button>
+          {finished ? (missing ? <s-button href="/app/products" variant="primary">Connect products</s-button> : null) : <s-button href="/app/look" variant="primary">Continue setup</s-button>}
+          <s-button href="/app/category" variant="tertiary" tone="critical">Change category</s-button>
         </s-stack>
       </s-section>
+
       <s-section slot="aside" heading="Setup progress">
         <s-unordered-list>
           {["Category", "Look", "Questions", "Products", "Go live"].map((label, i) => {
@@ -139,6 +140,10 @@ export default function Index() {
             return <s-list-item key={key}>{label}{done.includes(key) ? ": done" : ""}</s-list-item>;
           })}
         </s-unordered-list>
+      </s-section>
+
+      <s-section slot="aside" heading="Beta">
+        <s-paragraph color="subdued">{`Version ${BETA.version}. Something off? `}<s-link href={`mailto:${SUPPORT_EMAIL}?subject=Bundle%20Configurator%20beta`}>Tell us</s-link>.</s-paragraph>
       </s-section>
     </s-page>
   );

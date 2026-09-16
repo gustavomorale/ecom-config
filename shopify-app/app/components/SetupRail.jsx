@@ -1,7 +1,11 @@
 /* The five-step rail. One line per step, the current one highlighted, done
    ones marked. Mirrors the mock in demo/harness.js. */
+/* Beta status shown on every page, and where merchants reach us. */
+export const BETA = { version: "0.9 beta" };
+export const SUPPORT_EMAIL = "contact@craftframe.agency";
+
 export const STEPS = [
-  { n: 1, key: "category", label: "Category", href: "/app" },
+  { n: 1, key: "category", label: "Category", href: "/app/category" },
   { n: 2, key: "look", label: "Look", href: "/app/look" },
   { n: 3, key: "questions", label: "Questions", href: "/app/questions" },
   { n: 4, key: "products", label: "Products", href: "/app/products" },
@@ -20,6 +24,8 @@ export function SetupRail({ current, done = [] }) {
           </s-link>
         );
       })}
+      <span style={{ marginLeft: "auto" }} />
+      <s-badge tone="info">Beta</s-badge>
     </s-stack>
   );
 }

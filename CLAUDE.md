@@ -4,8 +4,12 @@ White-label Shopify app: a shopper answers a short questionnaire and gets a conf
 bundle/cart. Any merchant installs it, picks a category, edits the template, and the widget
 wears their store's colours. **A store is a JSON config, not a fork.**
 
-Owner: Gustavo (CraftFrame). Current version: engine v1.2. Status: testable MVP, admin app
-and analytics endpoint are mocked in the harness and not built.
+Owner: Gustavo (CraftFrame). Current version: engine v1.2, app 0.9 beta. Status: the Shopify
+app (`shopify-app/`, React Router + Polaris web components) runs on the dev store with the
+five-step setup, metafield config, theme block, sample catalogue and compliance webhooks.
+Analytics endpoint and the full editor (rules, icons, copy) are not built. Listing copy in
+`shopify-app/LISTING.md`; the beta status and support email live in
+`shopify-app/app/components/SetupRail.jsx` (`BETA`, `SUPPORT_EMAIL`).
 
 ## Layout
 

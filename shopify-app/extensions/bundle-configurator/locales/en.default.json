@@ -1,0 +1,8 @@
+{
+  "blocks": {
+    "configurator": {
+      "name": "Bundle Configurator",
+      "unconfigured": "Finish the five-step setup in the Bundle Configurator app and this block will show your questionnaire here."
+    }
+  }
+}

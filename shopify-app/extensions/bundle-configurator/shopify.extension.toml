@@ -3,3 +3,4 @@
 # same layout; keep blocks/ and assets/ as the source of truth.
 name = "bundle-configurator"
 type = "theme"
+uid = "f81dd01f-1a3a-a4a7-f4df-7e289a2c5a3de815813a"

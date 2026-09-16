@@ -1,53 +1,20 @@
-# Shopify app configuration for Bundle Configurator.
-# client_id is filled in by `shopify app dev` (or `shopify app config link`) the first time
-# it runs against the Partners org. That step is interactive and happens once. No secrets here.
+# Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
-client_id = ""
-name = "Bundle Configurator"
-handle = "bundle-configurator"
-application_url = "https://example.com"   # rewritten automatically during `shopify app dev`
+client_id = "a1b72ae7a95a6312f1f0587db9042df4"
+name = "bundle-configurator"
+application_url = "https://example.com"
 embedded = true
 
-[build]
-dev_store_url = "funrackets.myshopify.com"
-automatically_update_urls_on_dev = true
-include_config_on_deploy = true
+[webhooks]
+api_version = "2026-10"
 
 [access_scopes]
-# read_products: resource picker in the admin and price sync (v1.2).
-# App-owned metafields (the per-store config) need no extra scope.
+# Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
 scopes = "read_products"
 
 [auth]
-redirect_urls = [
-  "https://example.com/auth/callback",
-  "https://example.com/auth/shopify/callback",
-  "https://example.com/api/auth/callback"
-]
+redirect_urls = [ "https://example.com/api/auth" ]
 
-[webhooks]
-api_version = "2025-10"
-
-  # Handled by: /app/routes/webhooks.app.uninstalled.jsx
-  [[webhooks.subscriptions]]
-  uri = "/webhooks/app/uninstalled"
-  topics = ["app/uninstalled"]
-
-  # Handled by: /app/routes/webhooks.app.scopes_update.jsx
-  [[webhooks.subscriptions]]
-  topics = ["app/scopes_update"]
-  uri = "/webhooks/app/scopes_update"
-
-  # Mandatory compliance topics for a public listing. Add the handlers before app review.
-  # [[webhooks.subscriptions]]
-  # uri = "/webhooks/customers/data_request"
-  # compliance_topics = ["customers/data_request"]
-  # [[webhooks.subscriptions]]
-  # uri = "/webhooks/customers/redact"
-  # compliance_topics = ["customers/redact"]
-  # [[webhooks.subscriptions]]
-  # uri = "/webhooks/shop/redact"
-  # compliance_topics = ["shop/redact"]
-
-[pos]
-embedded = false
+[build]
+include_config_on_deploy = true
+automatically_update_urls_on_dev = true

@@ -17,7 +17,9 @@
     "prisma": "prisma",
     "graphql-codegen": "graphql-codegen",
     "vite": "vite",
-    "typecheck": "react-router typegen && tsc --noEmit"
+    "typecheck": "react-router typegen && tsc --noEmit",
+    "predev": "node ../scripts/build-extension.js",
+    "predeploy": "node ../scripts/build-extension.js"
   },
   "type": "module",
   "engines": {

@@ -3,38 +3,57 @@
   The config JSON lives in an app-owned metafield (namespace: bundle_configurator,
   key: config). Nothing in this block is brand-specific; the merchant's choices arrive
   through the metafield and the theme's computed styles via theme-inherit.js.
+  With no config yet (fresh install), the block shows a setup note inside the theme
+  editor only and renders nothing on the live storefront.
 {% endcomment %}
-{{ 'configurator.css' | asset_url | stylesheet_tag }}
-{% if block.settings.preset == 'glass' %}{{ 'glass.css' | asset_url | stylesheet_tag }}{% endif %}
+{% assign bcfg_config = shop.metafields.bundle_configurator.config.value %}
 
-<div id="bcfg-{{ block.id }}" class="bcfg-mount" data-preset="{{ block.settings.preset }}"></div>
+{% if bcfg_config == blank %}
+  {% if request.design_mode %}
+    <div class="bcfg-unconfigured" style="padding:24px;border:1px dashed #999;border-radius:12px;text-align:center;font:14px/1.5 system-ui,sans-serif;color:#555">
+      <strong style="display:block;color:#222;margin-bottom:4px">Bundle Configurator</strong>
+      Finish the five-step setup in the Bundle Configurator app and this block will show your questionnaire here.
+    </div>
+  {% endif %}
+{% else %}
+  {{ 'configurator.css' | asset_url | stylesheet_tag }}
+  {% if block.settings.preset == 'glass' %}{{ 'glass.css' | asset_url | stylesheet_tag }}{% endif %}
 
-<script src="{{ 'configurator.js' | asset_url }}" defer></script>
-<script src="{{ 'scenes.js' | asset_url }}" defer></script>
-<script src="{{ 'theme-inherit.js' | asset_url }}" defer></script>
-<script type="application/json" id="bcfg-config-{{ block.id }}">
-  {{ shop.metafields.bundle_configurator.config.value | json }}
-</script>
-<script>
-  document.addEventListener('DOMContentLoaded', function () {
-    var el = document.getElementById('bcfg-{{ block.id }}');
-    var cfg = JSON.parse(document.getElementById('bcfg-config-{{ block.id }}').textContent || '{}');
-    cfg.brand = cfg.brand || {};
-    cfg.brand.preset = el.dataset.preset || cfg.brand.preset || 'glass';
-    if (cfg.brand.inheritTheme !== false && window.BundleConfigurator.inheritFromHost) {
-      cfg.brand.inherited = window.BundleConfigurator.inheritFromHost(document);
-    }
-    window.BundleConfigurator.mount(el, cfg);
-  });
-</script>
+  <div id="bcfg-{{ block.id }}" class="bcfg-mount" data-preset="{{ block.settings.preset }}" data-performance="{{ block.settings.performance }}"></div>
+
+  <script src="{{ 'configurator.js' | asset_url }}" defer></script>
+  <script src="{{ 'scenes.js' | asset_url }}" defer></script>
+  <script src="{{ 'theme-inherit.js' | asset_url }}" defer></script>
+  <script type="application/json" id="bcfg-config-{{ block.id }}">{{ bcfg_config | json }}</script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      var el = document.getElementById('bcfg-{{ block.id }}');
+      var raw = document.getElementById('bcfg-config-{{ block.id }}').textContent;
+      var cfg = null;
+      try { cfg = JSON.parse(raw); } catch (e) { }
+      if (!cfg || !cfg.steps || !window.BundleConfigurator) return;
+      cfg.brand = cfg.brand || {};
+      cfg.brand.preset = el.dataset.preset || cfg.brand.preset || 'glass';
+      if (el.dataset.performance) cfg.brand.performance = el.dataset.performance;
+      if (cfg.brand.inheritTheme !== false && window.BundleConfigurator.inheritFromHost) {
+        cfg.brand.inherited = window.BundleConfigurator.inheritFromHost(document);
+      }
+      window.BundleConfigurator.mount(el, cfg);
+    });
+  </script>
+{% endif %}
 
 {% schema %}
 {
   "name": "Bundle Configurator",
   "target": "section",
   "settings": [
-    { "type": "select", "id": "preset", "label": "Skin", "default": "glass",
-      "options": [ { "value": "glass", "label": "Glass" }, { "value": "base", "label": "Base" } ] }
+    { "type": "select", "id": "preset", "label": "Look", "default": "glass",
+      "info": "Glass adds translucency and depth. Base is flat.",
+      "options": [ { "value": "glass", "label": "Glass" }, { "value": "base", "label": "Base" } ] },
+    { "type": "select", "id": "performance", "label": "Performance", "default": "auto",
+      "info": "Auto steps Glass down to flat surfaces on slow devices.",
+      "options": [ { "value": "auto", "label": "Auto" }, { "value": "full", "label": "Always full" }, { "value": "lite", "label": "Always lite" } ] }
   ]
 }
 {% endschema %}

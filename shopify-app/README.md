@@ -27,3 +27,11 @@ Preferences on first run. Press `p` in the CLI to open the app in the store admi
 - `extensions/bundle-configurator/` — theme app extension (app block + built assets)
 - `shopify.app.toml` — app config (name, handle, scopes, webhooks, dev store)
 - `prisma/` — SQLite session store for development
+
+## Webhooks
+
+Declared in `shopify.app.toml`, handled in `app/routes/webhooks.*.jsx`: `app/uninstalled`
+(drops the shop's sessions), `app/scopes_update`, and the three privacy compliance topics
+(`customers/data_request`, `customers/redact`, `shop/redact`). The app holds no customer
+data: per shop it stores an OAuth session and one metafield with the merchant's config.
+Shoppers' answers stay in their browser.

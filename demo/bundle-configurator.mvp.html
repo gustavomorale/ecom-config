@@ -1047,11 +1047,29 @@ table.spec td:first-child{white-space:nowrap;font-weight:550}
   to   { opacity: 1; transform: none; filter: blur(0); }
 }
 
-/* No backdrop-filter (older Firefox/Android): fall back to opaque surfaces. */
+/* ── Lite glass ──
+   Same layout, same colours, no blur. Reached three ways: the browser has no
+   backdrop-filter, the visitor asked for reduced transparency, or the engine
+   added .bcfg-lite (low-end device heuristic, or brand.performance: 'lite').
+   Stacked backdrop-filter is the single most expensive thing this preset does
+   on low-end Android, so lite removes every one of them. */
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .bcfg.bcfg-theme-glass { --g-surface: rgba(255,255,255,.94); --g-surface-2: rgba(255,255,255,.86); --g-surface-3: rgba(255,255,255,.78); }
   .bcfg.bcfg-theme-glass[data-appearance="dark"] { --g-surface: rgba(28,32,42,.96); --g-surface-2: rgba(32,36,48,.92); --g-surface-3: rgba(38,42,54,.88); }
 }
+@media (prefers-reduced-transparency: reduce) {
+  .bcfg.bcfg-theme-glass { --g-surface: rgba(255,255,255,.94); --g-surface-2: rgba(255,255,255,.86); --g-surface-3: rgba(255,255,255,.78); }
+  .bcfg.bcfg-theme-glass[data-appearance="dark"] { --g-surface: rgba(28,32,42,.96); --g-surface-2: rgba(32,36,48,.92); --g-surface-3: rgba(38,42,54,.88); }
+  .bcfg.bcfg-theme-glass, .bcfg.bcfg-theme-glass * { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+  .bcfg.bcfg-theme-glass::before { display: none; }
+  .bcfg.bcfg-theme-glass .card, .bcfg.bcfg-theme-glass .result-card { animation-name: bcfgSlideUp; }
+}
+.bcfg.bcfg-theme-glass.bcfg-lite { --g-surface: rgba(255,255,255,.94); --g-surface-2: rgba(255,255,255,.86); --g-surface-3: rgba(255,255,255,.78); }
+.bcfg.bcfg-theme-glass.bcfg-lite[data-appearance="dark"] { --g-surface: rgba(28,32,42,.96); --g-surface-2: rgba(32,36,48,.92); --g-surface-3: rgba(38,42,54,.88); }
+.bcfg.bcfg-theme-glass.bcfg-lite, .bcfg.bcfg-theme-glass.bcfg-lite * { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+.bcfg.bcfg-theme-glass.bcfg-lite::before { display: none; }
+.bcfg.bcfg-theme-glass.bcfg-lite .card, .bcfg.bcfg-theme-glass.bcfg-lite .result-card { animation-name: bcfgSlideUp; }
+.bcfg.bcfg-theme-glass.bcfg-lite .progress-fill, .bcfg.bcfg-theme-glass.bcfg-lite .step-dot { box-shadow: none; }
 </style>
 <div class="topbar"><div class="topbar-in">
   <div class="logo"><span class="mark">&#x25C8;</span><span>Bundle Configurator<small>White-label MVP &middot; v1.2</small></span></div>
@@ -1442,6 +1460,12 @@ table.spec td:first-child{white-space:nowrap;font-weight:550}
     }
     this.el.setAttribute('data-appearance', app);
 
+    // performance: 'auto' steps the glass preset down to flat surfaces on
+    // devices that will struggle with stacked backdrop-filter
+    var perf = b.performance || 'auto';
+    var lite = perf === 'lite' || (perf === 'auto' && API.isLowEndDevice());
+    this.el.classList.toggle('bcfg-lite', lite);
+
     // 2. inherited tokens, 3. explicit brand tokens
     var apply = function (obj) {
       Object.keys(obj || {}).forEach(function (k) {
@@ -1473,7 +1497,7 @@ table.spec td:first-child{white-space:nowrap;font-weight:550}
   };
   Configurator.prototype.getState = function () { var o = {}; for (var k in this.state) o[k] = this.state[k]; return o; };
   Configurator.prototype.forget = function () { this._clearSaved(); return this; };
-  Configurator.prototype.destroy = function () { this.el.removeEventListener('click', this._onClick); this.el.removeEventListener('keydown', this._onKey); this.el.innerHTML = ''; this.el.classList.remove('bcfg'); if (this._preset && this._preset !== 'base') this.el.classList.remove('bcfg-theme-' + this._preset); this.el.removeAttribute('data-appearance'); this.el.removeAttribute('style'); };
+  Configurator.prototype.destroy = function () { this.el.removeEventListener('click', this._onClick); this.el.removeEventListener('keydown', this._onKey); this.el.innerHTML = ''; this.el.classList.remove('bcfg'); this.el.classList.remove('bcfg-lite'); if (this._preset && this._preset !== 'base') this.el.classList.remove('bcfg-theme-' + this._preset); this.el.removeAttribute('data-appearance'); this.el.removeAttribute('style'); };
 
   /* ---------- persistence ----------
      Answers survive a refresh (sessionStorage by default) and can travel in a
@@ -2195,8 +2219,22 @@ table.spec td:first-child{white-space:nowrap;font-weight:550}
   };
 
   /* ---------- public ---------- */
+  /* Cheap, conservative low-end heuristic. False negatives are fine: the CSS
+     also honours prefers-reduced-transparency, and merchants can force lite. */
+  function isLowEndDevice() {
+    try {
+      var n = root.navigator || {};
+      if (n.connection && n.connection.saveData) return true;
+      if (typeof n.deviceMemory === 'number' && n.deviceMemory <= 2) return true;
+      if (typeof n.hardwareConcurrency === 'number' && n.hardwareConcurrency <= 2) return true;
+      if (root.matchMedia && root.matchMedia('(prefers-reduced-transparency: reduce)').matches) return true;
+    } catch (e) { }
+    return false;
+  }
+
   var API = {
     version: '1.2.0',
+    isLowEndDevice: isLowEndDevice,
     mount: function (el, cfg) {
       var node = typeof el === 'string' ? document.querySelector(el) : el;
       if (!node) throw new Error('[bcfg] mount target not found');

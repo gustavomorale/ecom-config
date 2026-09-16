@@ -179,6 +179,12 @@
     }
     this.el.setAttribute('data-appearance', app);
 
+    // performance: 'auto' steps the glass preset down to flat surfaces on
+    // devices that will struggle with stacked backdrop-filter
+    var perf = b.performance || 'auto';
+    var lite = perf === 'lite' || (perf === 'auto' && API.isLowEndDevice());
+    this.el.classList.toggle('bcfg-lite', lite);
+
     // 2. inherited tokens, 3. explicit brand tokens
     var apply = function (obj) {
       Object.keys(obj || {}).forEach(function (k) {
@@ -210,7 +216,7 @@
   };
   Configurator.prototype.getState = function () { var o = {}; for (var k in this.state) o[k] = this.state[k]; return o; };
   Configurator.prototype.forget = function () { this._clearSaved(); return this; };
-  Configurator.prototype.destroy = function () { this.el.removeEventListener('click', this._onClick); this.el.removeEventListener('keydown', this._onKey); this.el.innerHTML = ''; this.el.classList.remove('bcfg'); if (this._preset && this._preset !== 'base') this.el.classList.remove('bcfg-theme-' + this._preset); this.el.removeAttribute('data-appearance'); this.el.removeAttribute('style'); };
+  Configurator.prototype.destroy = function () { this.el.removeEventListener('click', this._onClick); this.el.removeEventListener('keydown', this._onKey); this.el.innerHTML = ''; this.el.classList.remove('bcfg'); this.el.classList.remove('bcfg-lite'); if (this._preset && this._preset !== 'base') this.el.classList.remove('bcfg-theme-' + this._preset); this.el.removeAttribute('data-appearance'); this.el.removeAttribute('style'); };
 
   /* ---------- persistence ----------
      Answers survive a refresh (sessionStorage by default) and can travel in a
@@ -932,8 +938,22 @@
   };
 
   /* ---------- public ---------- */
+  /* Cheap, conservative low-end heuristic. False negatives are fine: the CSS
+     also honours prefers-reduced-transparency, and merchants can force lite. */
+  function isLowEndDevice() {
+    try {
+      var n = root.navigator || {};
+      if (n.connection && n.connection.saveData) return true;
+      if (typeof n.deviceMemory === 'number' && n.deviceMemory <= 2) return true;
+      if (typeof n.hardwareConcurrency === 'number' && n.hardwareConcurrency <= 2) return true;
+      if (root.matchMedia && root.matchMedia('(prefers-reduced-transparency: reduce)').matches) return true;
+    } catch (e) { }
+    return false;
+  }
+
   var API = {
     version: '1.2.0',
+    isLowEndDevice: isLowEndDevice,
     mount: function (el, cfg) {
       var node = typeof el === 'string' ? document.querySelector(el) : el;
       if (!node) throw new Error('[bcfg] mount target not found');

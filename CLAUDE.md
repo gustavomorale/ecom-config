@@ -101,8 +101,12 @@ commands: `/check`, `/build-extension`, `/sync-mvp`, `/next-blocker [n]`. Person
    has "Copy a link to this bundle": answers travel in `?bcfg=<base64url json>` and a link
    wins over storage. Config: `persist: { mode: session | local | none, key, link, param }`.
    Copy keys: `resumedNote`, `resumedLinkNote`, `shareLabel`, `shareCopied`.
-4. **Glass performance.** Stacked `backdrop-filter` is expensive on low-end Android.
-   Respect `prefers-reduced-transparency`, step down on slow devices.
+4. **Glass performance. Resolved (2026-09-16).** Lite glass keeps layout and colours
+   and removes every `backdrop-filter`, the grain layer and the blur-in animation. Reached
+   by `@supports not (backdrop-filter)`, by `prefers-reduced-transparency`, or by the
+   engine adding `.bcfg-lite` (`BundleConfigurator.isLowEndDevice()`: Save-Data, <= 2 GB
+   memory, <= 2 cores; or `brand.performance: 'lite'`, default `auto`, `full` never steps
+   down). Still worth measuring on a real low-end Android before listing.
 5. **Sniffer failure mode. Resolved (2026-09-16).** `sniffHost()` returns
    `confidence: { score, level: high | medium | low, reasons[], source }` scored from where
    the accent came from (primary button, button, link, neutral, fallback) and measured

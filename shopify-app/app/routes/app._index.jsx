@@ -8,7 +8,7 @@ import { useEffect } from "react";
 import { useFetcher, useLoaderData, useRouteError } from "react-router";
 import { useAppBridge } from "@shopify/app-bridge-react";
 import { boundary } from "@shopify/shopify-app-react-router/server";
-import { authenticate } from "../shopify.server";
+import { authenticate, billingEnabled, PLAN_PRICE_USD, PLAN_TRIAL_DAYS } from "../shopify.server";
 import { listCategories, readConfig, themeEditorUrl } from "../config.server";
 import { SetupRail, doneSteps, BETA, SUPPORT_EMAIL } from "../components/SetupRail";
 
@@ -17,10 +17,11 @@ export const loader = async ({ request }) => {
   const { config, domain } = await readConfig(admin);
   const categories = listCategories();
   const current = config ? categories.find((c) => c.id === config.meta?.category) || null : null;
-  return { config, current, editorUrl: themeEditorUrl(domain), storeUrl: `https://${domain}/`, done: doneSteps(config) };
+  const billing = { enabled: billingEnabled, price: PLAN_PRICE_USD, trialDays: PLAN_TRIAL_DAYS };
+  return { config, current, editorUrl: themeEditorUrl(domain), storeUrl: `https://${domain}/`, done: doneSteps(config), billing };
 };
 
-function Welcome() {
+function Welcome({ billing }) {
   return (
     <s-page heading="Welcome to Bundle Configurator">
       <s-button slot="primary-action" href="/app/category">Start setup</s-button>
@@ -29,7 +30,7 @@ function Welcome() {
         <s-stack direction="block" gap="base">
           <s-stack direction="inline" gap="small" alignItems="center">
             <s-badge tone="info">Beta</s-badge>
-            <s-text color="subdued">{`Version ${BETA.version}. Free while in beta.`}</s-text>
+            <s-text color="subdued">{billing.enabled ? `Version ${BETA.version}. ${billing.trialDays} days free, then USD ${billing.price} a month.` : `Version ${BETA.version}. Free while in beta.`}</s-text>
           </s-stack>
           <s-paragraph>
             A short questionnaire on your storefront that turns a shopper's answers into a ready-made cart: the right bundle, the right add-ons, one click to checkout. You choose what to ask, the rules decide what goes in the basket, and the widget wears your store's colours.
@@ -83,7 +84,7 @@ function Welcome() {
 }
 
 export default function Index() {
-  const { config, current, editorUrl, storeUrl, done } = useLoaderData();
+  const { config, current, editorUrl, storeUrl, done, billing } = useLoaderData();
   const fetcher = useFetcher();
   const shopify = useAppBridge();
 
@@ -91,7 +92,7 @@ export default function Index() {
     if (fetcher.data && fetcher.data.ok === false) shopify.toast.show(fetcher.data.error || "Something went wrong", { isError: true });
   }, [fetcher.data, shopify]);
 
-  if (!config) return <Welcome />;
+  if (!config) return <Welcome billing={billing} />;
 
   const steps = (config.steps || []).length;
   const products = [...(config.bundles || []), ...Object.values(config.accessories || {})];
@@ -140,6 +141,10 @@ export default function Index() {
             return <s-list-item key={key}>{label}{done.includes(key) ? ": done" : ""}</s-list-item>;
           })}
         </s-unordered-list>
+      </s-section>
+
+      <s-section slot="aside" heading="Plan">
+        <s-paragraph>{billing.enabled ? `${billing.trialDays}-day free trial, then USD ${billing.price} a month, on your Shopify bill.` : "Free while in beta. When the beta ends: 14 days free, then USD 25 a month, on your Shopify bill."}</s-paragraph>
       </s-section>
 
       <s-section slot="aside" heading="Beta">

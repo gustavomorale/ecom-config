@@ -124,6 +124,10 @@ commands: `/check`, `/build-extension`, `/sync-mvp`, `/next-blocker [n]`. Person
 
 ## Commercials
 
-Monthly tiers by questionnaire count and step count, not per order. Scopes:
-`read_products` and `write_app_metafields`. No theme write scope; app blocks do not modify
-the theme. The drop-off funnel is the retention mechanic.
+One plan via the Billing API: 14-day free trial, then USD 25 a month (about GBP 19), never
+per order. Off during beta (`BCFG_BILLING=on` enables it; dev stores get test charges).
+Scopes: `read_products`, `read_themes`; the app writes one shop metafield. No theme write
+scope; app blocks do not modify the theme. Running costs are fixed (one small app server
+and database, roughly USD 7 to 20 a month): the widget is served from Shopify's CDN and
+the config from a metafield, so shopper traffic costs nothing. The drop-off funnel is the
+retention mechanic.

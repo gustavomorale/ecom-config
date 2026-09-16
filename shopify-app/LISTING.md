@@ -44,10 +44,14 @@ Bundle Configurator is in beta. It is free while in beta. Some editing (add-on r
 option icons, copy) is not yet in the app; it arrives in the next updates. Report anything
 broken or missing to contact@craftframe.agency and expect a reply within a working day.
 
-## Pricing (for the listing while in beta)
+## Pricing
 
-Free during beta. Planned: monthly tiers by number of questionnaires and steps, never per
-order. Existing beta stores keep a discount at launch.
+One plan, set in the Billing API (`shopify-app/app/shopify.server.js`): **14-day free
+trial, then USD 25 a month** on the merchant's Shopify bill, never per order. App charges
+are set in USD; Shopify shows merchants an approximate local amount (about GBP 19).
+During the beta billing is off (`BCFG_BILLING=on` turns it on) and the listing says
+"Free while in beta". Register for Shopify's revenue share programme in the Partner
+dashboard: 0% on the first USD 1M a year.
 
 ## Access scopes and why (privacy section)
 

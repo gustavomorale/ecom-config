@@ -44,7 +44,7 @@ First time on a branch: `npx prisma migrate deploy`.
 
 ## Deploy (Netlify)
 
-`netlify.toml` builds from this folder with `npm run netlify:build` (extension assets,
+`../netlify.toml` (repo root, base `shopify-app`) builds with `npm run netlify:build` (extension assets,
 Prisma generate, migrate deploy, React Router build). Once in the Netlify UI:
 
 1. New site from the GitHub repo, base directory `shopify-app` (the toml sets it too).
@@ -55,7 +55,8 @@ Prisma generate, migrate deploy, React Router build). Once in the Netlify UI:
    `npm run deploy` to push the app config and the theme extension to Shopify.
 
 After that the app runs without a terminal and can be installed on any store from the
-Partner dashboard.
+Partner dashboard. Every push to `main` on GitHub triggers a Netlify build (CI/CD linked via
+`netlify init`); `npm run deploy:web` deploys from your machine without waiting for CI.
 
 ## Layout
 

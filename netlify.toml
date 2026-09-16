@@ -1,4 +1,5 @@
-# Netlify deploy for the Shopify app (admin + webhooks). The storefront widget
+# Netlify deploy for the Shopify app (admin + webhooks). Lives at the repo root
+# because GitHub-triggered builds read it from there; base points at shopify-app/. The storefront widget
 # is not served from here: the theme app extension ships it via Shopify's CDN.
 #
 # Site settings to create once in the Netlify UI (Site configuration > Environment):

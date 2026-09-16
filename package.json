@@ -5,7 +5,7 @@
   "description": "White-label Shopify bundle/checkout configurator. Engine + themes + category templates + MVP harness.",
   "scripts": {
     "dev": "python3 -m http.server 8765",
-    "check": "node --check src/configurator.js && node --check src/scenes/summary.js && node --check src/scenes/house.js && node --check src/theme-inherit.js && node --check configs/categories.js && node --check configs/templates/house-accessories.js && node --check configs/templates/subscription-boxes.js && node --check demo/harness.js",
+    "check": "node --check src/configurator.js && node --check src/scenes/summary.js && node --check src/scenes/house.js && node --check src/theme-inherit.js && node --check configs/categories.js && node --check configs/templates/house-accessories.js && node --check configs/templates/subscription-boxes.js && node --check configs/templates/cosmetics.js && node --check demo/harness.js",
     "build:extension": "node scripts/build-extension.js"
   }
 }

@@ -9,8 +9,9 @@
    BundleConfigurator.mount(el, config)  -> instance
    BundleConfigurator.registerScene(name, renderFn)
    instance.destroy()  /  instance.getState()  /  instance.on(evt, fn)
+   instance.shareUrl()  /  instance.forget()   (persistence, see below)
 
-   Events: 'step', 'answer', 'result', 'addtocart'
+   Events: 'step', 'answer', 'result', 'addtocart', 'restore', 'share'
    ============================================================ */
 (function (root) {
   'use strict';
@@ -116,6 +117,8 @@
     this.stockPending = {};
     this.removed = {};      // addon key -> true
     this.state = this._initialState();
+    this.resumed = null;    // 'link' | 'storage' when answers were restored
+    this._restore();
     this._onClick = this._handleClick.bind(this);
     this._onKey = this._handleKey.bind(this);
     this._focusTo = null;    // where focus should land after the next render
@@ -202,10 +205,89 @@
     (this.listeners[evt] = this.listeners[evt] || []).push(fn); return this;
   };
   Configurator.prototype._emit = function (evt, payload) {
+    if (evt === 'answer' || evt === 'step') this._save();
     (this.listeners[evt] || []).forEach(function (fn) { try { fn(payload, this); } catch (e) { } }, this);
   };
   Configurator.prototype.getState = function () { var o = {}; for (var k in this.state) o[k] = this.state[k]; return o; };
+  Configurator.prototype.forget = function () { this._clearSaved(); return this; };
   Configurator.prototype.destroy = function () { this.el.removeEventListener('click', this._onClick); this.el.removeEventListener('keydown', this._onKey); this.el.innerHTML = ''; this.el.classList.remove('bcfg'); if (this._preset && this._preset !== 'base') this.el.classList.remove('bcfg-theme-' + this._preset); this.el.removeAttribute('data-appearance'); this.el.removeAttribute('style'); };
+
+  /* ---------- persistence ----------
+     Answers survive a refresh (sessionStorage by default) and can travel in a
+     link (?bcfg=<base64url json>). Only fields the config declares are
+     restored, and a stored copy is dropped if the questionnaire changed
+     underneath it. cfg.persist = { mode: 'session' | 'local' | 'none',
+     key: '', link: true, param: 'bcfg' }.                                   */
+  function hash(str) {
+    var h = 5381; for (var i = 0; i < str.length; i++) h = ((h << 5) + h + str.charCodeAt(i)) | 0;
+    return (h >>> 0).toString(36);
+  }
+  function b64url(s) {
+    try { return btoa(unescape(encodeURIComponent(s))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); } catch (e) { return ''; }
+  }
+  function unb64url(s) {
+    try { s = s.replace(/-/g, '+').replace(/_/g, '/'); while (s.length % 4) s += '='; return decodeURIComponent(escape(atob(s))); } catch (e) { return ''; }
+  }
+  Configurator.prototype._persistOpts = function () {
+    var p = this.cfg.persist || {};
+    return { mode: p.mode || 'session', key: p.key || '', link: p.link !== false, param: p.param || 'bcfg' };
+  };
+  /* Fingerprint of the questionnaire shape, so stale answers never load. */
+  Configurator.prototype._shape = function () {
+    return hash((this.cfg.steps || []).map(function (s) { return s.id + ':' + s.type + ':' + (s.field || '') + ':' + (s.counters || []).concat(s.toggles || []).map(function (c) { return c.field; }).join('.'); }).join('|'));
+  };
+  Configurator.prototype._storeKey = function () {
+    var p = this._persistOpts(), b = this.cfg.brand || {};
+    return 'bcfg:' + (p.key || b.id || this._shape());
+  };
+  Configurator.prototype._storage = function () {
+    var p = this._persistOpts();
+    try { return p.mode === 'local' ? root.localStorage : p.mode === 'session' ? root.sessionStorage : null; } catch (e) { return null; }
+  };
+  /* Snapshot = answers + removed add-ons + shape. Never the config itself. */
+  Configurator.prototype._snapshot = function () {
+    return { v: 1, shape: this._shape(), state: this.getState(), removed: this.removed };
+  };
+  Configurator.prototype._applySnapshot = function (snap) {
+    if (!snap || snap.v !== 1 || snap.shape !== this._shape() || !snap.state) return false;
+    var base = this._initialState(), n = (this.cfg.steps || []).length, k;
+    for (k in snap.state) if (Object.prototype.hasOwnProperty.call(base, k)) base[k] = snap.state[k];
+    base.step = clamp(Number(snap.state.step) || 0, 0, n);
+    this.state = base;
+    this.removed = {}; for (k in (snap.removed || {})) this.removed[k] = true;
+    return true;
+  };
+  Configurator.prototype._save = function () {
+    var s = this._storage(); if (!s) return;
+    try { s.setItem(this._storeKey(), JSON.stringify(this._snapshot())); } catch (e) { }
+  };
+  Configurator.prototype._clearSaved = function () {
+    var s = this._storage(); if (!s) return;
+    try { s.removeItem(this._storeKey()); } catch (e) { }
+  };
+  Configurator.prototype._restore = function () {
+    var p = this._persistOpts();
+    // 1. a link wins over storage: it is the shopper's explicit intent
+    if (p.link) {
+      var m = new RegExp('[?&#]' + p.param + '=([^&#]+)').exec(root.location && root.location.href || '');
+      if (m) {
+        var fromLink = null;
+        try { fromLink = JSON.parse(unb64url(m[1])); } catch (e) { }
+        if (this._applySnapshot(fromLink)) { this.resumed = 'link'; this._emit('restore', { source: 'link' }); return; }
+      }
+    }
+    // 2. this browser's own unfinished answers
+    var s = this._storage(); if (!s) return;
+    var raw = null; try { raw = JSON.parse(s.getItem(this._storeKey()) || 'null'); } catch (e) { }
+    if (raw && this._applySnapshot(raw) && (raw.state.step > 0 || this._isDone())) { this.resumed = 'storage'; this._emit('restore', { source: 'storage' }); }
+  };
+  /* Shareable URL for the current answers (used on the result screen). */
+  Configurator.prototype.shareUrl = function () {
+    var p = this._persistOpts(), c = this.cfg.cart || {};
+    var base = c.shareUrl || (root.location ? root.location.href.split('#')[0] : '');
+    base = base.replace(new RegExp('([?&])' + p.param + '=[^&]*&?'), '$1').replace(/[?&]$/, '');
+    return base + (base.indexOf('?') > -1 ? '&' : '?') + p.param + '=' + b64url(JSON.stringify(this._snapshot()));
+  };
 
   /* ---------- stock ---------- */
   Configurator.prototype._isOOS = function (variantId) {
@@ -457,12 +539,20 @@
     return out || (val == null ? '' : String(val));
   };
 
+  Configurator.prototype._renderResumeNote = function () {
+    if (!this.resumed) return '';
+    var copy = this.cfg.copy || {};
+    var text = this.resumed === 'link' ? (copy.resumedLinkNote || 'Loaded from a shared link.') : (copy.resumedNote || 'Picked up where you left off.');
+    return '<div class="resume-note" role="status">' + esc(text) + ' ' +
+      '<button type="button" class="resume-reset" data-action="restart">' + esc(copy.restartLabel || 'Start over') + '</button></div>';
+  };
+
   Configurator.prototype._renderProgress = function () {
     var n = (this.cfg.steps || []).length;
     var pct = Math.round((this.state.step / n) * 100);
     var copy = this.cfg.copy || {};
     var label = this._stepLabel();
-    return '<div class="progress-wrap"><div class="progress-meta">' +
+    return this._renderResumeNote() + '<div class="progress-wrap"><div class="progress-meta">' +
       '<span class="progress-step">' + esc(label) + '</span>' +
       '<span class="progress-pct" aria-hidden="true">' + pct + '%</span></div>' +
       '<div class="progress-bar" role="progressbar" aria-label="' + esc(label) + '" aria-valuemin="0" aria-valuemax="' + n + '" aria-valuenow="' + this.state.step + '" aria-valuetext="' + esc(label) + ', ' + pct + '%"><div class="progress-fill" style="width:' + pct + '%"></div></div></div>';
@@ -686,6 +776,9 @@
           '<button type="button" class="btn-restart" data-action="restart"><span aria-hidden="true">&#x21BB;</span> ' + esc(copy.restartLabel || 'Start over') + '</button>' +
           '<a class="btn-cta" data-action="addToCart" href="' + esc(rec.cartUrl) + '"' + ((this.cfg.cart || {}).mode === 'ajax' ? '' : ' target="_blank" rel="noopener"') + '>' + esc(copy.ctaLabel || 'Add to cart') + ' &#x2192;</a>' +
         '</div>' +
+        (this._persistOpts().link ? '<div class="share-row">' +
+          '<button type="button" class="btn-share" data-action="share">' + esc(copy.shareLabel || 'Copy a link to this bundle') + '</button>' +
+          '<span class="share-note" aria-live="polite"></span></div>' : '') +
       '</div></div>' + this._renderFooter();
   };
 
@@ -738,8 +831,17 @@
         this._emit('step', this.state.step);
         this._goToStep(); break;
       case 'restart':
-        this.state = this._initialState(); this.removed = {};
+        this.state = this._initialState(); this.removed = {}; this.resumed = null;
+        this._clearSaved();
         this._goToStep(); break;
+      case 'share': {
+        var url = this.shareUrl(), note = this.el.querySelector('.share-note'), cp = this.cfg.copy || {};
+        var done = function () { if (note) note.textContent = cp.shareCopied || 'Link copied'; };
+        var fail = function () { if (note) { note.innerHTML = '<input type="text" readonly value="' + esc(url) + '" aria-label="' + esc(cp.shareLabel || 'Link to this bundle') + '">'; note.querySelector('input').select(); } };
+        try { (root.navigator.clipboard ? root.navigator.clipboard.writeText(url) : Promise.reject()).then(done, fail); } catch (e) { fail(); }
+        this._emit('share', url);
+        break;
+      }
       case 'toggleScene': {
         var panel = this.el.querySelector('[data-scene]');
         if (!panel) break;
@@ -822,7 +924,7 @@
 
   /* ---------- public ---------- */
   var API = {
-    version: '1.1.0',
+    version: '1.2.0',
     mount: function (el, cfg) {
       var node = typeof el === 'string' ? document.querySelector(el) : el;
       if (!node) throw new Error('[bcfg] mount target not found');
@@ -830,6 +932,8 @@
     },
     registerScene: registerScene,
     scenes: SCENES,
+    encodeAnswers: function (snap) { return b64url(JSON.stringify(snap)); },
+    decodeAnswers: function (s) { try { return JSON.parse(unb64url(s)); } catch (e) { return null; } },
     test: test,
     expr: safeExpr
   };

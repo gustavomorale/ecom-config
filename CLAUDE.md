@@ -4,7 +4,7 @@ White-label Shopify app: a shopper answers a short questionnaire and gets a conf
 bundle/cart. Any merchant installs it, picks a category, edits the template, and the widget
 wears their store's colours. **A store is a JSON config, not a fork.**
 
-Owner: Gustavo (CraftFrame). Current version: engine v1.1. Status: testable MVP, admin app
+Owner: Gustavo (CraftFrame). Current version: engine v1.2. Status: testable MVP, admin app
 and analytics endpoint are mocked in the harness and not built.
 
 ## Layout
@@ -69,8 +69,8 @@ commands: `/check`, `/build-extension`, `/sync-mvp`, `/next-blocker [n]`. Person
 
 - **v1, ship:** app block, config metafield, category step and templates, the four admin
   screens, permalink cart, glass + base presets, theme sync.
-- **v1.1:** analytics endpoint and drop-off funnel. Ajax cart. Answer persistence
-  (`sessionStorage` + resumable link).
+- **v1.1:** analytics endpoint and drop-off funnel. Ajax cart.
+- **v1.2 (current):** answer persistence (`sessionStorage` + resumable link), done.
 - **v1.2:** price sync from the Storefront API. Metaobject-backed accessory catalogue.
 - **v2:** draft orders for high-value configs. Per-market/per-locale configs.
   Merchant-defined scenes.
@@ -92,7 +92,13 @@ commands: `/check`, `/build-extension`, `/sync-mvp`, `/next-blocker [n]`. Person
    colours can break contrast; that warning belongs in the admin (see 5).
 2. **Price drift.** Prices live in config and in Shopify. Show "preview, checkout is the
    source of truth" until Storefront API sync lands.
-3. **Persistence.** Answers are lost on refresh.
+3. **Persistence. Resolved (2026-09-16).** Answers save to `sessionStorage` on every
+   answer and step, keyed by `brand.id` or a fingerprint of the questionnaire shape, so a
+   changed questionnaire never loads stale answers. Restored silently with a "Picked up
+   where you left off. Start over" note; Start over clears the store. The result screen
+   has "Copy a link to this bundle": answers travel in `?bcfg=<base64url json>` and a link
+   wins over storage. Config: `persist: { mode: session | local | none, key, link, param }`.
+   Copy keys: `resumedNote`, `resumedLinkNote`, `shareLabel`, `shareCopied`.
 4. **Glass performance.** Stacked `backdrop-filter` is expensive on low-end Android.
    Respect `prefers-reduced-transparency`, step down on slow devices.
 5. **Sniffer failure mode.** Theme sync guesses. Needs a confidence signal and a one-click

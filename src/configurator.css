@@ -247,7 +247,7 @@
 .bcfg .profile-chip { display: flex; align-items: center; gap: 6px; background: #f5f3f0; padding: 8px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; color: var(--bcfg-ink-2); }
 .bcfg .profile-chip span:first-child { font-size: 14px; }
 
-.bcfg .note-box { padding: 14px; background: var(--bcfg-well-2); border-radius: var(--bcfg-radius-sm); margin-bottom: 20px; font-size: 12px; color: #888; line-height: 1.6; }
+.bcfg .note-box { padding: 14px; background: var(--bcfg-well-2); border-radius: var(--bcfg-radius-sm); margin-bottom: 20px; font-size: 12px; color: var(--bcfg-muted); line-height: 1.6; }
 .bcfg .note-box strong { color: var(--bcfg-ink-2); }
 .bcfg .callout { background: var(--bcfg-accent-soft); border: 2px solid var(--bcfg-accent-line); border-radius: 14px; padding: 18px; margin-bottom: 20px; }
 .bcfg .callout-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
@@ -270,6 +270,13 @@
 .bcfg .cart-hint { font-size: 11px; color: rgba(255,255,255,.4); }
 
 .bcfg .cta-row { display: flex; gap: 10px; }
+.bcfg .share-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+.bcfg .btn-share { padding: 8px 12px; border-radius: var(--bcfg-radius-sm); border: 1px solid var(--bcfg-line-2); background: transparent; font-size: 12px; font-weight: 600; color: var(--bcfg-ink-2); cursor: pointer; transition: all .2s; }
+.bcfg .btn-share:hover { border-color: var(--bcfg-accent); color: var(--bcfg-accent); }
+.bcfg .share-note { font-size: 12px; color: var(--bcfg-good); font-weight: 600; flex: 1; min-width: 0; }
+.bcfg .share-note input { width: 100%; font: inherit; font-size: 11px; padding: 6px 8px; border: 1px solid var(--bcfg-line-2); border-radius: var(--bcfg-radius-sm); color: var(--bcfg-ink); background: var(--bcfg-card); }
+.bcfg .resume-note { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; padding: 10px 14px; border-radius: var(--bcfg-radius-sm); background: var(--bcfg-accent-soft); border: 1px solid var(--bcfg-accent-line); font-size: 12px; color: var(--bcfg-ink-2); }
+.bcfg .resume-reset { margin-left: auto; padding: 4px 10px; border-radius: 99px; border: 1px solid var(--bcfg-accent-line); background: var(--bcfg-card); font-size: 11px; font-weight: 700; color: var(--bcfg-accent); cursor: pointer; }
 .bcfg .btn-restart { padding: 14px 20px; border-radius: var(--bcfg-radius-sm); border: 2px solid var(--bcfg-line-2); background: var(--bcfg-card); font-size: 13px; font-weight: 700; color: var(--bcfg-ink-2); cursor: pointer; transition: all .2s; }
 .bcfg .btn-restart:hover { border-color: var(--bcfg-muted); }
 .bcfg .btn-cta { flex: 1; padding: 14px 22px; border-radius: var(--bcfg-radius-sm); border: none; background: var(--bcfg-accent); font-size: 14px; font-weight: 800; color: var(--bcfg-accent-ink); cursor: pointer; transition: all .2s; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px; }

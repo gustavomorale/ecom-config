@@ -529,7 +529,7 @@ table.spec td:first-child{white-space:nowrap;font-weight:550}
 .bcfg .profile-chip { display: flex; align-items: center; gap: 6px; background: #f5f3f0; padding: 8px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; color: var(--bcfg-ink-2); }
 .bcfg .profile-chip span:first-child { font-size: 14px; }
 
-.bcfg .note-box { padding: 14px; background: var(--bcfg-well-2); border-radius: var(--bcfg-radius-sm); margin-bottom: 20px; font-size: 12px; color: #888; line-height: 1.6; }
+.bcfg .note-box { padding: 14px; background: var(--bcfg-well-2); border-radius: var(--bcfg-radius-sm); margin-bottom: 20px; font-size: 12px; color: var(--bcfg-muted); line-height: 1.6; }
 .bcfg .note-box strong { color: var(--bcfg-ink-2); }
 .bcfg .callout { background: var(--bcfg-accent-soft); border: 2px solid var(--bcfg-accent-line); border-radius: 14px; padding: 18px; margin-bottom: 20px; }
 .bcfg .callout-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
@@ -552,6 +552,13 @@ table.spec td:first-child{white-space:nowrap;font-weight:550}
 .bcfg .cart-hint { font-size: 11px; color: rgba(255,255,255,.4); }
 
 .bcfg .cta-row { display: flex; gap: 10px; }
+.bcfg .share-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+.bcfg .btn-share { padding: 8px 12px; border-radius: var(--bcfg-radius-sm); border: 1px solid var(--bcfg-line-2); background: transparent; font-size: 12px; font-weight: 600; color: var(--bcfg-ink-2); cursor: pointer; transition: all .2s; }
+.bcfg .btn-share:hover { border-color: var(--bcfg-accent); color: var(--bcfg-accent); }
+.bcfg .share-note { font-size: 12px; color: var(--bcfg-good); font-weight: 600; flex: 1; min-width: 0; }
+.bcfg .share-note input { width: 100%; font: inherit; font-size: 11px; padding: 6px 8px; border: 1px solid var(--bcfg-line-2); border-radius: var(--bcfg-radius-sm); color: var(--bcfg-ink); background: var(--bcfg-card); }
+.bcfg .resume-note { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; padding: 10px 14px; border-radius: var(--bcfg-radius-sm); background: var(--bcfg-accent-soft); border: 1px solid var(--bcfg-accent-line); font-size: 12px; color: var(--bcfg-ink-2); }
+.bcfg .resume-reset { margin-left: auto; padding: 4px 10px; border-radius: 99px; border: 1px solid var(--bcfg-accent-line); background: var(--bcfg-card); font-size: 11px; font-weight: 700; color: var(--bcfg-accent); cursor: pointer; }
 .bcfg .btn-restart { padding: 14px 20px; border-radius: var(--bcfg-radius-sm); border: 2px solid var(--bcfg-line-2); background: var(--bcfg-card); font-size: 13px; font-weight: 700; color: var(--bcfg-ink-2); cursor: pointer; transition: all .2s; }
 .bcfg .btn-restart:hover { border-color: var(--bcfg-muted); }
 .bcfg .btn-cta { flex: 1; padding: 14px 22px; border-radius: var(--bcfg-radius-sm); border: none; background: var(--bcfg-accent); font-size: 14px; font-weight: 800; color: var(--bcfg-accent-ink); cursor: pointer; transition: all .2s; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px; }
@@ -1009,6 +1016,13 @@ table.spec td:first-child{white-space:nowrap;font-weight:550}
 .bcfg.bcfg-theme-glass .bcfg-footer { color: var(--g-ink-3); font-weight: 500; }
 .bcfg.bcfg-theme-glass .followup-label { color: var(--g-ink-2); font-weight: 600; }
 
+.bcfg.bcfg-theme-glass .btn-share { border-radius: 12px; border: 1px solid var(--g-stroke-2); background: var(--g-surface-2); color: var(--g-ink-2); }
+.bcfg.bcfg-theme-glass .resume-note {
+  background: color-mix(in srgb, var(--bcfg-accent) 10%, var(--g-surface));
+  border: 1px solid color-mix(in srgb, var(--bcfg-accent) 30%, transparent); border-radius: 14px; color: var(--g-ink-2);
+}
+.bcfg.bcfg-theme-glass .resume-reset { background: var(--g-surface); border-color: color-mix(in srgb, var(--bcfg-accent) 40%, transparent); }
+
 /* Focus: blur eats a thin outline, so the ring is solid ink with an opaque
    canvas-coloured halo underneath it. */
 .bcfg.bcfg-theme-glass :is(button, a, [tabindex]):focus-visible {
@@ -1036,7 +1050,7 @@ table.spec td:first-child{white-space:nowrap;font-weight:550}
 }
 </style>
 <div class="topbar"><div class="topbar-in">
-  <div class="logo"><span class="mark">&#x25C8;</span><span>Bundle Configurator<small>White-label MVP &middot; v1.1</small></span></div>
+  <div class="logo"><span class="mark">&#x25C8;</span><span>Bundle Configurator<small>White-label MVP &middot; v1.2</small></span></div>
   <div class="tabs" role="tablist">
     <button role="tab" data-tab="store" aria-selected="true">Storefront</button>
     <button role="tab" data-tab="admin" aria-selected="false">Merchant admin</button>
@@ -1254,8 +1268,9 @@ table.spec td:first-child{white-space:nowrap;font-weight:550}
    BundleConfigurator.mount(el, config)  -> instance
    BundleConfigurator.registerScene(name, renderFn)
    instance.destroy()  /  instance.getState()  /  instance.on(evt, fn)
+   instance.shareUrl()  /  instance.forget()   (persistence, see below)
 
-   Events: 'step', 'answer', 'result', 'addtocart'
+   Events: 'step', 'answer', 'result', 'addtocart', 'restore', 'share'
    ============================================================ */
 (function (root) {
   'use strict';
@@ -1361,6 +1376,8 @@ table.spec td:first-child{white-space:nowrap;font-weight:550}
     this.stockPending = {};
     this.removed = {};      // addon key -> true
     this.state = this._initialState();
+    this.resumed = null;    // 'link' | 'storage' when answers were restored
+    this._restore();
     this._onClick = this._handleClick.bind(this);
     this._onKey = this._handleKey.bind(this);
     this._focusTo = null;    // where focus should land after the next render
@@ -1447,10 +1464,89 @@ table.spec td:first-child{white-space:nowrap;font-weight:550}
     (this.listeners[evt] = this.listeners[evt] || []).push(fn); return this;
   };
   Configurator.prototype._emit = function (evt, payload) {
+    if (evt === 'answer' || evt === 'step') this._save();
     (this.listeners[evt] || []).forEach(function (fn) { try { fn(payload, this); } catch (e) { } }, this);
   };
   Configurator.prototype.getState = function () { var o = {}; for (var k in this.state) o[k] = this.state[k]; return o; };
+  Configurator.prototype.forget = function () { this._clearSaved(); return this; };
   Configurator.prototype.destroy = function () { this.el.removeEventListener('click', this._onClick); this.el.removeEventListener('keydown', this._onKey); this.el.innerHTML = ''; this.el.classList.remove('bcfg'); if (this._preset && this._preset !== 'base') this.el.classList.remove('bcfg-theme-' + this._preset); this.el.removeAttribute('data-appearance'); this.el.removeAttribute('style'); };
+
+  /* ---------- persistence ----------
+     Answers survive a refresh (sessionStorage by default) and can travel in a
+     link (?bcfg=<base64url json>). Only fields the config declares are
+     restored, and a stored copy is dropped if the questionnaire changed
+     underneath it. cfg.persist = { mode: 'session' | 'local' | 'none',
+     key: '', link: true, param: 'bcfg' }.                                   */
+  function hash(str) {
+    var h = 5381; for (var i = 0; i < str.length; i++) h = ((h << 5) + h + str.charCodeAt(i)) | 0;
+    return (h >>> 0).toString(36);
+  }
+  function b64url(s) {
+    try { return btoa(unescape(encodeURIComponent(s))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); } catch (e) { return ''; }
+  }
+  function unb64url(s) {
+    try { s = s.replace(/-/g, '+').replace(/_/g, '/'); while (s.length % 4) s += '='; return decodeURIComponent(escape(atob(s))); } catch (e) { return ''; }
+  }
+  Configurator.prototype._persistOpts = function () {
+    var p = this.cfg.persist || {};
+    return { mode: p.mode || 'session', key: p.key || '', link: p.link !== false, param: p.param || 'bcfg' };
+  };
+  /* Fingerprint of the questionnaire shape, so stale answers never load. */
+  Configurator.prototype._shape = function () {
+    return hash((this.cfg.steps || []).map(function (s) { return s.id + ':' + s.type + ':' + (s.field || '') + ':' + (s.counters || []).concat(s.toggles || []).map(function (c) { return c.field; }).join('.'); }).join('|'));
+  };
+  Configurator.prototype._storeKey = function () {
+    var p = this._persistOpts(), b = this.cfg.brand || {};
+    return 'bcfg:' + (p.key || b.id || this._shape());
+  };
+  Configurator.prototype._storage = function () {
+    var p = this._persistOpts();
+    try { return p.mode === 'local' ? root.localStorage : p.mode === 'session' ? root.sessionStorage : null; } catch (e) { return null; }
+  };
+  /* Snapshot = answers + removed add-ons + shape. Never the config itself. */
+  Configurator.prototype._snapshot = function () {
+    return { v: 1, shape: this._shape(), state: this.getState(), removed: this.removed };
+  };
+  Configurator.prototype._applySnapshot = function (snap) {
+    if (!snap || snap.v !== 1 || snap.shape !== this._shape() || !snap.state) return false;
+    var base = this._initialState(), n = (this.cfg.steps || []).length, k;
+    for (k in snap.state) if (Object.prototype.hasOwnProperty.call(base, k)) base[k] = snap.state[k];
+    base.step = clamp(Number(snap.state.step) || 0, 0, n);
+    this.state = base;
+    this.removed = {}; for (k in (snap.removed || {})) this.removed[k] = true;
+    return true;
+  };
+  Configurator.prototype._save = function () {
+    var s = this._storage(); if (!s) return;
+    try { s.setItem(this._storeKey(), JSON.stringify(this._snapshot())); } catch (e) { }
+  };
+  Configurator.prototype._clearSaved = function () {
+    var s = this._storage(); if (!s) return;
+    try { s.removeItem(this._storeKey()); } catch (e) { }
+  };
+  Configurator.prototype._restore = function () {
+    var p = this._persistOpts();
+    // 1. a link wins over storage: it is the shopper's explicit intent
+    if (p.link) {
+      var m = new RegExp('[?&#]' + p.param + '=([^&#]+)').exec(root.location && root.location.href || '');
+      if (m) {
+        var fromLink = null;
+        try { fromLink = JSON.parse(unb64url(m[1])); } catch (e) { }
+        if (this._applySnapshot(fromLink)) { this.resumed = 'link'; this._emit('restore', { source: 'link' }); return; }
+      }
+    }
+    // 2. this browser's own unfinished answers
+    var s = this._storage(); if (!s) return;
+    var raw = null; try { raw = JSON.parse(s.getItem(this._storeKey()) || 'null'); } catch (e) { }
+    if (raw && this._applySnapshot(raw) && (raw.state.step > 0 || this._isDone())) { this.resumed = 'storage'; this._emit('restore', { source: 'storage' }); }
+  };
+  /* Shareable URL for the current answers (used on the result screen). */
+  Configurator.prototype.shareUrl = function () {
+    var p = this._persistOpts(), c = this.cfg.cart || {};
+    var base = c.shareUrl || (root.location ? root.location.href.split('#')[0] : '');
+    base = base.replace(new RegExp('([?&])' + p.param + '=[^&]*&?'), '$1').replace(/[?&]$/, '');
+    return base + (base.indexOf('?') > -1 ? '&' : '?') + p.param + '=' + b64url(JSON.stringify(this._snapshot()));
+  };
 
   /* ---------- stock ---------- */
   Configurator.prototype._isOOS = function (variantId) {
@@ -1702,12 +1798,20 @@ table.spec td:first-child{white-space:nowrap;font-weight:550}
     return out || (val == null ? '' : String(val));
   };
 
+  Configurator.prototype._renderResumeNote = function () {
+    if (!this.resumed) return '';
+    var copy = this.cfg.copy || {};
+    var text = this.resumed === 'link' ? (copy.resumedLinkNote || 'Loaded from a shared link.') : (copy.resumedNote || 'Picked up where you left off.');
+    return '<div class="resume-note" role="status">' + esc(text) + ' ' +
+      '<button type="button" class="resume-reset" data-action="restart">' + esc(copy.restartLabel || 'Start over') + '</button></div>';
+  };
+
   Configurator.prototype._renderProgress = function () {
     var n = (this.cfg.steps || []).length;
     var pct = Math.round((this.state.step / n) * 100);
     var copy = this.cfg.copy || {};
     var label = this._stepLabel();
-    return '<div class="progress-wrap"><div class="progress-meta">' +
+    return this._renderResumeNote() + '<div class="progress-wrap"><div class="progress-meta">' +
       '<span class="progress-step">' + esc(label) + '</span>' +
       '<span class="progress-pct" aria-hidden="true">' + pct + '%</span></div>' +
       '<div class="progress-bar" role="progressbar" aria-label="' + esc(label) + '" aria-valuemin="0" aria-valuemax="' + n + '" aria-valuenow="' + this.state.step + '" aria-valuetext="' + esc(label) + ', ' + pct + '%"><div class="progress-fill" style="width:' + pct + '%"></div></div></div>';
@@ -1931,6 +2035,9 @@ table.spec td:first-child{white-space:nowrap;font-weight:550}
           '<button type="button" class="btn-restart" data-action="restart"><span aria-hidden="true">&#x21BB;</span> ' + esc(copy.restartLabel || 'Start over') + '</button>' +
           '<a class="btn-cta" data-action="addToCart" href="' + esc(rec.cartUrl) + '"' + ((this.cfg.cart || {}).mode === 'ajax' ? '' : ' target="_blank" rel="noopener"') + '>' + esc(copy.ctaLabel || 'Add to cart') + ' &#x2192;</a>' +
         '</div>' +
+        (this._persistOpts().link ? '<div class="share-row">' +
+          '<button type="button" class="btn-share" data-action="share">' + esc(copy.shareLabel || 'Copy a link to this bundle') + '</button>' +
+          '<span class="share-note" aria-live="polite"></span></div>' : '') +
       '</div></div>' + this._renderFooter();
   };
 
@@ -1983,8 +2090,17 @@ table.spec td:first-child{white-space:nowrap;font-weight:550}
         this._emit('step', this.state.step);
         this._goToStep(); break;
       case 'restart':
-        this.state = this._initialState(); this.removed = {};
+        this.state = this._initialState(); this.removed = {}; this.resumed = null;
+        this._clearSaved();
         this._goToStep(); break;
+      case 'share': {
+        var url = this.shareUrl(), note = this.el.querySelector('.share-note'), cp = this.cfg.copy || {};
+        var done = function () { if (note) note.textContent = cp.shareCopied || 'Link copied'; };
+        var fail = function () { if (note) { note.innerHTML = '<input type="text" readonly value="' + esc(url) + '" aria-label="' + esc(cp.shareLabel || 'Link to this bundle') + '">'; note.querySelector('input').select(); } };
+        try { (root.navigator.clipboard ? root.navigator.clipboard.writeText(url) : Promise.reject()).then(done, fail); } catch (e) { fail(); }
+        this._emit('share', url);
+        break;
+      }
       case 'toggleScene': {
         var panel = this.el.querySelector('[data-scene]');
         if (!panel) break;
@@ -2067,7 +2183,7 @@ table.spec td:first-child{white-space:nowrap;font-weight:550}
 
   /* ---------- public ---------- */
   var API = {
-    version: '1.1.0',
+    version: '1.2.0',
     mount: function (el, cfg) {
       var node = typeof el === 'string' ? document.querySelector(el) : el;
       if (!node) throw new Error('[bcfg] mount target not found');
@@ -2075,6 +2191,8 @@ table.spec td:first-child{white-space:nowrap;font-weight:550}
     },
     registerScene: registerScene,
     scenes: SCENES,
+    encodeAnswers: function (snap) { return b64url(JSON.stringify(snap)); },
+    decodeAnswers: function (s) { try { return JSON.parse(unb64url(s)); } catch (e) { return null; } },
     test: test,
     expr: safeExpr
   };

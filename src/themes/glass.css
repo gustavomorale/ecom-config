@@ -347,6 +347,13 @@
 .bcfg.bcfg-theme-glass .bcfg-footer { color: var(--g-ink-3); font-weight: 500; }
 .bcfg.bcfg-theme-glass .followup-label { color: var(--g-ink-2); font-weight: 600; }
 
+.bcfg.bcfg-theme-glass .btn-share { border-radius: 12px; border: 1px solid var(--g-stroke-2); background: var(--g-surface-2); color: var(--g-ink-2); }
+.bcfg.bcfg-theme-glass .resume-note {
+  background: color-mix(in srgb, var(--bcfg-accent) 10%, var(--g-surface));
+  border: 1px solid color-mix(in srgb, var(--bcfg-accent) 30%, transparent); border-radius: 14px; color: var(--g-ink-2);
+}
+.bcfg.bcfg-theme-glass .resume-reset { background: var(--g-surface); border-color: color-mix(in srgb, var(--bcfg-accent) 40%, transparent); }
+
 /* Focus: blur eats a thin outline, so the ring is solid ink with an opaque
    canvas-coloured halo underneath it. */
 .bcfg.bcfg-theme-glass :is(button, a, [tabindex]):focus-visible {

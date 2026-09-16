@@ -145,7 +145,7 @@ export async function deleteConfig(admin, shopId) {
 /* Theme editor links. The deep link drops our block straight in, but the
    editor refuses it for dev-preview extensions and shows a red error, so the
    plain editor is used until the app is deployed (BCFG_DEEP_LINK=1). */
-export const EXTENSION_UID = "f81dd01f-1a3a-a4a7-f4df-7e289a2c5a3de815813a";
+export const EXTENSION_UID = "01a0aa66-c9b0-7531-ab18-ec6df9e3c716"; // registered id, seen in the CDN asset path
 export function themeEditorUrl(domain) {
   const base = `https://${domain}/admin/themes/current/editor`;
   // eslint-disable-next-line no-undef

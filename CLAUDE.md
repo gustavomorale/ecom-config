@@ -71,7 +71,7 @@ commands: `/check`, `/build-extension`, `/sync-mvp`, `/next-blocker [n]`. Person
   screens, permalink cart, glass + base presets, theme sync.
 - **v1.1:** analytics endpoint and drop-off funnel. Ajax cart.
 - **v1.2 (current):** answer persistence (`sessionStorage` + resumable link), done.
-- **v1.2:** price sync from the Storefront API. Metaobject-backed accessory catalogue.
+- **v1.3:** price sync from the Storefront API. Metaobject-backed accessory catalogue.
 - **v2:** draft orders for high-value configs. Per-market/per-locale configs.
   Merchant-defined scenes.
 - **Not in v1:** multi-language, customer accounts, B2B price lists, anything needing an
@@ -90,8 +90,10 @@ commands: `/check`, `/build-extension`, `/sync-mvp`, `/next-blocker [n]`. Person
    `--g-ink-3` at 60% light / 62% dark). Copy keys added: `requiredHint`, `decreaseLabel`,
    `increaseLabel`, `removeAddonLabel`, `removedNote`. Still open: a merchant's own theme
    colours can break contrast; that warning belongs in the admin (see 5).
-2. **Price drift.** Prices live in config and in Shopify. Show "preview, checkout is the
-   source of truth" until Storefront API sync lands.
+2. **Price drift. Mitigated (2026-09-16), resolved by v1.3 price sync.** The result
+   shows "Prices are a preview. Checkout shows the final price." under the price
+   (`copy.priceNote`, token `--bcfg-price-note-ink`). `pricing.synced: true` removes it;
+   the v1.3 Storefront API sync will set that automatically.
 3. **Persistence. Resolved (2026-09-16).** Answers save to `sessionStorage` on every
    answer and step, keyed by `brand.id` or a fingerprint of the questionnaire shape, so a
    changed questionnaire never loads stale answers. Restored silently with a "Picked up

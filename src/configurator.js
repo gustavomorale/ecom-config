@@ -699,6 +699,15 @@
     return interpolate(copy.removedNote || '{n} add-on{s} removed from your cart', { n: n, s: n === 1 ? '' : 's' });
   };
 
+  /* Prices live in config and in Shopify. Until the Storefront API sync
+     lands, say so under the price; a merchant whose prices are synced sets
+     pricing.synced = true and the line goes away. */
+  Configurator.prototype._renderPriceNote = function () {
+    var pr = this.cfg.pricing || {}, copy = this.cfg.copy || {};
+    if (pr.synced === true || copy.priceNote === '') return '';
+    return '<div class="price-note">' + esc(copy.priceNote || 'Prices are a preview. Checkout shows the final price.') + '</div>';
+  };
+
   /* ---------- result ---------- */
   Configurator.prototype._renderResult = function () {
     var rec = this.recommend(), copy = this.cfg.copy || {}, self = this;
@@ -750,7 +759,7 @@
         '<div class="rec-badge">' + esc(copy.recommendationBadge || 'Your recommendation') + '</div>' +
         '<h2 tabindex="-1">' + esc(rec.bundle.title) + '</h2>' +
         (rec.bundle.subtitle ? '<div class="bundle-sub">' + esc(rec.bundle.subtitle) + '</div>' : '') +
-        priceBlock +
+        priceBlock + this._renderPriceNote() +
       '</div>' +
       '<div class="result-body">' +
         (rec.why ? '<div class="summary-box"><div class="summary-title">' + esc(copy.whyTitle || 'Why this bundle?') + '</div><div class="summary-text">' + rec.why + '</div></div>' : '') +

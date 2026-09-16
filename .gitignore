@@ -5,3 +5,4 @@ node_modules/
 .env.*
 shopify-app/extensions/bundle-configurator/assets/*.js
 shopify-app/extensions/bundle-configurator/assets/*.css
+.claude/settings.local.json

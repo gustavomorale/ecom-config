@@ -24,6 +24,10 @@ and analytics endpoint are mocked in the harness and not built.
 
 Run locally: `npm run dev` then open `http://localhost:8765/demo/`. Syntax check: `npm run check`.
 
+Claude Code: `.claude/settings.json` pre-approves the npm scripts and read-only git. Slash
+commands: `/check`, `/build-extension`, `/sync-mvp`, `/next-blocker [n]`. Personal overrides go in
+`.claude/settings.local.json` (gitignored).
+
 ## Decisions (do not relitigate without a reason)
 
 1. **Category first.** The admin opens on "what are you building a configurator for" and

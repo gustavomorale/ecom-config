@@ -11,13 +11,14 @@ import { useAppBridge } from "@shopify/app-bridge-react";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { authenticate } from "../shopify.server";
 import { listCategories, buildCategory, readConfig, saveConfig, deleteConfig, themeEditorUrl } from "../config.server";
+import { SetupRail, doneSteps } from "../components/SetupRail";
 
 export const loader = async ({ request }) => {
   const { admin } = await authenticate.admin(request);
   const { config, domain } = await readConfig(admin);
   const categories = listCategories();
   const current = config ? categories.find((c) => c.id === config.meta?.category) || null : null;
-  return { categories, config, current, editorUrl: themeEditorUrl(domain) };
+  return { categories, config, current, editorUrl: themeEditorUrl(domain), done: doneSteps(config) };
 };
 
 export const action = async ({ request }) => {
@@ -42,7 +43,7 @@ export const action = async ({ request }) => {
 };
 
 export default function Index() {
-  const { categories, config, current, editorUrl } = useLoaderData();
+  const { categories, config, current, editorUrl, done } = useLoaderData();
   const fetcher = useFetcher();
   const shopify = useAppBridge();
   const busy = fetcher.state !== "idle";
@@ -99,6 +100,9 @@ export default function Index() {
   return (
     <s-page heading="Bundle Configurator">
       <s-button slot="primary-action" href={editorUrl} target="_blank">Add the block to your theme</s-button>
+      <s-section>
+        <SetupRail current="category" done={done} />
+      </s-section>
       <s-section heading={current ? `${current.icon} ${current.label}` : "Your configurator"}>
         <s-paragraph>{current ? current.blurb : "A saved configuration."}</s-paragraph>
         <s-stack direction="inline" gap="base">
@@ -110,8 +114,9 @@ export default function Index() {
       </s-section>
       <s-section heading="Next steps">
         <s-paragraph>
-          The theme block now shows this questionnaire. Prices and products are template placeholders until you connect your own, which is the next setup step.
+          The theme block now shows this questionnaire. Continue setup to match your store's look, check the questions and connect your products.
         </s-paragraph>
+        <s-button href="/app/look" variant="primary">Continue setup</s-button>
         <s-paragraph color="subdued">
           If the block is not added for you, in the theme editor choose a section, then Add block, Apps, Bundle Configurator.
         </s-paragraph>
@@ -124,11 +129,10 @@ export default function Index() {
       </s-section>
       <s-section slot="aside" heading="Setup progress">
         <s-unordered-list>
-          <s-list-item>Category: done</s-list-item>
-          <s-list-item>Look: coming next</s-list-item>
-          <s-list-item>Questions</s-list-item>
-          <s-list-item>Products</s-list-item>
-          <s-list-item>Go live</s-list-item>
+          {["Category", "Look", "Questions", "Products", "Go live"].map((label, i) => {
+            const key = ["category", "look", "questions", "products", "live"][i];
+            return <s-list-item key={key}>{label}{done.includes(key) ? ": done" : ""}</s-list-item>;
+          })}
         </s-unordered-list>
       </s-section>
     </s-page>

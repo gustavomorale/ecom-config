@@ -6,3 +6,4 @@ node_modules/
 shopify-app/extensions/bundle-configurator/assets/*.js
 shopify-app/extensions/bundle-configurator/assets/*.css
 .claude/settings.local.json
+shopify-app/public/widget/

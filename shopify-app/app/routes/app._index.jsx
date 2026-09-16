@@ -1,243 +1,138 @@
+/* ============================================================
+   Home. First access: step 1 of setup, "What are you selling?".
+   Picking a category seeds a complete working template and saves it to the
+   shop metafield; from that moment the theme block shows a real questionnaire.
+   With a config saved, this page is the status overview. The remaining setup
+   steps (Look, Questions, Products, Go live) land here next.
+   ============================================================ */
 import { useEffect } from "react";
-import { useFetcher } from "react-router";
+import { useFetcher, useLoaderData, useRouteError } from "react-router";
 import { useAppBridge } from "@shopify/app-bridge-react";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { authenticate } from "../shopify.server";
+import { listCategories, buildCategory, readConfig, saveConfig, deleteConfig, themeEditorUrl } from "../config.server";
 
 export const loader = async ({ request }) => {
-  await authenticate.admin(request);
-
-  return null;
+  const { admin } = await authenticate.admin(request);
+  const { config, domain } = await readConfig(admin);
+  const categories = listCategories();
+  const current = config ? categories.find((c) => c.id === config.meta?.category) || null : null;
+  return { categories, config, current, editorUrl: themeEditorUrl(domain) };
 };
 
 export const action = async ({ request }) => {
   const { admin } = await authenticate.admin(request);
-  const color = ["Red", "Orange", "Yellow", "Green"][
-    Math.floor(Math.random() * 4)
-  ];
-  const response = await admin.graphql(
-    `#graphql
-      mutation populateProduct($product: ProductCreateInput!) {
-        productCreate(product: $product) {
-          product {
-            id
-            title
-            handle
-            status
-            variants(first: 10) {
-              edges {
-                node {
-                  id
-                  price
-                  barcode
-                  createdAt
-                }
-              }
-            }
-          }
-        }
-      }`,
-    {
-      variables: {
-        product: {
-          title: `${color} Snowboard`,
-        },
-      },
-    },
-  );
-  const responseJson = await response.json();
-  const product = responseJson.data.productCreate.product;
-  const variantId = product.variants.edges[0].node.id;
-  const variantResponse = await admin.graphql(
-    `#graphql
-    mutation shopifyReactRouterTemplateUpdateVariant($productId: ID!, $variants: [ProductVariantsBulkInput!]!) {
-      productVariantsBulkUpdate(productId: $productId, variants: $variants) {
-        productVariants {
-          id
-          price
-          barcode
-          createdAt
-        }
-      }
-    }`,
-    {
-      variables: {
-        productId: product.id,
-        variants: [{ id: variantId, price: "100.00" }],
-      },
-    },
-  );
-  const variantResponseJson = await variantResponse.json();
-
-  return {
-    product: responseJson.data.productCreate.product,
-    variant: variantResponseJson.data.productVariantsBulkUpdate.productVariants,
-  };
+  const form = await request.formData();
+  const intent = form.get("intent");
+  const { shopId } = await readConfig(admin);
+  try {
+    if (intent === "choose") {
+      const cfg = buildCategory(String(form.get("category")));
+      await saveConfig(admin, shopId, cfg);
+      return { ok: true, intent, category: cfg.meta.category };
+    }
+    if (intent === "reset") {
+      await deleteConfig(admin, shopId);
+      return { ok: true, intent };
+    }
+  } catch (e) {
+    return { ok: false, intent, error: e.message };
+  }
+  return { ok: false, intent, error: "Unknown action" };
 };
 
 export default function Index() {
+  const { categories, config, current, editorUrl } = useLoaderData();
   const fetcher = useFetcher();
   const shopify = useAppBridge();
-  const isLoading =
-    ["loading", "submitting"].includes(fetcher.state) &&
-    fetcher.formMethod === "POST";
+  const busy = fetcher.state !== "idle";
+  const pending = busy ? fetcher.formData?.get("category") : null;
 
   useEffect(() => {
-    if (fetcher.data?.product?.id) {
-      shopify.toast.show("Product created");
-    }
-  }, [fetcher.data?.product?.id, shopify]);
-  const generateProduct = () => fetcher.submit({}, { method: "POST" });
+    if (!fetcher.data) return;
+    if (fetcher.data.ok && fetcher.data.intent === "choose") shopify.toast.show("Template saved. Your questionnaire is live in the theme block.");
+    if (fetcher.data.ok && fetcher.data.intent === "reset") shopify.toast.show("Reset. Pick a category to start again.");
+    if (!fetcher.data.ok) shopify.toast.show(fetcher.data.error || "Something went wrong", { isError: true });
+  }, [fetcher.data, shopify]);
+
+  const choose = (id) => fetcher.submit({ intent: "choose", category: id }, { method: "POST" });
+  const reset = () => fetcher.submit({ intent: "reset" }, { method: "POST" });
+
+  if (!config) {
+    return (
+      <s-page heading="What are you selling?">
+        <s-section>
+          <s-paragraph>
+            Pick the closest match. You get a working questionnaire straight away and edit it from there. Nothing here is final.
+          </s-paragraph>
+          <s-grid gridTemplateColumns="repeat(auto-fill, minmax(260px, 1fr))" gap="base">
+            {categories.map((c) => (
+              <s-box key={c.id} padding="base" borderWidth="base" borderRadius="base" background="base">
+                <s-stack direction="block" gap="small-200">
+                  <s-text>{c.icon}</s-text>
+                  <s-heading>{c.label}</s-heading>
+                  <s-paragraph color="subdued">{c.blurb}</s-paragraph>
+                  <s-button
+                    variant={c.id === "blank" ? "tertiary" : "secondary"}
+                    onClick={() => choose(c.id)}
+                    {...(pending === c.id ? { loading: true } : {})}
+                    {...(busy && pending !== c.id ? { disabled: true } : {})}
+                  >
+                    {c.id === "blank" ? "Start from blank" : "Use this"}
+                  </s-button>
+                </s-stack>
+              </s-box>
+            ))}
+          </s-grid>
+        </s-section>
+        <s-section slot="aside" heading="Setup, step 1 of 5">
+          <s-paragraph>Category, then Look, Questions, Products, Go live. One decision per step, about five minutes in all.</s-paragraph>
+        </s-section>
+      </s-page>
+    );
+  }
+
+  const steps = (config.steps || []).length;
+  const products = [...(config.bundles || []), ...Object.values(config.accessories || {})];
+  const missing = products.filter((p) => !p.variantId).length;
 
   return (
-    <s-page heading="Shopify app template">
-      <s-button slot="primary-action" onClick={generateProduct}>
-        Generate a product
-      </s-button>
-
-      <s-section heading="Congrats on creating a new Shopify app 🎉">
-        <s-paragraph>
-          This embedded app template uses{" "}
-          <s-link
-            href="https://shopify.dev/docs/apps/tools/app-bridge"
-            target="_blank"
-          >
-            App Bridge
-          </s-link>{" "}
-          interface examples like an{" "}
-          <s-link href="/app/additional">additional page in the app nav</s-link>
-          , as well as an{" "}
-          <s-link
-            href="https://shopify.dev/docs/api/admin-graphql"
-            target="_blank"
-          >
-            Admin GraphQL
-          </s-link>{" "}
-          mutation demo, to provide a starting point for app development.
-        </s-paragraph>
+    <s-page heading="Bundle Configurator">
+      <s-button slot="primary-action" href={editorUrl} target="_blank">Add the block to your theme</s-button>
+      <s-section heading={current ? `${current.icon} ${current.label}` : "Your configurator"}>
+        <s-paragraph>{current ? current.blurb : "A saved configuration."}</s-paragraph>
+        <s-stack direction="inline" gap="base">
+          <s-badge tone="success">{`${steps} question${steps === 1 ? "" : "s"}`}</s-badge>
+          <s-badge tone={missing ? "warning" : "success"}>
+            {missing ? `${missing} of ${products.length} products need a variant` : `All ${products.length} products connected`}
+          </s-badge>
+        </s-stack>
       </s-section>
-      <s-section heading="Get started with products">
+      <s-section heading="Next steps">
         <s-paragraph>
-          Generate a product with GraphQL and get the JSON output for that
-          product. Learn more about the{" "}
-          <s-link
-            href="https://shopify.dev/docs/api/admin-graphql/latest/mutations/productCreate"
-            target="_blank"
-          >
-            productCreate
-          </s-link>{" "}
-          mutation in our API references.
+          The theme block now shows this questionnaire. Prices and products are template placeholders until you connect your own, which is the next setup step.
         </s-paragraph>
         <s-stack direction="inline" gap="base">
-          <s-button
-            onClick={generateProduct}
-            {...(isLoading ? { loading: true } : {})}
-          >
-            Generate a product
+          <s-button href={editorUrl} target="_blank">Open theme editor</s-button>
+          <s-button variant="tertiary" tone="critical" onClick={reset} {...(busy ? { loading: true } : {})}>
+            Change category
           </s-button>
-          {fetcher.data?.product && (
-            <s-button
-              onClick={() => {
-                shopify.intents.invoke?.("edit:shopify/Product", {
-                  value: fetcher.data?.product?.id,
-                });
-              }}
-              target="_blank"
-              variant="tertiary"
-            >
-              Edit product
-            </s-button>
-          )}
         </s-stack>
-        {fetcher.data?.product && (
-          <s-section heading="productCreate mutation">
-            <s-stack direction="block" gap="base">
-              <s-box
-                padding="base"
-                borderWidth="base"
-                borderRadius="base"
-                background="subdued"
-              >
-                <pre style={{ margin: 0 }}>
-                  <code>{JSON.stringify(fetcher.data.product, null, 2)}</code>
-                </pre>
-              </s-box>
-
-              <s-heading>productVariantsBulkUpdate mutation</s-heading>
-              <s-box
-                padding="base"
-                borderWidth="base"
-                borderRadius="base"
-                background="subdued"
-              >
-                <pre style={{ margin: 0 }}>
-                  <code>{JSON.stringify(fetcher.data.variant, null, 2)}</code>
-                </pre>
-              </s-box>
-            </s-stack>
-          </s-section>
-        )}
       </s-section>
-
-      <s-section slot="aside" heading="App template specs">
-        <s-paragraph>
-          <s-text>Framework: </s-text>
-          <s-link href="https://reactrouter.com/" target="_blank">
-            React Router
-          </s-link>
-        </s-paragraph>
-        <s-paragraph>
-          <s-text>Interface: </s-text>
-          <s-link
-            href="https://shopify.dev/docs/api/app-home/using-polaris-components"
-            target="_blank"
-          >
-            Polaris web components
-          </s-link>
-        </s-paragraph>
-        <s-paragraph>
-          <s-text>API: </s-text>
-          <s-link
-            href="https://shopify.dev/docs/api/admin-graphql"
-            target="_blank"
-          >
-            GraphQL
-          </s-link>
-        </s-paragraph>
-        <s-paragraph>
-          <s-text>Database: </s-text>
-          <s-link href="https://www.prisma.io/" target="_blank">
-            Prisma
-          </s-link>
-        </s-paragraph>
-      </s-section>
-
-      <s-section slot="aside" heading="Next steps">
+      <s-section slot="aside" heading="Setup progress">
         <s-unordered-list>
-          <s-list-item>
-            Build an{" "}
-            <s-link
-              href="https://shopify.dev/docs/apps/getting-started/build-app-example"
-              target="_blank"
-            >
-              example app
-            </s-link>
-          </s-list-item>
-          <s-list-item>
-            Explore Shopify&apos;s API with{" "}
-            <s-link
-              href="https://shopify.dev/docs/apps/tools/graphiql-admin-api"
-              target="_blank"
-            >
-              GraphiQL
-            </s-link>
-          </s-list-item>
+          <s-list-item>Category: done</s-list-item>
+          <s-list-item>Look: coming next</s-list-item>
+          <s-list-item>Questions</s-list-item>
+          <s-list-item>Products</s-list-item>
+          <s-list-item>Go live</s-list-item>
         </s-unordered-list>
       </s-section>
     </s-page>
   );
 }
 
-export const headers = (headersArgs) => {
-  return boundary.headers(headersArgs);
-};
+export function ErrorBoundary() {
+  return boundary.error(useRouteError());
+}
+export const headers = (headersArgs) => boundary.headers(headersArgs);

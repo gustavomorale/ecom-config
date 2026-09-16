@@ -82,7 +82,7 @@
 
     // Accent: the most prominent coloured control on the page wins; a link's
     // colour is the fallback, because many themes style buttons black.
-    var accent = null, radius = null;
+    var accent = null, radius = null, source = 'fallback';
     var buttons = [].slice.call(doc.querySelectorAll(BTN_SEL)).slice(0, 40);
     for (var i = 0; i < buttons.length; i++) {
       var cs = getComputedStyle(buttons[i]);
@@ -91,20 +91,23 @@
         var r = parseFloat(cs.borderRadius);
         if (isFinite(r)) radius = r;
       }
-      if (!accent && isCandidateAccent(bg)) { accent = bg; radius = parseFloat(cs.borderRadius) || radius; }
+      if (!accent && isCandidateAccent(bg)) {
+        accent = bg; radius = parseFloat(cs.borderRadius) || radius;
+        source = buttons[i].matches(PRIMARY_SEL) ? 'primary-button' : 'button';
+      }
     }
     if (!accent) {
       var links = [].slice.call(doc.querySelectorAll('a')).slice(0, 60);
       for (var j = 0; j < links.length; j++) {
         var lc = parse(getComputedStyle(links[j]).color);
-        if (isCandidateAccent(lc)) { accent = lc; break; }
+        if (isCandidateAccent(lc)) { accent = lc; source = 'link'; break; }
       }
     }
     // Last resort: a dark/black button theme — keep the store's neutral, it is
     // deliberate. Tint it very slightly so gradients have somewhere to go.
-    if (!accent) accent = buttons.length ? (parse(getComputedStyle(buttons[0]).backgroundColor) || ink) : ink;
+    if (!accent) { accent = buttons.length ? (parse(getComputedStyle(buttons[0]).backgroundColor) || ink) : ink; source = buttons.length ? 'neutral-button' : 'fallback'; }
 
-    return {
+    var p = {
       accent: hex(accent),
       ink: hex(ink),
       paper: hex(paper),
@@ -112,6 +115,30 @@
       radius: radius == null ? 12 : Math.round(radius),
       appearance: lum(paper) < .35 ? 'dark' : 'light'
     };
+    p.confidence = API.confidence(p, { source: source, buttons: buttons.length, radiusFound: radius != null });
+    return p;
+  };
+
+  /* ---------- confidence ----------
+     The sniffer guesses. Say how good the guess is, in words a merchant can act
+     on, so the admin can offer "use my colours instead" when it is weak. */
+  var PRIMARY_SEL = '.shopify-payment-button__button, button[name="add"], .product-form__submit, .btn--primary, .button--primary, .btn-primary';
+  var GENERIC_FONTS = /^(serif|sans-serif|times|times new roman|arial|system-ui|-apple-system)\b/i;
+  API.confidence = function (p, ctx) {
+    ctx = ctx || {};
+    var score = 1, reasons = [];
+    var accent = parse(p.accent), ink = parse(p.ink), paper = parse(p.paper);
+    var srcScore = { 'primary-button': 1, button: .8, link: .6, 'neutral-button': .45, fallback: .2 }[ctx.source || 'fallback'];
+    score = Math.min(score, srcScore == null ? .5 : srcScore);
+    if (ctx.source === 'link') reasons.push('Accent taken from link colour, no coloured button found');
+    if (ctx.source === 'neutral-button') reasons.push('Buttons are neutral, so the accent is a guess');
+    if (ctx.source === 'fallback') reasons.push('No buttons found on the page');
+    if (accent && ink && contrast(accent, WHITE) < 4.5 && contrast(accent, BLACK) < 4.5) { score -= .25; reasons.push('Text on the accent would be hard to read'); }
+    if (ink && paper && contrast(ink, paper) < 4.5) { score -= .25; reasons.push('Page text and background are low contrast'); }
+    if (!p.font || GENERIC_FONTS.test(p.font.replace(/["']/g, '').trim())) { score -= .1; reasons.push('No theme typeface detected'); }
+    if (!ctx.radiusFound) { score -= .05; }
+    score = Math.max(0, Math.min(1, score));
+    return { score: Math.round(score * 100) / 100, level: score >= .8 ? 'high' : score >= .5 ? 'medium' : 'low', reasons: reasons, source: ctx.source || 'fallback' };
   };
 
   /* ---------- derive the full token set ---------- */
@@ -151,7 +178,7 @@
     t['--g-canvas-2'] = hex(mix(paper, dark ? WHITE : BLACK, .04));
     t['--g-ink'] = hex(ink);
     t['--g-ink-2'] = 'rgba(' + [ink.r, ink.g, ink.b].map(Math.round).join(',') + ',.66)';
-    t['--g-ink-3'] = 'rgba(' + [ink.r, ink.g, ink.b].map(Math.round).join(',') + ',.42)';
+    t['--g-ink-3'] = 'rgba(' + [ink.r, ink.g, ink.b].map(Math.round).join(',') + ',.6)';
     if (p.radius != null) {
       var r = Math.max(0, Math.min(28, Number(p.radius) || 0));
       t.radius = (r + 4) + 'px';

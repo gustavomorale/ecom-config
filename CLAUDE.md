@@ -103,8 +103,13 @@ commands: `/check`, `/build-extension`, `/sync-mvp`, `/next-blocker [n]`. Person
    Copy keys: `resumedNote`, `resumedLinkNote`, `shareLabel`, `shareCopied`.
 4. **Glass performance.** Stacked `backdrop-filter` is expensive on low-end Android.
    Respect `prefers-reduced-transparency`, step down on slow devices.
-5. **Sniffer failure mode.** Theme sync guesses. Needs a confidence signal and a one-click
-   "ignore, use my colours" in the admin.
+5. **Sniffer failure mode. Resolved (2026-09-16).** `sniffHost()` returns
+   `confidence: { score, level: high | medium | low, reasons[], source }` scored from where
+   the accent came from (primary button, button, link, neutral, fallback) and measured
+   contrast of accent ink and page text. Setup step 2 and the Theme sync tab show it in
+   words ("Partial match. Accent taken from link colour") and, below high, offer "use my
+   own colours instead", which drops `brand.inherited`. The full editor has the same
+   control under Appearance whenever an inherited layer exists.
 
 ## Commercials
 

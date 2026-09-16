@@ -242,8 +242,12 @@ var Admin = {
         Object.keys(FONTS).map(function (k) {
           return '<option value="' + esc(FONTS[k]) + '"' + (t.font === FONTS[k] ? ' selected' : '') + '>' + k + '</option>';
         }).join('') + '</select></div>' +
-      '<div class="ctl"><label>Store name (footer)</label><input type="text" id="ad-name" value="' + esc(b.name || '') + '"></div>';
+      '<div class="ctl"><label>Store name (footer)</label><input type="text" id="ad-name" value="' + esc(b.name || '') + '"></div>' +
+      (b.inherited ? '<div class="ctl"><label>Matched from your store</label><div class="row"><span class="pill ok">' + Object.keys(b.inherited).length + ' values inherited</span>' +
+        '<button class="btn sm ghost" id="ad-mine">Use my colours instead</button></div>' +
+        '<div class="hint">Your choices above always win over the match. This removes the match entirely.</div></div>' : '');
 
+    if ($('#ad-mine')) $('#ad-mine').addEventListener('click', function () { Setup.useMyColours(); });
     seg('ad-preset', 'data-p', function (p) { b.preset = p; self.touch(); });
     seg('ad-app', 'data-a', function (a) { b.appearance = a; self.touch(); });
 
@@ -438,7 +442,15 @@ var Admin = {
    real app this state is the merchant's metafield plus an onboarding flag.
    ============================================================ */
 var Setup = {
-  KEY: 'bcfg.setup', active: false, step: 1, matched: null,
+  KEY: 'bcfg.setup', active: false, step: 1, matched: null, confidence: null,
+
+  /* Drop the inherited layer; the merchant's own choices and the preset stand. */
+  useMyColours: function () {
+    if (Admin.cfg && Admin.cfg.brand) { delete Admin.cfg.brand.inherited; Admin.cfg.brand.appearance = 'auto'; }
+    this.matched = null; this.confidence = null;
+    var mb = $('#setup-match'); if (mb) { mb.textContent = 'Match my store'; mb.disabled = false; }
+    Admin.renderAppearance(); Admin.touch(); this.refreshHint();
+  },
 
   STEPS: {
     2: { title: 'Make it look like your store.',
@@ -454,7 +466,7 @@ var Setup = {
   load: function () { try { return JSON.parse(localStorage.getItem(this.KEY) || 'null'); } catch (e) { return null; } },
   save: function () {
     if (!Admin.cfg) return;
-    try { localStorage.setItem(this.KEY, JSON.stringify({ active: this.active, step: this.step, category: Admin.category, cfg: Admin.cfg, matched: this.matched })); } catch (e) { }
+    try { localStorage.setItem(this.KEY, JSON.stringify({ active: this.active, step: this.step, category: Admin.category, cfg: Admin.cfg, matched: this.matched, confidence: this.confidence })); } catch (e) { }
   },
 
   /* Decide where a merchant lands. */
@@ -462,7 +474,7 @@ var Setup = {
     var s = this.load();
     Admin.renderChooser();
     if (s && s.cfg && s.category) {
-      Admin.category = s.category; Admin.cfg = s.cfg; this.matched = s.matched || null;
+      Admin.category = s.category; Admin.cfg = s.cfg; this.matched = s.matched || null; this.confidence = s.confidence || null;
       var c = category(s.category);
       $('#cat-bar-icon').innerHTML = c.icon; $('#cat-bar-label').textContent = c.label; $('#cat-bar-blurb').textContent = c.blurb;
       $('#cat-screen').hidden = true; $('#cat-bar').hidden = false; $('#admin-editors').hidden = false;
@@ -562,8 +574,16 @@ var Setup = {
     if (!this.active || this.step < 2) return;
     var n = this.step, cfg = Admin.cfg || {}, h = '';
     if (n === 2) {
-      h = this.matched ? '<span class="pill ok">Matched to ' + esc(this.matched) + '</span> Change anything below; your choices win over the match.'
-                       : 'Or leave the defaults. The widget already fits most themes.';
+      if (this.matched) {
+        var c = this.confidence, lvl = c ? c.level : 'high';
+        h = '<span class="pill ' + (lvl === 'high' ? 'ok' : lvl === 'medium' ? 'warn' : 'bad') + '">' +
+            (lvl === 'high' ? 'Good match' : lvl === 'medium' ? 'Partial match' : 'Weak match') + ' to ' + esc(this.matched) + '</span> ' +
+            (c && c.reasons.length ? esc(c.reasons[0]) + '. ' : '') +
+            (lvl === 'high' ? 'Change anything below; your choices win over the match.' : 'Check the preview. If it looks off, ') +
+            (lvl === 'high' ? '' : '<a href="#" id="setup-mine">use my own colours instead</a>.');
+      } else {
+        h = 'Or leave the defaults. The widget already fits most themes.';
+      }
     }
     if (n === 3) {
       var q = (cfg.steps || []).length;
@@ -585,6 +605,8 @@ var Setup = {
         (pp.missing ? '<span class="pill warn">' + pp.missing + ' product' + (pp.missing === 1 ? '' : 's') + ' still need a variant ID</span> The widget works now; checkout adds those once set.' : '');
     }
     $('#setup-hint').innerHTML = h;
+    var mine = $('#setup-mine'), self2 = this;
+    if (mine) mine.addEventListener('click', function (e) { e.preventDefault(); self2.useMyColours(); });
   },
 
   /* "Match my store": read the storefront's computed styles and apply them as the
@@ -606,6 +628,7 @@ var Setup = {
       Admin.cfg.brand.inherited = tokens;
       Admin.cfg.brand.appearance = p.appearance || 'auto';
       self.matched = (STORES[0] || {}).label || 'your store';
+      self.confidence = p.confidence || null;
       Admin.renderAppearance(); Admin.touch();
       btn.textContent = 'Matched'; btn.disabled = false;
       self.refreshHint();
@@ -625,6 +648,13 @@ $('#ad-reset').addEventListener('click', function () { Admin.boot(Admin.category
 /* ============================================================
    Theme sync — simulated storefronts
    ============================================================ */
+function confidenceHtml(c) {
+  if (!c) return '';
+  var cls = c.level === 'high' ? 'ok' : c.level === 'medium' ? 'warn' : 'bad';
+  var word = c.level === 'high' ? 'Good match' : c.level === 'medium' ? 'Partial match' : 'Weak match';
+  return '<p class="note" style="margin:0 0 8px"><span class="pill ' + cls + '">' + word + ' &middot; ' + Math.round(c.score * 100) + '%</span>' +
+    (c.reasons.length ? ' ' + esc(c.reasons.join('. ')) + '.' : ' Colours, type and corners all read cleanly.') + '</p>';
+}
 function storePage(o) {
   return '<!doctype html><html><head><meta charset="utf-8"><style>' +
     'body{margin:0;font-family:' + o.font + ';background:' + o.bg + ';color:' + o.ink + ';font-size:13px}' +
@@ -709,6 +739,7 @@ var Theme = {
         '<span class="sw">' + esc(p.appearance) + '</span>' +
       '</div>' +
       '<p class="note">Typeface: <code>' + esc((p.font || '').split(',')[0].replace(/"/g, '')) + '</code></p>' +
+      confidenceHtml(p.confidence) +
       '<p class="note">Derived <b>' + Object.keys(tokens).length + ' tokens</b> from those six readings. ' +
       'Button text contrast against the accent: <b>' + ratio + ':1</b> ' +
       (ratio >= 4.5 ? '<span class="pill ok">passes AA</span>' : '<span class="pill warn">below AA &mdash; merchant should override</span>') + '</p>' +

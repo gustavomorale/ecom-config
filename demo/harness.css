@@ -93,6 +93,8 @@ input[type=range]{width:100%;accent-color:var(--ui-accent)}
   background:var(--ui-surface-2);border:1px solid var(--ui-stroke);color:var(--ui-ink-2)}
 .pill.ok{color:#6ee7a8;border-color:rgba(110,231,168,.3);background:rgba(110,231,168,.1)}
 .pill.warn{color:#ffd479;border-color:rgba(255,212,121,.3);background:rgba(255,212,121,.1)}
+.pill.bad{color:#ff9a8a;border-color:rgba(255,154,138,.3);background:rgba(255,154,138,.1)}
+.setup-hint a{color:var(--ui-accent);text-decoration:none}.setup-hint a:hover{text-decoration:underline}
 code,.mono{font-family:var(--ui-mono);font-size:11px}
 
 /* layout */

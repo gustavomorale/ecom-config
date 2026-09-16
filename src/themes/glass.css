@@ -306,9 +306,6 @@
 .bcfg.bcfg-theme-glass .line-item-img {
   background: var(--g-surface-3); border: 1px solid var(--g-hairline); border-radius: 12px;
 }
-/* An empty product-image slot should read as absent, not as a broken frame. */
-.bcfg.bcfg-theme-glass .line-item-img:empty,
-.bcfg.bcfg-theme-glass .addon-icon:empty { opacity: .35; border-style: dashed; }
 .bcfg.bcfg-theme-glass .line-item-qty { font-weight: 700; }
 .bcfg.bcfg-theme-glass .addon-row { border-bottom: 1px solid var(--g-hairline); }
 .bcfg.bcfg-theme-glass .addon-text { color: var(--g-ink); font-weight: 500; }

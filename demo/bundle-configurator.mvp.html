@@ -394,7 +394,10 @@ table.spec td:first-child{white-space:nowrap;font-weight:550}
   box-shadow: 0 0 0 2px var(--bcfg-focus-halo);
 }
 .bcfg .btn-next:focus-visible, .bcfg .btn-cta:focus-visible { outline-color: var(--bcfg-ink); }
-.bcfg .card-question:focus-visible, .bcfg .result-header h2:focus-visible { outline-offset: 6px; box-shadow: none; }
+/* Headings receive focus programmatically on step change so they are announced; they are not controls, so no ring. */
+.bcfg .card-question:focus, .bcfg .result-header h2:focus, .bcfg .card-question:focus-visible, .bcfg .result-header h2:focus-visible { outline: none; box-shadow: none; }
+/* A product without an image gets no empty frame. */
+.bcfg .addon-icon:empty, .bcfg .line-item-img:empty { display: none; }
 .bcfg .bcfg-live { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 
 /* ── Hero ── */
@@ -979,9 +982,6 @@ table.spec td:first-child{white-space:nowrap;font-weight:550}
 .bcfg.bcfg-theme-glass .line-item-img {
   background: var(--g-surface-3); border: 1px solid var(--g-hairline); border-radius: 12px;
 }
-/* An empty product-image slot should read as absent, not as a broken frame. */
-.bcfg.bcfg-theme-glass .line-item-img:empty,
-.bcfg.bcfg-theme-glass .addon-icon:empty { opacity: .35; border-style: dashed; }
 .bcfg.bcfg-theme-glass .line-item-qty { font-weight: 700; }
 .bcfg.bcfg-theme-glass .addon-row { border-bottom: 1px solid var(--g-hairline); }
 .bcfg.bcfg-theme-glass .addon-text { color: var(--g-ink); font-weight: 500; }

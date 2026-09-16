@@ -35,8 +35,17 @@
       cfg.brand = cfg.brand || {};
       cfg.brand.preset = el.dataset.preset || cfg.brand.preset || 'glass';
       if (el.dataset.performance) cfg.brand.performance = el.dataset.performance;
-      if (cfg.brand.inheritTheme !== false && window.BundleConfigurator.inheritFromHost) {
-        cfg.brand.inherited = window.BundleConfigurator.inheritFromHost(document);
+      // Theme sync: inherit the storefront look. When the sniffer reports a weak
+      // match (neutral buttons, no accent found) keep only type and corners and let
+      // the widget use its own colours. brand.inheritTheme: false | 'always' overrides.
+      if (cfg.brand.inheritTheme !== false && window.BundleConfigurator.sniffHost) {
+        var p = window.BundleConfigurator.sniffHost(document);
+        var t = window.BundleConfigurator.tokensFrom(p);
+        if (p.confidence && p.confidence.level === 'low' && cfg.brand.inheritTheme !== 'always') {
+          t = { font: t.font, radius: t.radius, 'radius-sm': t['radius-sm'], 'radius-pill': t['radius-pill'] };
+        }
+        cfg.brand.inherited = t;
+        cfg.brand.inheritConfidence = p.confidence;
       }
       window.BundleConfigurator.mount(el, cfg);
     });

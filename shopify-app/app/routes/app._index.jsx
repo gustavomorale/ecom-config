@@ -112,6 +112,9 @@ export default function Index() {
         <s-paragraph>
           The theme block now shows this questionnaire. Prices and products are template placeholders until you connect your own, which is the next setup step.
         </s-paragraph>
+        <s-paragraph color="subdued">
+          If the block is not added for you, in the theme editor choose a section, then Add block, Apps, Bundle Configurator.
+        </s-paragraph>
         <s-stack direction="inline" gap="base">
           <s-button href={editorUrl} target="_blank">Open theme editor</s-button>
           <s-button variant="tertiary" tone="critical" onClick={reset} {...(busy ? { loading: true } : {})}>

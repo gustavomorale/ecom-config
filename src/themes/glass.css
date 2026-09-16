@@ -1,0 +1,361 @@
+/* ============================================================
+   Bundle Configurator — "Glass" theme preset
+   Apple-style translucent / futuristic skin.
+
+   Additive: load AFTER configurator.css. Activated by
+   config.brand.preset = 'glass'  (engine adds .bcfg-theme-glass)
+   Appearance: config.brand.appearance = 'auto' | 'light' | 'dark'
+               (engine sets data-appearance on the mount node)
+
+   Merchant brand tokens still win — --bcfg-accent is read here and
+   used to tint every glass surface, so a store's colour survives.
+   ============================================================ */
+
+.bcfg.bcfg-theme-glass {
+  /* ── glass system tokens (light) ── */
+  --g-surface:        rgba(255,255,255,.62);
+  --g-surface-2:      rgba(255,255,255,.44);
+  --g-surface-3:      rgba(255,255,255,.28);
+  --g-stroke:         rgba(255,255,255,.75);
+  --g-stroke-2:       rgba(9,12,20,.08);
+  --g-hairline:       rgba(9,12,20,.06);
+  --g-gloss:          inset 0 1px 0 rgba(255,255,255,.85);
+  --g-lift:           0 1px 2px rgba(9,12,20,.04), 0 8px 28px rgba(9,12,20,.08);
+  --g-lift-lg:        0 2px 6px rgba(9,12,20,.05), 0 22px 60px rgba(9,12,20,.13);
+  --g-blur:           saturate(180%) blur(24px);
+  --g-blur-lg:        saturate(200%) blur(40px);
+  --g-ink:            #0b0f19;
+  --g-ink-2:          rgba(11,15,25,.66);
+  --g-ink-3:          rgba(11,15,25,.42);
+  --g-canvas-1:       #eef1f7;
+  --g-canvas-2:       #e6ebf5;
+  --g-spring:         cubic-bezier(.22,1.15,.36,1);
+
+  /* ── remap the core white-label tokens onto glass ── */
+  --bcfg-accent-ink:  #ffffff;
+  --bcfg-ink:         var(--g-ink);
+  --bcfg-ink-2:       var(--g-ink-2);
+  --bcfg-muted:       var(--g-ink-3);
+  --bcfg-faint:       var(--g-ink-3);
+  --bcfg-card:        var(--g-surface);
+  --bcfg-well:        var(--g-surface-2);
+  --bcfg-well-2:      var(--g-surface-3);
+  --bcfg-line:        var(--g-stroke-2);
+  --bcfg-line-2:      var(--g-stroke-2);
+  --bcfg-paper:       transparent;
+  --bcfg-radius:      22px;
+  --bcfg-radius-sm:   14px;
+  --bcfg-radius-pill: 18px;
+  --bcfg-shadow:      var(--g-lift);
+  --bcfg-font: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text',
+               'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+
+  position: relative;
+  isolation: isolate;
+  color: var(--g-ink);
+  background:
+    radial-gradient(120% 80% at 12% -10%, color-mix(in srgb, var(--bcfg-accent) 17%, transparent) 0%, transparent 58%),
+    radial-gradient(100% 70% at 92% 4%,  color-mix(in srgb, var(--bcfg-accent-dark, var(--bcfg-accent)) 13%, transparent) 0%, transparent 55%),
+    radial-gradient(90%  80% at 60% 108%, rgba(120,160,255,.14) 0%, transparent 60%),
+    linear-gradient(180deg, var(--g-canvas-1) 0%, var(--g-canvas-2) 100%);
+  -webkit-font-smoothing: antialiased;
+  letter-spacing: -.011em;
+}
+
+/* Fine grain over the mesh — stops large gradients banding. */
+.bcfg.bcfg-theme-glass::before {
+  content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  opacity: .5; mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='.35'/%3E%3C/svg%3E");
+}
+
+/* ── dark appearance ── */
+.bcfg.bcfg-theme-glass[data-appearance="dark"],
+.bcfg.bcfg-theme-glass.is-dark {
+  --g-surface:   rgba(255,255,255,.085);
+  --g-surface-2: rgba(255,255,255,.055);
+  --g-surface-3: rgba(255,255,255,.035);
+  --g-stroke:    rgba(255,255,255,.16);
+  --g-stroke-2:  rgba(255,255,255,.12);
+  --g-hairline:  rgba(255,255,255,.08);
+  --g-gloss:     inset 0 1px 0 rgba(255,255,255,.14);
+  --g-lift:      0 1px 2px rgba(0,0,0,.4), 0 10px 34px rgba(0,0,0,.45);
+  --g-lift-lg:   0 2px 8px rgba(0,0,0,.45), 0 26px 70px rgba(0,0,0,.55);
+  --g-ink:       #f2f4f8;
+  --g-ink-2:     rgba(242,244,248,.68);
+  --g-ink-3:     rgba(242,244,248,.42);
+  --g-canvas-1:  #0a0d14;
+  --g-canvas-2:  #10141d;
+}
+.bcfg.bcfg-theme-glass::before { }
+.bcfg.bcfg-theme-glass[data-appearance="dark"]::before,
+.bcfg.bcfg-theme-glass.is-dark::before { opacity: .28; mix-blend-mode: soft-light; }
+
+/* ── shared glass surface recipe ── */
+.bcfg.bcfg-theme-glass .card,
+.bcfg.bcfg-theme-glass .scene-panel,
+.bcfg.bcfg-theme-glass .result-card,
+.bcfg.bcfg-theme-glass .summary-box,
+.bcfg.bcfg-theme-glass .callout,
+.bcfg.bcfg-theme-glass .note-box,
+.bcfg.bcfg-theme-glass .tip {
+  background: var(--g-surface);
+  -webkit-backdrop-filter: var(--g-blur);
+  backdrop-filter: var(--g-blur);
+  border: 1px solid var(--g-stroke-2);
+  box-shadow: var(--g-lift), var(--g-gloss);
+}
+
+.bcfg.bcfg-theme-glass .card { border-radius: var(--bcfg-radius); padding: 30px 26px; }
+.bcfg.bcfg-theme-glass .result-card { border-radius: 26px; box-shadow: var(--g-lift-lg), var(--g-gloss); overflow: hidden; }
+
+/* ── hero ── */
+.bcfg.bcfg-theme-glass .hero h1 {
+  font-weight: 700; letter-spacing: -.03em; font-size: 34px; line-height: 1.08;
+}
+.bcfg.bcfg-theme-glass .hero h1 span {
+  background: linear-gradient(120deg, var(--bcfg-accent), color-mix(in srgb, var(--bcfg-accent) 45%, #8ab6ff));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.bcfg.bcfg-theme-glass .hero p { color: var(--g-ink-2); font-size: 15px; }
+
+/* ── progress ── */
+.bcfg.bcfg-theme-glass .progress-bar {
+  height: 8px; border-radius: 99px; background: var(--g-surface-2);
+  border: 1px solid var(--g-hairline);
+  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+}
+.bcfg.bcfg-theme-glass .progress-fill {
+  border-radius: 99px;
+  background: linear-gradient(90deg, var(--bcfg-accent), color-mix(in srgb, var(--bcfg-accent) 55%, #9fc4ff));
+  box-shadow: 0 0 16px color-mix(in srgb, var(--bcfg-accent) 55%, transparent);
+  transition: width .6s var(--g-spring);
+}
+.bcfg.bcfg-theme-glass .progress-step { color: var(--g-ink-3); letter-spacing: .08em; }
+.bcfg.bcfg-theme-glass .progress-pct { color: var(--bcfg-accent); font-variant-numeric: tabular-nums; }
+
+/* ── options / tiles ── */
+.bcfg.bcfg-theme-glass .option-btn,
+.bcfg.bcfg-theme-glass .tile-btn,
+.bcfg.bcfg-theme-glass .counter-item {
+  background: var(--g-surface-2);
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
+  backdrop-filter: blur(14px) saturate(160%);
+  border: 1px solid var(--g-stroke-2);
+  border-radius: 18px;
+  box-shadow: var(--g-gloss);
+  transition: transform .35s var(--g-spring), background .25s ease, border-color .25s ease, box-shadow .25s ease;
+}
+.bcfg.bcfg-theme-glass .option-btn:hover,
+.bcfg.bcfg-theme-glass .tile-btn:hover {
+  transform: translateY(-2px);
+  background: var(--g-surface);
+  border-color: color-mix(in srgb, var(--bcfg-accent) 40%, transparent);
+  box-shadow: var(--g-lift), var(--g-gloss);
+}
+.bcfg.bcfg-theme-glass .option-btn.selected,
+.bcfg.bcfg-theme-glass .tile-btn.selected {
+  background: color-mix(in srgb, var(--bcfg-accent) 14%, var(--g-surface));
+  border-color: color-mix(in srgb, var(--bcfg-accent) 62%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--bcfg-accent) 20%, transparent), var(--g-lift), var(--g-gloss);
+}
+.bcfg.bcfg-theme-glass .option-btn:active,
+.bcfg.bcfg-theme-glass .tile-btn:active { transform: scale(.985); }
+.bcfg.bcfg-theme-glass .option-icon {
+  background: var(--g-surface-3); border: 1px solid var(--g-hairline);
+  border-radius: 13px; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+}
+.bcfg.bcfg-theme-glass .option-btn.selected .option-icon,
+.bcfg.bcfg-theme-glass .option-btn:hover .option-icon {
+  background: color-mix(in srgb, var(--bcfg-accent) 18%, transparent);
+}
+.bcfg.bcfg-theme-glass .option-label { font-weight: 600; letter-spacing: -.01em; color: var(--g-ink); }
+.bcfg.bcfg-theme-glass .option-desc  { color: var(--g-ink-3); }
+.bcfg.bcfg-theme-glass .tile-text    { font-weight: 600; color: var(--g-ink); }
+
+/* ── counters ── */
+.bcfg.bcfg-theme-glass .counter-btn {
+  background: var(--g-surface); border: 1px solid var(--g-stroke-2); color: var(--g-ink);
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+  box-shadow: var(--g-gloss); transition: transform .3s var(--g-spring), background .2s, border-color .2s;
+}
+.bcfg.bcfg-theme-glass .counter-btn:hover {
+  background: color-mix(in srgb, var(--bcfg-accent) 16%, var(--g-surface));
+  border-color: color-mix(in srgb, var(--bcfg-accent) 50%, transparent);
+  color: var(--bcfg-accent); transform: scale(1.08);
+}
+.bcfg.bcfg-theme-glass .counter-btn:active { transform: scale(.92); }
+.bcfg.bcfg-theme-glass .counter-val { font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
+.bcfg.bcfg-theme-glass .counter-label { color: var(--g-ink-2); font-weight: 600; }
+
+/* ── buttons ── */
+.bcfg.bcfg-theme-glass .btn-next,
+.bcfg.bcfg-theme-glass .btn-cta {
+  border-radius: 16px; font-weight: 600; letter-spacing: -.01em;
+  background: linear-gradient(180deg,
+      color-mix(in srgb, var(--bcfg-accent) 88%, #fff) 0%,
+      var(--bcfg-accent) 55%,
+      color-mix(in srgb, var(--bcfg-accent) 86%, #000) 100%);
+  box-shadow: 0 1px 0 rgba(255,255,255,.35) inset,
+              0 8px 24px color-mix(in srgb, var(--bcfg-accent) 38%, transparent);
+  transition: transform .3s var(--g-spring), box-shadow .25s ease, filter .2s ease;
+}
+.bcfg.bcfg-theme-glass .btn-next:hover,
+.bcfg.bcfg-theme-glass .btn-cta:hover {
+  transform: translateY(-2px); filter: brightness(1.06);
+  box-shadow: 0 1px 0 rgba(255,255,255,.4) inset,
+              0 14px 34px color-mix(in srgb, var(--bcfg-accent) 46%, transparent);
+}
+.bcfg.bcfg-theme-glass .btn-next:active,
+.bcfg.bcfg-theme-glass .btn-cta:active { transform: translateY(0) scale(.985); }
+.bcfg.bcfg-theme-glass .btn-next:disabled {
+  background: var(--g-surface-2); color: var(--g-ink-3); box-shadow: var(--g-gloss); filter: none; transform: none;
+}
+.bcfg.bcfg-theme-glass .btn-back,
+.bcfg.bcfg-theme-glass .btn-restart {
+  border-radius: 16px; font-weight: 600; color: var(--g-ink-2);
+  background: var(--g-surface-2); border: 1px solid var(--g-stroke-2);
+  -webkit-backdrop-filter: var(--g-blur); backdrop-filter: var(--g-blur);
+  box-shadow: var(--g-gloss); transition: transform .3s var(--g-spring), background .2s;
+}
+.bcfg.bcfg-theme-glass .btn-back:hover,
+.bcfg.bcfg-theme-glass .btn-restart:hover { background: var(--g-surface); color: var(--g-ink); transform: translateY(-1px); }
+
+/* ── scene panel ──
+   The illustrations are line art in near-white. On a translucent panel they
+   vanish, so the canvas gets its own slightly cooler well to sit against. */
+.bcfg.bcfg-theme-glass .scene-panel { border-radius: 26px; background: var(--g-surface); }
+.bcfg.bcfg-theme-glass .scene-canvas {
+  border-radius: 18px; padding: 14px 12px; min-height: 300px;
+  background: linear-gradient(180deg, rgba(214,226,246,.5) 0%, rgba(238,243,252,.28) 100%);
+  border: 1px solid var(--g-hairline);
+  box-shadow: inset 0 1px 3px rgba(9,12,20,.05);
+}
+/* Scenes are illustrations with their own fixed palette, drawn for a light
+   ground. In dark appearance they keep a light plate — like a photo on a dark
+   card — rather than being inverted into mud. */
+.bcfg.bcfg-theme-glass[data-appearance="dark"] .scene-canvas {
+  background: linear-gradient(180deg, #dfe6f2 0%, #eef2f9 100%);
+  border-color: rgba(255,255,255,.18);
+  box-shadow: inset 0 1px 3px rgba(9,12,20,.18), 0 6px 20px rgba(0,0,0,.35);
+}
+.bcfg.bcfg-theme-glass .scene-panel-title { color: var(--g-ink-3); letter-spacing: .16em; font-weight: 600; }
+.bcfg.bcfg-theme-glass .chip {
+  background: var(--g-surface-2); border: 1px solid var(--g-hairline);
+  color: var(--g-ink-2); border-radius: 99px; font-weight: 600;
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+}
+.bcfg.bcfg-theme-glass .chip .dot { box-shadow: 0 0 8px currentColor; }
+.bcfg.bcfg-theme-glass .scene-toggle { color: var(--bcfg-accent); }
+
+/* ── result ── */
+.bcfg.bcfg-theme-glass .result-header {
+  position: relative;
+  background:
+    radial-gradient(120% 120% at 20% 0%, color-mix(in srgb, var(--bcfg-accent) 55%, transparent) 0%, transparent 62%),
+    linear-gradient(160deg, rgba(18,22,34,.94) 0%, rgba(10,13,20,.97) 100%);
+  border-bottom: 1px solid rgba(255,255,255,.1);
+  padding: 34px 26px;
+}
+.bcfg.bcfg-theme-glass .result-header h2 { font-weight: 700; letter-spacing: -.03em; }
+.bcfg.bcfg-theme-glass .rec-badge {
+  background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.22);
+  color: #fff; border-radius: 99px; font-weight: 600; letter-spacing: .14em;
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+}
+.bcfg.bcfg-theme-glass .price-tag { font-weight: 700; letter-spacing: -.04em; }
+.bcfg.bcfg-theme-glass .promo-pill {
+  border: 1px solid rgba(95,208,138,.3); border-radius: 99px;
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+}
+.bcfg.bcfg-theme-glass .bundle-hero {
+  border-radius: 18px; border: 1px solid rgba(255,255,255,.14);
+  background: rgba(255,255,255,.07);
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+}
+.bcfg.bcfg-theme-glass .section-title { color: var(--g-ink-3); letter-spacing: .14em; font-weight: 600; }
+.bcfg.bcfg-theme-glass .summary-box,
+.bcfg.bcfg-theme-glass .callout {
+  background: color-mix(in srgb, var(--bcfg-accent) 10%, var(--g-surface));
+  border: 1px solid color-mix(in srgb, var(--bcfg-accent) 30%, transparent);
+  border-radius: 20px;
+}
+.bcfg.bcfg-theme-glass .summary-title { color: var(--bcfg-accent); font-weight: 600; }
+.bcfg.bcfg-theme-glass .summary-text,
+.bcfg.bcfg-theme-glass .callout-body,
+.bcfg.bcfg-theme-glass .note-box,
+.bcfg.bcfg-theme-glass .tip { color: var(--g-ink-2); }
+.bcfg.bcfg-theme-glass .callout-badge {
+  border-radius: 13px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--bcfg-accent) 85%, #fff), var(--bcfg-accent));
+  box-shadow: 0 6px 18px color-mix(in srgb, var(--bcfg-accent) 35%, transparent);
+}
+.bcfg.bcfg-theme-glass .callout-link {
+  background: var(--g-surface); border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--bcfg-accent) 45%, transparent);
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+}
+.bcfg.bcfg-theme-glass .line-item,
+.bcfg.bcfg-theme-glass .profile-chip {
+  background: var(--g-surface-2); border: 1px solid var(--g-hairline);
+  border-radius: 16px; color: var(--g-ink-2);
+  -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+}
+.bcfg.bcfg-theme-glass .line-item-name { color: var(--g-ink); font-weight: 600; }
+.bcfg.bcfg-theme-glass .line-item-img {
+  background: var(--g-surface-3); border: 1px solid var(--g-hairline); border-radius: 12px;
+}
+/* An empty product-image slot should read as absent, not as a broken frame. */
+.bcfg.bcfg-theme-glass .line-item-img:empty,
+.bcfg.bcfg-theme-glass .addon-icon:empty { opacity: .35; border-style: dashed; }
+.bcfg.bcfg-theme-glass .line-item-qty { font-weight: 700; }
+.bcfg.bcfg-theme-glass .addon-row { border-bottom: 1px solid var(--g-hairline); }
+.bcfg.bcfg-theme-glass .addon-text { color: var(--g-ink); font-weight: 500; }
+.bcfg.bcfg-theme-glass .addon-icon img { background: var(--g-surface-3); border-radius: 10px; }
+.bcfg.bcfg-theme-glass .addon-remove-btn {
+  background: var(--g-surface); border: 1px solid var(--g-stroke-2); color: var(--g-ink-3);
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+}
+.bcfg.bcfg-theme-glass .addon-remove-btn:hover {
+  background: color-mix(in srgb, var(--bcfg-accent) 18%, var(--g-surface));
+  border-color: color-mix(in srgb, var(--bcfg-accent) 50%, transparent); color: var(--bcfg-accent);
+}
+
+/* ── cart panel ── */
+.bcfg.bcfg-theme-glass .cart-panel {
+  border-radius: 20px;
+  background: linear-gradient(160deg, rgba(18,22,34,.92), rgba(10,13,20,.95));
+  border: 1px solid rgba(255,255,255,.1);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.1), var(--g-lift);
+  -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px);
+}
+
+/* ── mobile sticky bar ── */
+.bcfg.bcfg-theme-glass .sticky-cta {
+  background: color-mix(in srgb, var(--g-canvas-2) 72%, transparent);
+  border-top: 1px solid var(--g-stroke-2);
+  -webkit-backdrop-filter: var(--g-blur-lg); backdrop-filter: var(--g-blur-lg);
+  box-shadow: 0 -8px 32px rgba(9,12,20,.12);
+}
+.bcfg.bcfg-theme-glass .step-dot { background: var(--g-stroke-2); }
+.bcfg.bcfg-theme-glass .step-dot.done,
+.bcfg.bcfg-theme-glass .step-dot.active {
+  background: var(--bcfg-accent); box-shadow: 0 0 10px color-mix(in srgb, var(--bcfg-accent) 60%, transparent);
+}
+
+.bcfg.bcfg-theme-glass .bcfg-footer { color: var(--g-ink-3); font-weight: 500; }
+.bcfg.bcfg-theme-glass .followup-label { color: var(--g-ink-2); font-weight: 600; }
+
+/* Entrance: glass materialises rather than slides. */
+.bcfg.bcfg-theme-glass .card,
+.bcfg.bcfg-theme-glass .result-card { animation: bcfgGlassIn .55s var(--g-spring); }
+@keyframes bcfgGlassIn {
+  from { opacity: 0; transform: translateY(14px) scale(.985); filter: blur(6px); }
+  to   { opacity: 1; transform: none; filter: blur(0); }
+}
+
+/* No backdrop-filter (older Firefox/Android): fall back to opaque surfaces. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .bcfg.bcfg-theme-glass { --g-surface: rgba(255,255,255,.94); --g-surface-2: rgba(255,255,255,.86); --g-surface-3: rgba(255,255,255,.78); }
+  .bcfg.bcfg-theme-glass[data-appearance="dark"] { --g-surface: rgba(28,32,42,.96); --g-surface-2: rgba(32,36,48,.92); --g-surface-3: rgba(38,42,54,.88); }
+}

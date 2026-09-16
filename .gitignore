@@ -1,0 +1,7 @@
+node_modules/
+.DS_Store
+*.log
+.env
+.env.*
+shopify-app/extensions/bundle-configurator/assets/*.js
+shopify-app/extensions/bundle-configurator/assets/*.css

@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bundle Configurator MVP</title>
+<link rel="stylesheet" href="harness.css">
+<link rel="stylesheet" href="../src/configurator.css">
+<link rel="stylesheet" href="../src/themes/glass.css">
+</head>
+<body>
+<div class="topbar"><div class="topbar-in">
+  <div class="logo"><span class="mark">&#x25C8;</span><span>Bundle Configurator<small>White-label MVP &middot; v1.1</small></span></div>
+  <div class="tabs" role="tablist">
+    <button role="tab" data-tab="store" aria-selected="true">Storefront</button>
+    <button role="tab" data-tab="admin" aria-selected="false">Merchant admin</button>
+    <button role="tab" data-tab="theme" aria-selected="false">Theme sync</button>
+    <button role="tab" data-tab="stats" aria-selected="false">Analytics</button>
+    <button role="tab" data-tab="model" aria-selected="false">MVP model</button>
+  </div>
+</div></div>
+
+<div class="wrap">
+
+<!-- ══════════ STOREFRONT ══════════ -->
+<section class="tab-panel" data-panel="store">
+  <div class="eyebrow">What the shopper sees</div>
+  <h1 class="page">Storefront widget</h1>
+  <p class="lede">The same engine and the same assets behind every category. Nothing below is hard-coded &mdash; questions, rules, prices, icons, copy and colour all come from a config object, and switching category swaps that object, not the code. The <b>Glass</b> preset is the Apple-style skin; <b>Base</b> is the original flat theme, kept so a merchant whose store is already opinionated can opt out.</p>
+  <div class="panel">
+    <div class="panel-h">
+      <h2>Live widget</h2>
+      <label class="inline-ctl" style="margin-left:auto"><span>Category</span>
+        <select id="store-category"></select></label>
+      <div class="seg" data-seg="preset">
+        <button data-p="glass" aria-pressed="true">Glass</button>
+        <button data-p="base" aria-pressed="false">Base</button>
+      </div>
+      <div class="seg" data-seg="appearance">
+        <button data-a="light" aria-pressed="true">Light</button>
+        <button data-a="dark" aria-pressed="false">Dark</button>
+      </div>
+      <div class="seg" data-seg="device">
+        <button data-d="desktop" aria-pressed="true">Desktop</button>
+        <button data-d="tablet" aria-pressed="false">Tablet</button>
+        <button data-d="phone" aria-pressed="false">Phone</button>
+      </div>
+      <div class="sub">Cart links point at <code>example-store.myshopify.com</code> and will not resolve &mdash; everything else is real behaviour.</div>
+    </div>
+    <div class="stage"><div class="device" id="store-device"><div class="mountpoint" id="store-mount"></div></div></div>
+  </div>
+</section>
+
+<!-- ══════════ ADMIN ══════════ -->
+<section class="tab-panel" data-panel="admin" hidden>
+  <div class="eyebrow">What the merchant sees</div>
+  <h1 class="page">Merchant admin</h1>
+  <p class="lede">A mock of the embedded Shopify app. Every control here writes into one JSON document &mdash; the shop-level app metafield <code>bundle_configurator.config</code> &mdash; and the storefront on the right re-renders from it. No code editor, no theme edits, no fork per store.</p>
+
+  <div class="panel" id="cat-screen">
+    <div class="panel-h"><h2>Step 1 &mdash; What are you building a configurator for?</h2>
+      <div class="sub">This is the merchant's first decision, before any question exists. It picks the starting template, which they then edit. Nobody should ever face an empty questionnaire.</div></div>
+    <div class="panel-b"><div class="catgrid" id="cat-grid"></div></div>
+  </div>
+
+  <div class="catbar panel" id="cat-bar" hidden>
+    <span class="catbar-icon" id="cat-bar-icon"></span>
+    <span class="catbar-text"><b id="cat-bar-label"></b><small id="cat-bar-blurb"></small></span>
+    <button class="btn sm ghost" id="cat-change">Change category</button>
+  </div>
+
+  <div class="split" id="admin-editors" hidden>
+    <div class="sticky-col">
+      <div class="panel"><div class="panel-h"><h2>Brand identity</h2><div class="sub">All of it optional. Set nothing and the widget carries no attribution at all &mdash; there is no vendor mark to remove.</div></div>
+        <div class="panel-b" id="ad-brand"></div></div>
+      <div class="panel" style="margin-top:14px"><div class="panel-h"><h2>Appearance</h2><div class="sub">Preset skin, brand colour, corner radius, type.</div></div>
+        <div class="panel-b" id="ad-appearance"></div></div>
+      <div class="panel" style="margin-top:14px"><div class="panel-h"><h2>Questions &amp; icons</h2><div class="sub">Reorder, retitle, and give every option its own icon.</div></div>
+        <div class="panel-b" id="ad-steps"></div></div>
+      <div class="panel" style="margin-top:14px"><div class="panel-h"><h2>Bundles</h2><div class="sub">First matching rule wins; the last entry is the fallback.</div></div>
+        <div class="panel-b" id="ad-bundles"></div></div>
+      <div class="panel" style="margin-top:14px"><div class="panel-h"><h2>Add-on rules</h2><div class="sub">Condition &rarr; accessory &times; quantity. Quantities may be expressions.</div></div>
+        <div class="panel-b" id="ad-rules"></div></div>
+      <div class="panel" style="margin-top:14px"><div class="panel-h"><h2>Copy &amp; cart</h2></div>
+        <div class="panel-b" id="ad-copy"></div></div>
+      <div class="panel" style="margin-top:14px"><div class="panel-h"><h2>Saved config</h2><div class="sub">This is the whole thing a store owns.</div></div>
+        <div class="panel-b"><div class="row" style="margin-bottom:10px">
+            <button class="btn sm" id="ad-export">Copy JSON</button>
+            <button class="btn sm ghost" id="ad-reset">Reset to template</button>
+            <span class="pill" id="ad-size">&mdash;</span></div>
+          <div class="evlog" id="ad-json" style="max-height:200px"></div></div></div>
+    </div>
+    <div class="panel">
+      <div class="panel-h"><h2>Storefront preview</h2>
+        <span class="pill ok" id="ad-live">live</span>
+        <div class="seg" data-seg="ad-device" style="margin-left:auto">
+          <button data-d="desktop" aria-pressed="true">Desktop</button>
+          <button data-d="phone" aria-pressed="false">Phone</button></div></div>
+      <div class="stage"><div class="device" id="ad-devicebox"><div class="mountpoint" id="ad-mount"></div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ THEME SYNC ══════════ -->
+<section class="tab-panel" data-panel="theme" hidden>
+  <div class="eyebrow">Install &amp; it already fits</div>
+  <h1 class="page">Theme sync</h1>
+  <p class="lede">Importing a merchant's stylesheet is a trap &mdash; selectors collide and the next theme update breaks the widget. So the app reads <b>computed values</b> off real elements already on the storefront (body, headings, the add-to-cart button, links), reduces them to six numbers and strings, and feeds those back in as its own tokens. The widget keeps its own DOM and its own cascade; it just wears the store's colours, type and corner radius. Pick a storefront below and sniff it.</p>
+  <div class="panel"><div class="panel-h"><h2>1. Pick a storefront</h2><div class="sub">Three simulated shops, each with its own theme. These are real rendered pages in iframes &mdash; the sniffer reads them the way it would read a live shop.</div></div>
+    <div class="panel-b"><div class="storegrid" id="store-sims"></div></div></div>
+  <div class="split" style="margin-top:16px">
+    <div class="panel"><div class="panel-h"><h2>2. What was detected</h2></div>
+      <div class="panel-b" id="sniff-out"><p class="note">Pick a storefront above, then hit <b>Sniff this store</b>.</p></div></div>
+    <div class="panel"><div class="panel-h"><h2>3. Applied to the widget</h2>
+        <span class="pill" id="sniff-state" style="margin-left:auto">not applied</span></div>
+      <div class="stage"><div class="device"><div class="mountpoint" id="theme-mount"></div></div></div></div>
+  </div>
+</section>
+
+<!-- ══════════ ANALYTICS ══════════ -->
+<section class="tab-panel" data-panel="stats" hidden>
+  <div class="eyebrow">Why a merchant keeps paying</div>
+  <h1 class="page">Drop-off analytics</h1>
+  <p class="lede">The engine already emits four events &mdash; <code>step</code>, <code>answer</code>, <code>result</code>, <code>addtocart</code>. Post them to an app endpoint and every store gets a question-by-question funnel: which question loses people, which answers correlate with a bigger basket. That is the part a merchant cannot get from Shopify analytics, and it is the reason the subscription renews.</p>
+  <div class="panel"><div class="panel-h"><h2>Funnel</h2>
+      <span class="pill" id="ev-src">your session</span>
+      <div class="row" style="margin-left:auto">
+        <button class="btn sm" id="ev-sim">Simulate 500 sessions</button>
+        <button class="btn sm ghost" id="ev-clear">Clear</button></div>
+      <div class="sub">Interact with the Storefront tab and your own steps appear here in real time.</div></div>
+    <div class="panel-b">
+      <div class="kpis" id="ev-kpis"></div>
+      <div class="funnel" id="ev-funnel"></div>
+      <div class="grid2" style="margin-top:20px">
+        <div><div class="eyebrow" style="margin-bottom:8px">Event stream</div><div class="evlog" id="ev-log"></div></div>
+        <div><div class="eyebrow" style="margin-bottom:8px">Bundle mix</div><div id="ev-mix"></div></div>
+      </div>
+    </div></div>
+</section>
+
+<!-- ══════════ MODEL ══════════ -->
+<section class="tab-panel" data-panel="model" hidden>
+  <div class="eyebrow">The product, not the widget</div>
+  <h1 class="page">MVP model</h1>
+  <p class="lede">What has to exist for this to be a public Shopify app that any store can install, and what deliberately does not exist yet.</p>
+  <div class="grid2">
+    <div class="panel"><div class="panel-h"><h2>Architecture</h2></div><div class="panel-b"><table class="spec"><tbody>
+      <tr><td>Runtime</td><td>Three static assets &mdash; engine, core CSS, preset CSS &mdash; identical in every store. Zero brand, product, price or copy inside them.</td></tr>
+      <tr><td>Config</td><td>One JSON document per shop in a shop-level app metafield <code>bundle_configurator.config</code>. 64&nbsp;KB ceiling, far more than a questionnaire needs. Ships with the page cache; no extra request, no layout shift.</td></tr>
+      <tr><td>Storefront</td><td>Theme app extension &mdash; an app block the merchant drags into any section. Never edits theme files, so it survives theme updates and uninstalls cleanly.</td></tr>
+      <tr><td>Admin</td><td>Embedded Remix + Polaris. Opens on the category step &mdash; what is this configurator for &mdash; which seeds a working template, then four editing screens: Questions, Bundles, Add-on rules, Appearance. Forms over the arrays, not a code editor.</td></tr>
+      <tr><td>Categories</td><td>A registry of starting templates. Two are full questionnaires; the rest are generated from a terse spec so each still ships as a working configurator with three questions, three tiers and real add-on rules. Adding a category is adding one object to the list &mdash; nothing else in the app knows the set.</td></tr>
+      <tr><td>Brand</td><td>Nothing is stamped. <code>brand.id</code>, <code>brand.name</code> and the footer are empty by default and the footer renders only when a merchant fills them. No illustration colour, product name, price or copy ships in the runtime.</td></tr>
+      <tr><td>Theme sync</td><td>Runs at boot on the storefront, caches the derived tokens in the metafield, re-sniffs when the merchant asks. Merchant overrides always win.</td></tr>
+      <tr><td>Cart</td><td><code>permalink</code> by default &mdash; works on every theme and every checkout with no JS API. <code>ajax</code> when line-item properties or selling plans are needed.</td></tr>
+      <tr><td>Safety</td><td>Config arrives from merchant input, so rule expressions are token-whitelisted before compilation. Only numbers, known field names, arithmetic and <code>min max round floor ceil abs</code>. Anything else is rejected and logged, never executed.</td></tr>
+    </tbody></table></div></div>
+
+    <div class="panel"><div class="panel-h"><h2>Scope</h2></div><div class="panel-b"><table class="spec"><tbody>
+      <tr><td>v1 &mdash; ship</td><td>App block, config metafield, the category step and its templates, the four admin screens, permalink cart, glass + base presets, theme sync.</td></tr>
+      <tr><td>v1.1</td><td>Analytics endpoint and the funnel above. Ajax cart. Answer persistence via <code>sessionStorage</code> and a resumable link.</td></tr>
+      <tr><td>v1.2</td><td>Price sync from the Storefront API, so the preview total can never drift from checkout. Metaobject-backed accessory catalogue.</td></tr>
+      <tr><td>v2</td><td>Draft orders for high-value configurations. Per-market and per-locale configs. Merchant-defined scenes.</td></tr>
+      <tr><td>Not in v1</td><td>Multi-language (one config, one locale). Customer accounts. B2B price lists. Anything requiring an app database.</td></tr>
+    </tbody></table></div></div>
+
+    <div class="panel"><div class="panel-h"><h2>Must fix before a public listing</h2></div><div class="panel-b"><table class="spec"><tbody>
+      <tr><td>Accessibility</td><td><b>Blocking.</b> Options are <code>div</code>s with click handlers. They need real <code>button</code> / <code>radio</code> semantics, keyboard navigation, focus management and visible focus rings. Shopify's app review checks this, and glass surfaces make contrast harder, not easier &mdash; every token pair needs a 4.5:1 audit.</td></tr>
+      <tr><td>Price drift</td><td>Prices live in both the config and Shopify. The displayed total is a preview; checkout is the source of truth. Say so in the UI until Storefront API sync lands.</td></tr>
+      <tr><td>Persistence</td><td>Answers are lost on refresh. Cheap to fix, disproportionately annoying.</td></tr>
+      <tr><td>Performance</td><td><code>backdrop-filter</code> on many stacked layers is expensive on low-end Android. The preset degrades to opaque surfaces where the property is unsupported, but it should also degrade under <code>prefers-reduced-transparency</code> and on a measured slow device.</td></tr>
+      <tr><td>Sniffer failure</td><td>Theme sync guesses. It needs a confidence signal and a one-click "ignore, use my colours" in the admin, or it will feel broken on the themes it reads wrong.</td></tr>
+    </tbody></table></div></div>
+
+    <div class="panel"><div class="panel-h"><h2>Commercials</h2></div><div class="panel-b"><table class="spec"><tbody>
+      <tr><td>Pricing</td><td>Usage-independent monthly tiers by questionnaire count and step count. A configurator is a conversion tool &mdash; per-order pricing is harder to explain and punishes success.</td></tr>
+      <tr><td>Scopes</td><td><code>read_products</code> for the resource picker, <code>write_app_metafields</code> for the config. No theme write scope &mdash; app blocks do not modify the theme.</td></tr>
+      <tr><td>Onboarding</td><td>Never an empty questionnaire. The category step seeds a working template, theme sync runs on install, and the merchant's first screen already looks like their store with real questions in it.</td></tr>
+      <tr><td>Proof</td><td>The funnel is the retention mechanic. A merchant who can see that question 3 loses 40% of shoppers has a reason to open the app next month.</td></tr>
+    </tbody></table></div></div>
+  </div>
+</section>
+
+</div>
+
+<div class="picker" id="picker" hidden><div class="picker-card">
+  <h3>Choose an icon</h3>
+  <p class="note" id="picker-for" style="margin:0 0 4px"></p>
+  <div id="picker-cats"></div>
+  <div class="ctl"><label>Or paste an image URL (your own SVG / PNG)</label>
+    <input type="text" id="picker-url" placeholder="https://cdn.shopify.com/…/icon.svg"></div>
+  <div class="row"><button class="btn primary" id="picker-apply">Apply</button>
+    <button class="btn ghost" id="picker-clear">No icon</button>
+    <button class="btn ghost" id="picker-cancel" style="margin-left:auto">Cancel</button></div>
+</div></div>
+<script src="../src/configurator.js"></script>
+<script src="../src/scenes/summary.js"></script>
+<script src="../src/scenes/house.js"></script>
+<script src="../src/theme-inherit.js"></script>
+<script src="../configs/templates/house-accessories.js"></script>
+<script src="../configs/templates/subscription-boxes.js"></script>
+<script src="../configs/categories.js"></script>
+<script src="harness.js"></script>
+</body>
+</html>

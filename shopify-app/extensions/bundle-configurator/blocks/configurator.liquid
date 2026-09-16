@@ -1,0 +1,40 @@
+{% comment %}
+  Bundle Configurator app block.
+  The config JSON lives in an app-owned metafield (namespace: bundle_configurator,
+  key: config). Nothing in this block is brand-specific; the merchant's choices arrive
+  through the metafield and the theme's computed styles via theme-inherit.js.
+{% endcomment %}
+{{ 'configurator.css' | asset_url | stylesheet_tag }}
+{% if block.settings.preset == 'glass' %}{{ 'glass.css' | asset_url | stylesheet_tag }}{% endif %}
+
+<div id="bcfg-{{ block.id }}" class="bcfg-mount" data-preset="{{ block.settings.preset }}"></div>
+
+<script src="{{ 'configurator.js' | asset_url }}" defer></script>
+<script src="{{ 'scenes.js' | asset_url }}" defer></script>
+<script src="{{ 'theme-inherit.js' | asset_url }}" defer></script>
+<script type="application/json" id="bcfg-config-{{ block.id }}">
+  {{ shop.metafields.bundle_configurator.config.value | json }}
+</script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    var el = document.getElementById('bcfg-{{ block.id }}');
+    var cfg = JSON.parse(document.getElementById('bcfg-config-{{ block.id }}').textContent || '{}');
+    cfg.brand = cfg.brand || {};
+    cfg.brand.preset = el.dataset.preset || cfg.brand.preset || 'glass';
+    if (cfg.brand.inheritTheme !== false && window.BundleConfigurator.inheritFromHost) {
+      cfg.brand.inherited = window.BundleConfigurator.inheritFromHost(document);
+    }
+    window.BundleConfigurator.mount(el, cfg);
+  });
+</script>
+
+{% schema %}
+{
+  "name": "Bundle Configurator",
+  "target": "section",
+  "settings": [
+    { "type": "select", "id": "preset", "label": "Skin", "default": "glass",
+      "options": [ { "value": "glass", "label": "Glass" }, { "value": "base", "label": "Base" } ] }
+  ]
+}
+{% endschema %}

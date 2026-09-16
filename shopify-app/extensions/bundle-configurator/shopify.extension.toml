@@ -1,0 +1,5 @@
+# Theme app extension — app block that mounts the configurator on any page.
+# Scaffold: `shopify app generate extension --type theme_app_extension` produces the
+# same layout; keep blocks/ and assets/ as the source of truth.
+name = "bundle-configurator"
+type = "theme"

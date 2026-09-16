@@ -2,7 +2,10 @@
 
 client_id = "a1b72ae7a95a6312f1f0587db9042df4"
 name = "bundle-configurator"
-application_url = "https://example.com"
+# Production URL on Netlify. `shopify app dev` overrides it with the tunnel
+# while running (automatically_update_urls_on_dev), then this is what
+# `shopify app deploy` pushes. Change <site> once the Netlify site exists.
+application_url = "https://bundle-configurator.netlify.app"
 embedded = true
 
 [webhooks]
@@ -28,7 +31,11 @@ api_version = "2026-10"
 scopes = "read_products,read_themes"
 
 [auth]
-redirect_urls = [ "https://example.com/api/auth" ]
+redirect_urls = [
+  "https://bundle-configurator.netlify.app/auth/callback",
+  "https://bundle-configurator.netlify.app/auth/shopify/callback",
+  "https://bundle-configurator.netlify.app/api/auth/callback"
+]
 
 [build]
 include_config_on_deploy = true

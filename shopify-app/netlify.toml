@@ -1,0 +1,37 @@
+# Netlify deploy for the Shopify app (admin + webhooks). The storefront widget
+# is not served from here: the theme app extension ships it via Shopify's CDN.
+#
+# Site settings to create once in the Netlify UI (Site configuration > Environment):
+#   SHOPIFY_API_KEY, SHOPIFY_API_SECRET   from the Partner dashboard / shopify app env show
+#   SHOPIFY_APP_URL                        https://<site>.netlify.app
+#   SCOPES                                 read_products,read_themes
+#   DATABASE_URL                           Neon Postgres connection string (pooled)
+#   BCFG_BILLING                           off while in beta; "on" to charge
+# Then point shopify.app.toml application_url / redirect_urls at the same URL
+# and run `npm run deploy` (shopify app deploy) to push the extension and config.
+
+[build]
+  base = "shopify-app"
+  command = "npm run netlify:build"
+  publish = "build/client"
+
+[build.environment]
+  NODE_VERSION = "22"
+  NPM_FLAGS = "--include=dev"
+
+[functions]
+  node_bundler = "esbuild"
+  # The server reads the category registry and runtime sources at request time
+  # (app/config.server.js, app/theme.server.js) and Prisma needs its engine.
+  included_files = [
+    "../configs/**",
+    "../src/**",
+    "node_modules/.prisma/client/**",
+    "node_modules/@prisma/client/**",
+    "prisma/schema.prisma"
+  ]
+
+[[headers]]
+  for = "/widget/*"
+  [headers.values]
+    Cache-Control = "public, max-age=3600"

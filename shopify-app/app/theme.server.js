@@ -12,10 +12,9 @@
 import fs from "node:fs";
 import path from "node:path";
 import vm from "node:vm";
-import { fileURLToPath } from "node:url";
+import { repoDir } from "./config.server";
 
-const here = path.dirname(fileURLToPath(import.meta.url));
-const srcDir = path.resolve(here, "../../src");
+const srcDir = repoDir("src");
 
 let api = null;
 function runtime() {

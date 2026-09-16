@@ -19,8 +19,24 @@ import { fileURLToPath } from "node:url";
 export const NAMESPACE = "bundle_configurator";
 export const KEY = "config";
 
-const here = path.dirname(fileURLToPath(import.meta.url));
-const configsDir = path.resolve(here, "../../configs");
+/* Locate a sibling folder of the app (configs/, src/) both in local dev, where
+   this file sits in shopify-app/app, and inside a Netlify function bundle,
+   where included files keep their repo-relative path under the task root. */
+export function repoDir(name) {
+  const here = path.dirname(fileURLToPath(import.meta.url));
+  const candidates = [
+    process.env[`BCFG_${name.toUpperCase()}_DIR`],
+    path.resolve(here, "../../", name),
+    path.resolve(here, "../../../", name),
+    path.resolve(process.cwd(), "..", name),
+    path.resolve(process.cwd(), name),
+    path.resolve("/var/task", name),
+    path.resolve("/var/task/shopify-app/..", name),
+  ].filter(Boolean);
+  for (const c of candidates) { try { if (fs.statSync(c).isDirectory()) return c; } catch (e) { /* next */ } }
+  throw new Error(`Cannot find the ${name}/ folder. Looked in: ${candidates.join(", ")}`);
+}
+const configsDir = repoDir("configs");
 
 let registry = null;
 

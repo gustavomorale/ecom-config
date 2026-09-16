@@ -2,7 +2,7 @@
   "name": "bundle-configurator-app",
   "private": true,
   "scripts": {
-    "build": "react-router build",
+    "build": "prisma generate && react-router build",
     "dev": "shopify app dev",
     "config:link": "shopify app config link",
     "generate": "shopify app generate",
@@ -19,7 +19,9 @@
     "vite": "vite",
     "typecheck": "react-router typegen && tsc --noEmit",
     "predev": "node ../scripts/build-extension.js",
-    "predeploy": "node ../scripts/build-extension.js"
+    "predeploy": "node ../scripts/build-extension.js",
+    "netlify:build": "node ../scripts/build-extension.js && prisma generate && prisma migrate deploy && react-router build",
+    "postinstall": "prisma generate"
   },
   "type": "module",
   "engines": {
@@ -42,6 +44,7 @@
     "vite-tsconfig-paths": "^5.1.4"
   },
   "devDependencies": {
+    "@netlify/vite-plugin-react-router": "^4.0.0",
     "@shopify/api-codegen-preset": "^2.0.0",
     "@shopify/cli": "^4.8.0",
     "@shopify/polaris-types": "1.0.1",

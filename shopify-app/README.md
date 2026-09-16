@@ -19,6 +19,34 @@ into `shopify.app.toml`. The dev store is `mysuperstore-ehtodjg8.myshopify.com` 
 CraftFrame WORKS Ltd org); it asks for the storefront password from Online Store >
 Preferences on first run. Press `p` in the CLI to open the app in the store admin.
 
+## Database
+
+Sessions live in Postgres on Neon, in production and in local dev alike (one provider, one
+migration history). Create a Neon project, use the main branch for Netlify and a `dev`
+branch locally, and put the pooled connection string in `.env`:
+
+```
+DATABASE_URL="postgresql://user:password@ep-xxxx-pooler.eu-west-2.aws.neon.tech/neondb?sslmode=require"
+BCFG_BILLING=off
+```
+
+First time on a branch: `npx prisma migrate deploy`.
+
+## Deploy (Netlify)
+
+`netlify.toml` builds from this folder with `npm run netlify:build` (extension assets,
+Prisma generate, migrate deploy, React Router build). Once in the Netlify UI:
+
+1. New site from the GitHub repo, base directory `shopify-app` (the toml sets it too).
+2. Environment variables: `SHOPIFY_API_KEY`, `SHOPIFY_API_SECRET` (from
+   `npm run env -- show`), `SHOPIFY_APP_URL` = the site URL, `SCOPES` =
+   `read_products,read_themes`, `DATABASE_URL` (Neon main branch), `BCFG_BILLING`.
+3. Put the site URL in `shopify.app.toml` (`application_url`, `redirect_urls`) and run
+   `npm run deploy` to push the app config and the theme extension to Shopify.
+
+After that the app runs without a terminal and can be installed on any store from the
+Partner dashboard.
+
 ## Layout
 
 - `app/` — admin app (routes, Shopify auth, Prisma session storage). `config.server.js` runs

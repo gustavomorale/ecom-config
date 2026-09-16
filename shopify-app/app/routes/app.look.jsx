@@ -150,7 +150,7 @@ export default function Look() {
   const submit = (cont) => fetcher.submit({ intent: "save", preset, appearance, accent, radius: radius === "" ? "" : String(radius), font, continue: cont ? "1" : "0" }, { method: "POST" });
 
   return (
-    <s-page heading="Make it look like your store." inlineSize="large">
+    <s-page heading="Make it look like your store.">
       <s-button slot="primary-action" onClick={() => submit(true)} {...(busy ? { loading: true } : {})}>Save and continue</s-button>
       <s-button slot="secondary-actions" href="/app/questions" variant="tertiary">Skip for now</s-button>
 
@@ -176,9 +176,9 @@ export default function Look() {
 
       <s-section heading="Your choices">
         <s-stack direction="block" gap="base">
-          <s-choice-list name="preset" label="Look" value={preset} onChange={(e) => setPreset(e.currentTarget.value)}>
-            <s-choice value="glass" details="Translucent surfaces, depth, a soft glow on the accent.">Glass</s-choice>
-            <s-choice value="base" details="Flat, quiet, closest to most themes.">Base</s-choice>
+          <s-choice-list name="preset" label="Look" values={[preset]} onChange={(e) => { const v = e.currentTarget.values; setPreset(Array.isArray(v) ? v[0] : e.currentTarget.value); }}>
+            <s-choice value="glass" selected={preset === "glass"} details="Translucent surfaces, depth, a soft glow on the accent.">Glass</s-choice>
+            <s-choice value="base" selected={preset === "base"} details="Flat, quiet, closest to most themes.">Base</s-choice>
           </s-choice-list>
           <s-select label="Appearance" name="appearance" value={appearance} onChange={(e) => setAppearance(e.currentTarget.value)}>
             <s-option value="auto">Auto (follows the shopper's device)</s-option>

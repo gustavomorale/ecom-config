@@ -110,7 +110,7 @@ export default function Products() {
   const submit = (cont) => fetcher.submit({ links: JSON.stringify(links), continue: cont ? "1" : "0" }, { method: "POST" });
 
   return (
-    <s-page heading="Connect your products." inlineSize="large">
+    <s-page heading="Connect your products.">
       <s-button slot="primary-action" onClick={() => submit(true)} {...(busy ? { loading: true } : {})}>Save and continue</s-button>
       <s-button slot="secondary-actions" href="/app/live" variant="tertiary">Skip for now</s-button>
 

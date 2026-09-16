@@ -142,8 +142,13 @@ export async function deleteConfig(admin, shopId) {
   if (errors.length) throw new Error("Reset failed: " + errors.map((e) => e.message).join("; "));
 }
 
-/* Deep link into the theme editor with our block ready to drop in. */
+/* Theme editor links. The deep link drops our block straight in, but the
+   editor refuses it for dev-preview extensions and shows a red error, so the
+   plain editor is used until the app is deployed (BCFG_DEEP_LINK=1). */
 export const EXTENSION_UID = "f81dd01f-1a3a-a4a7-f4df-7e289a2c5a3de815813a";
 export function themeEditorUrl(domain) {
-  return `https://${domain}/admin/themes/current/editor?template=index&addAppBlockId=${EXTENSION_UID}/configurator&target=newAppsSection`;
+  const base = `https://${domain}/admin/themes/current/editor`;
+  // eslint-disable-next-line no-undef
+  if (process.env.BCFG_DEEP_LINK === "1") return `${base}?template=index&addAppBlockId=${EXTENSION_UID}/configurator&target=newAppsSection`;
+  return base;
 }

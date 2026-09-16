@@ -57,9 +57,13 @@ export async function readThemeLook(admin) {
 
   let settings = null;
   try { settings = JSON.parse(raw.replace(/^\s*\/\*[\s\S]*?\*\/\s*/, "")); } catch (e) { settings = null; }
-  const cur = settings?.current && typeof settings.current === "object" ? settings.current : null;
+  // Older Dawn-family themes point `current` at a named preset; newer ones
+  // inline the object. Either way the flat keys and colour schemes live there.
+  let cur = null;
+  if (settings?.current && typeof settings.current === "object") cur = settings.current;
+  else if (typeof settings?.current === "string" && settings.presets) cur = settings.presets[settings.current] || null;
   const schemes = cur?.color_schemes || {};
-  const first = Object.values(schemes)[0]?.settings || {};
+  const first = Object.values(schemes)[0]?.settings || cur || {};
 
   const readings = {
     accent: first.button || first.accent_1 || first.colors_accent_1 || null,
@@ -79,6 +83,12 @@ export async function readThemeLook(admin) {
   const sat = accent ? (Math.max(accent.r, accent.g, accent.b) - Math.min(accent.r, accent.g, accent.b)) / (Math.max(accent.r, accent.g, accent.b) || 1) : 0;
   const source = !accent ? "fallback" : sat > 0.18 ? "primary-button" : "neutral-button";
   const confidence = A.confidence(readings, { source, buttons: accent ? 1 : 0, radiusFound: cur?.buttons_radius != null });
+  // The scorer's reasons are written for the storefront sniffer; reword the
+  // ones that mean something different when reading theme settings.
+  confidence.reasons = confidence.reasons.map((r) =>
+    r === "No buttons found on the page" ? "No button colour in the theme settings"
+    : r === "Buttons are neutral, so the accent is a guess" ? "The theme's buttons are black or grey, so there is no brand colour to take"
+    : r);
   const tokens = A.tokensFrom(readings);
   return { theme: theme?.name || null, readings, tokens, confidence };
 }

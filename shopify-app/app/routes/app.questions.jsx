@@ -85,7 +85,7 @@ export default function Questions() {
   const previewCfg = { ...config, steps };
 
   return (
-    <s-page heading="Check the questions." inlineSize="large">
+    <s-page heading="Check the questions.">
       <s-button slot="primary-action" onClick={() => submit(true)} {...(busy ? { loading: true } : {})}>Save and continue</s-button>
       <s-button slot="secondary-actions" href="/app/products" variant="tertiary">Skip for now</s-button>
 

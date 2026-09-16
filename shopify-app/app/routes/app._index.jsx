@@ -96,6 +96,7 @@ export default function Index() {
   const steps = (config.steps || []).length;
   const products = [...(config.bundles || []), ...Object.values(config.accessories || {})];
   const missing = products.filter((p) => !p.variantId).length;
+  const finished = !!config.meta?.setup?.live;
 
   return (
     <s-page heading="Bundle Configurator">
@@ -112,11 +113,15 @@ export default function Index() {
           </s-badge>
         </s-stack>
       </s-section>
-      <s-section heading="Next steps">
-        <s-paragraph>
-          The theme block now shows this questionnaire. Continue setup to match your store's look, check the questions and connect your products.
-        </s-paragraph>
-        <s-button href="/app/look" variant="primary">Continue setup</s-button>
+      <s-section heading={finished ? "Edit any step" : "Next steps"}>
+        {finished ? (
+          <s-paragraph>Setup is complete and the theme block shows this questionnaire. Use the steps above to change the look, the questions or the products at any time.</s-paragraph>
+        ) : (
+          <s-paragraph>
+            The theme block now shows this questionnaire. Continue setup to match your store's look, check the questions and connect your products.
+          </s-paragraph>
+        )}
+        {finished ? (missing ? <s-button href="/app/products" variant="primary">Connect products</s-button> : null) : <s-button href="/app/look" variant="primary">Continue setup</s-button>}
         <s-paragraph color="subdued">
           If the block is not added for you, in the theme editor choose a section, then Add block, Apps, Bundle Configurator.
         </s-paragraph>

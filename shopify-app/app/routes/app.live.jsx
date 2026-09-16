@@ -49,7 +49,7 @@ export default function Live() {
   }, [fetcher.data, shopify]);
 
   return (
-    <s-page heading="You are ready to go live." inlineSize="large">
+    <s-page heading="You are ready to go live.">
       <s-button slot="primary-action" onClick={() => fetcher.submit({}, { method: "POST" })} {...(busy ? { loading: true } : {})}>Finish setup</s-button>
 
       <s-section>

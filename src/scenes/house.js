@@ -61,7 +61,7 @@
       var v = cs ? cs.getPropertyValue('--bcfg-scene-' + name).trim() : '';
       return v || fallback;
     };
-    var accent = tok('accent', '') || (cs ? cs.getPropertyValue('--bcfg-accent').trim() : '') || '#4a6cf7';
+    var accent = tok('accent', '') || (cs ? cs.getPropertyValue('--bcfg-accent').trim() : '') || '#3d5ee6';
     var accentDark = (cs ? cs.getPropertyValue('--bcfg-accent-dark').trim() : '') || accent;
 
     var C = {};

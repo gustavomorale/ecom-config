@@ -9,7 +9,7 @@
   if (!API) return;
 
   API.registerScene('summary', function (state, opts, cfg, scope) {
-    var accent = (opts.accent) || ((cfg.brand && cfg.brand.theme && cfg.brand.theme.accent) || '#4a6cf7');
+    var accent = (opts.accent) || ((cfg.brand && cfg.brand.theme && cfg.brand.theme.accent) || '#3d5ee6');
     var rows = (opts.rows || []).filter(function (r) { return API.test(r.when, scope); });
     if (!rows.length) {
       return '<svg viewBox="0 0 360 260" xmlns="http://www.w3.org/2000/svg">' +

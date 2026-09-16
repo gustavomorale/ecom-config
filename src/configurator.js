@@ -117,9 +117,13 @@
     this.removed = {};      // addon key -> true
     this.state = this._initialState();
     this._onClick = this._handleClick.bind(this);
+    this._onKey = this._handleKey.bind(this);
+    this._focusTo = null;    // where focus should land after the next render
+    this._announce = '';     // text for the live region after the next render
     el.classList.add('bcfg');
     this._applyTheme();
     el.addEventListener('click', this._onClick);
+    el.addEventListener('keydown', this._onKey);
     this.render();
   }
 
@@ -201,7 +205,7 @@
     (this.listeners[evt] || []).forEach(function (fn) { try { fn(payload, this); } catch (e) { } }, this);
   };
   Configurator.prototype.getState = function () { var o = {}; for (var k in this.state) o[k] = this.state[k]; return o; };
-  Configurator.prototype.destroy = function () { this.el.removeEventListener('click', this._onClick); this.el.innerHTML = ''; this.el.classList.remove('bcfg'); if (this._preset && this._preset !== 'base') this.el.classList.remove('bcfg-theme-' + this._preset); this.el.removeAttribute('data-appearance'); this.el.removeAttribute('style'); };
+  Configurator.prototype.destroy = function () { this.el.removeEventListener('click', this._onClick); this.el.removeEventListener('keydown', this._onKey); this.el.innerHTML = ''; this.el.classList.remove('bcfg'); if (this._preset && this._preset !== 'base') this.el.classList.remove('bcfg-theme-' + this._preset); this.el.removeAttribute('data-appearance'); this.el.removeAttribute('style'); };
 
   /* ---------- stock ---------- */
   Configurator.prototype._isOOS = function (variantId) {
@@ -337,9 +341,35 @@
   Configurator.prototype._isDone = function () { return this.state.step >= (this.cfg.steps || []).length; };
   Configurator.prototype._isMobile = function () { return root.innerWidth <= 820; };
 
+  /* Every render replaces innerHTML, which drops keyboard focus on the floor.
+     Callers set _focusTo before rendering; otherwise we put focus back on the
+     control that had it, matched by its data-* identity. */
+  Configurator.prototype._rememberFocus = function () {
+    var a = document.activeElement;
+    if (!a || !this.el.contains(a)) return null;
+    return { action: a.getAttribute('data-action'), field: a.getAttribute('data-field'), value: a.getAttribute('data-value'), delta: a.getAttribute('data-delta'), key: a.getAttribute('data-key') };
+  };
+  Configurator.prototype._restoreFocus = function (want) {
+    if (!want) return;
+    var target = null;
+    if (want.selector) target = this.el.querySelector(want.selector);
+    else if (want.action) {
+      var all = this.el.querySelectorAll('[data-action="' + want.action + '"]');
+      for (var i = 0; i < all.length; i++) {
+        var c = all[i];
+        if (c.getAttribute('data-field') === want.field && c.getAttribute('data-value') === want.value &&
+            c.getAttribute('data-delta') === want.delta && c.getAttribute('data-key') === want.key) { target = c; break; }
+      }
+      if (!target && all.length) target = all[0];
+    }
+    if (target && !target.disabled) { try { target.focus({ preventScroll: true }); } catch (e) { target.focus(); } }
+  };
+
   Configurator.prototype.render = function () {
     var copy = this.cfg.copy || {};
     var done = this._isDone();
+    var want = this._focusTo || this._rememberFocus();
+    this._focusTo = null;
     if (done) this.sceneCollapsed = false;
     var sceneHtml = this._renderScene();
     var body = done ? this._renderResult() : (this._renderProgress() + this._renderStep());
@@ -355,9 +385,26 @@
           '<div class="form-panel">' + body + '</div>' +
         '</div>' +
         (done ? '' : this._renderStickyBar()) +
+        '<div class="bcfg-live" role="status" aria-live="polite" aria-atomic="true"></div>' +
       '</div>';
 
+    this._restoreFocus(want);
+    if (this._announce) { this._say(this._announce); this._announce = ''; }
     if (done) { this._checkStock(); this._emit('result', this.recommend()); }
+  };
+
+  /* Screen reader announcement, delayed a tick so the live region is
+     observed as changing rather than as freshly inserted. */
+  Configurator.prototype._say = function (text) {
+    var live = this.el.querySelector('.bcfg-live');
+    if (!live) return;
+    live.textContent = '';
+    setTimeout(function () { live.textContent = text; }, 50);
+  };
+
+  Configurator.prototype._stepLabel = function () {
+    var n = (this.cfg.steps || []).length, copy = this.cfg.copy || {};
+    return interpolate(copy.stepLabel || 'Step {current} of {total}', { current: this.state.step + 1, total: n });
   };
 
   Configurator.prototype._renderScene = function () {
@@ -368,13 +415,15 @@
     var svg = fn(this.state, sc.options || {}, this.cfg, this._scope(), this);
     if (!svg) return '';
     var collapsed = this._isMobile() && this.sceneCollapsed ? ' collapsed' : '';
-    var label = this.sceneCollapsed ? (sc.showLabel || 'Show preview') : (sc.hideLabel || 'Hide preview');
-    return '<div class="scene-panel' + collapsed + '" data-scene>' +
-      '<div class="scene-panel-title">' + esc(sc.title || 'Your setup') + '</div>' +
-      '<div class="scene-canvas">' + svg + '</div>' +
-      '<div class="scene-chips">' + this._renderChips() + '</div>' +
-      '<div class="scene-toggle" data-action="toggleScene"><span>' + esc(label) + '</span><span class="toggle-arrow">&#x25B2;</span></div>' +
-      '</div>';
+    // label and aria-expanded follow what is actually on screen, not the flag
+    var label = collapsed ? (sc.showLabel || 'Show preview') : (sc.hideLabel || 'Hide preview');
+    var id = this._id('scene');
+    return '<aside class="scene-panel' + collapsed + '" data-scene aria-labelledby="' + id + '-title">' +
+      '<div class="scene-panel-title" id="' + id + '-title">' + esc(sc.title || 'Your setup') + '</div>' +
+      '<div class="scene-canvas" id="' + id + '-canvas" aria-hidden="true">' + svg + '</div>' +
+      '<ul class="scene-chips" aria-label="' + esc(sc.title || 'Your setup') + '">' + this._renderChips() + '</ul>' +
+      '<button type="button" class="scene-toggle" data-action="toggleScene" aria-expanded="' + (collapsed ? 'false' : 'true') + '" aria-controls="' + id + '-canvas"><span>' + esc(label) + '</span><span class="toggle-arrow" aria-hidden="true">&#x25B2;</span></button>' +
+      '</aside>';
   };
 
   Configurator.prototype._renderChips = function () {
@@ -386,8 +435,15 @@
         var label = c.label ? interpolate(c.label, tokens) : self._labelFor(c.field);
         if (!label) return '';
         var style = c.color ? ' style="background:' + esc(c.color) + '"' : '';
-        return '<span class="chip"><span class="dot"' + style + '></span>' + esc(label) + '</span>';
+        return '<li class="chip"><span class="dot" aria-hidden="true"' + style + '></span>' + esc(label) + '</li>';
       }).join('');
+  };
+
+  /* Stable per-instance ids for aria-* wiring. Several widgets may share a page. */
+  var UID = 0;
+  Configurator.prototype._id = function (suffix) {
+    if (!this._uid) this._uid = 'bcfg' + (++UID);
+    return this._uid + '-' + suffix;
   };
 
   /* resolve the human label of a choice field's current value */
@@ -405,11 +461,11 @@
     var n = (this.cfg.steps || []).length;
     var pct = Math.round((this.state.step / n) * 100);
     var copy = this.cfg.copy || {};
-    var label = interpolate(copy.stepLabel || 'Step {current} of {total}', { current: this.state.step + 1, total: n });
+    var label = this._stepLabel();
     return '<div class="progress-wrap"><div class="progress-meta">' +
       '<span class="progress-step">' + esc(label) + '</span>' +
-      '<span class="progress-pct">' + pct + '%</span></div>' +
-      '<div class="progress-bar"><div class="progress-fill" style="width:' + pct + '%"></div></div></div>';
+      '<span class="progress-pct" aria-hidden="true">' + pct + '%</span></div>' +
+      '<div class="progress-bar" role="progressbar" aria-label="' + esc(label) + '" aria-valuemin="0" aria-valuemax="' + n + '" aria-valuenow="' + this.state.step + '" aria-valuetext="' + esc(label) + ', ' + pct + '%"><div class="progress-fill" style="width:' + pct + '%"></div></div></div>';
   };
 
   Configurator.prototype._renderStickyBar = function () {
@@ -418,10 +474,21 @@
       return '<span class="step-dot' + (i < this.state.step ? ' done' : i === this.state.step ? ' active' : '') + '"></span>';
     }, this).join('');
     var last = this.state.step === n - 1;
-    return '<div class="sticky-cta"><div class="step-dots">' + dots + '</div>' +
-      (this.state.step > 0 ? '<button class="btn-back" data-action="back">&#x2190;</button>' : '') +
-      '<button class="btn-next" data-action="next"' + (this._canAdvance() ? '' : ' disabled') + '>' +
-      esc(last ? (copy.finishLabel || 'See my bundle') : (copy.nextLabel || 'Continue')) + ' &#x2192;</button></div>';
+    return '<div class="sticky-cta"><div class="step-dots" aria-hidden="true">' + dots + '</div>' +
+      (this.state.step > 0 ? '<button type="button" class="btn-back" data-action="back" aria-label="' + esc(copy.backLabel || 'Back') + '">&#x2190;</button>' : '') +
+      '<button type="button" class="btn-next" data-action="next"' + this._nextAttrs() + '>' +
+      esc(last ? (copy.finishLabel || 'See my bundle') : (copy.nextLabel || 'Continue')) + ' <span aria-hidden="true">&#x2192;</span></button></div>';
+  };
+
+  /* Disabled Continue plus a reason. The hint is rendered in the card once and
+     referenced by both Continue buttons (desktop nav row and mobile bar). */
+  Configurator.prototype._nextAttrs = function () {
+    return this._canAdvance() ? '' : ' disabled aria-disabled="true" aria-describedby="' + this._id('hint') + '"';
+  };
+  Configurator.prototype._renderHint = function () {
+    var st = (this.cfg.steps || [])[this.state.step], copy = this.cfg.copy || {};
+    if (!st || !st.required || this._canAdvance()) return '';
+    return '<div class="required-hint" id="' + this._id('hint') + '">' + esc(copy.requiredHint || 'Choose an option to continue') + '</div>';
   };
 
   Configurator.prototype._canAdvance = function () {
@@ -437,6 +504,7 @@
     if (!st) return '';
     var copy = this.cfg.copy || {}, body = '';
     var last = this.state.step === (this.cfg.steps || []).length - 1;
+    var qid = this._id('q');
 
     switch (st.type) {
       case 'choice':
@@ -447,18 +515,19 @@
         body = this._renderCounters(st);
         break;
       case 'toggles':
-        body = '<div class="tile-grid"' + (st.columns ? ' style="grid-template-columns:repeat(' + st.columns + ',1fr)"' : '') + '>' +
+        body = '<div class="tile-grid" role="group" aria-labelledby="' + qid + '"' + (st.columns ? ' style="grid-template-columns:repeat(' + st.columns + ',1fr)"' : '') + '>' +
           (st.toggles || []).map(function (t) {
-            return '<div class="tile-btn' + (this.state[t.field] ? ' selected' : '') + '" data-action="toggleField" data-field="' + esc(t.field) + '">' +
-              '<span class="tile-icon">' + (t.icon || '') + '</span><span class="tile-text">' + esc(t.label) + '</span></div>';
+            var on = !!this.state[t.field];
+            return '<button type="button" class="tile-btn' + (on ? ' selected' : '') + '" aria-pressed="' + on + '" data-action="toggleField" data-field="' + esc(t.field) + '">' +
+              '<span class="tile-icon" aria-hidden="true">' + (t.icon || '') + '</span><span class="tile-text">' + esc(t.label) + '</span></button>';
           }, this).join('') + '</div>';
         break;
       case 'multi':
-        body = '<div class="tile-grid"' + (st.columns ? ' style="grid-template-columns:repeat(' + st.columns + ',1fr)"' : '') + '>' +
+        body = '<div class="tile-grid" role="group" aria-labelledby="' + qid + '"' + (st.columns ? ' style="grid-template-columns:repeat(' + st.columns + ',1fr)"' : '') + '>' +
           (st.options || []).map(function (o) {
             var on = (this.state[st.field] || []).indexOf(o.value) > -1;
-            return '<div class="tile-btn' + (on ? ' selected' : '') + '" data-action="toggleMulti" data-field="' + esc(st.field) + '" data-value="' + esc(o.value) + '">' +
-              '<span class="tile-icon">' + (o.icon || '') + '</span><span class="tile-text">' + esc(o.label) + '</span></div>';
+            return '<button type="button" class="tile-btn' + (on ? ' selected' : '') + '" aria-pressed="' + on + '" data-action="toggleMulti" data-field="' + esc(st.field) + '" data-value="' + esc(o.value) + '">' +
+              '<span class="tile-icon" aria-hidden="true">' + (o.icon || '') + '</span><span class="tile-text">' + esc(o.label) + '</span></button>';
           }, this).join('') + '</div>';
         break;
     }
@@ -466,53 +535,60 @@
     if (st.tip) body += '<div class="tip">' + st.tip + '</div>';
 
     return '<div class="card">' +
-      '<div class="card-question">' + esc(st.question || '') + '</div>' +
-      '<div class="card-sub">' + esc(st.sub || '') + '</div>' + body +
+      '<h2 class="card-question" id="' + qid + '" tabindex="-1">' + esc(st.question || '') + '</h2>' +
+      '<div class="card-sub">' + esc(st.sub || '') + '</div>' + body + this._renderHint() +
       '<div class="nav-row">' +
-        (this.state.step > 0 ? '<button class="btn-back" data-action="back">&#x2190; ' + esc(copy.backLabel || 'Back') + '</button>' : '') +
-        '<button class="btn-next" data-action="next"' + (this._canAdvance() ? '' : ' disabled') + '>' +
-        esc(last ? (copy.finishLabel || 'See my bundle') : (copy.nextLabel || 'Continue')) + ' &#x2192;</button>' +
+        (this.state.step > 0 ? '<button type="button" class="btn-back" data-action="back"><span aria-hidden="true">&#x2190;</span> ' + esc(copy.backLabel || 'Back') + '</button>' : '') +
+        '<button type="button" class="btn-next" data-action="next"' + this._nextAttrs() + '>' +
+        esc(last ? (copy.finishLabel || 'See my bundle') : (copy.nextLabel || 'Continue')) + ' <span aria-hidden="true">&#x2192;</span></button>' +
       '</div></div>' + this._renderFooter();
   };
 
-  Configurator.prototype._renderChoice = function (st) {
-    var self = this;
-    var opts = st.options || [];
-    var grid = st.layout === 'grid';
-    var html = '<div class="' + (grid ? 'toggle-grid' : 'options') + '">' + opts.map(function (o) {
-      var sel = self.state[st.field] === o.value;
+  /* A single-choice step is a radiogroup: one Tab stop, arrows move within.
+     The selected option (or the first, when nothing is chosen yet) is the
+     stop; the rest sit at tabindex -1. */
+  Configurator.prototype._renderRadios = function (field, opts, current, cls) {
+    var anySel = opts.some(function (o) { return o.value === current; });
+    return opts.map(function (o, i) {
+      var sel = current === o.value;
+      var tab = sel || (!anySel && i === 0) ? '0' : '-1';
       var icon = o.image ? '<img src="' + esc(o.image) + '" alt="">' : (o.icon || '');
-      return '<div class="option-btn' + (sel ? ' selected' : '') + '" data-action="setField" data-field="' + esc(st.field) + '" data-value="' + esc(o.value) + '" data-type="' + esc(typeof o.value) + '">' +
-        '<div class="option-icon">' + icon + '</div><div class="option-text">' +
-        '<div class="option-label">' + esc(o.label) + '</div>' +
-        (o.desc ? '<div class="option-desc">' + esc(o.desc) + '</div>' : '') + '</div></div>';
-    }).join('') + '</div>';
+      return '<button type="button" role="radio" aria-checked="' + sel + '" tabindex="' + tab + '" class="' + cls + (sel ? ' selected' : '') + '" data-action="setField" data-field="' + esc(field) + '" data-value="' + esc(o.value) + '" data-type="' + esc(typeof o.value) + '">' +
+        '<span class="option-icon" aria-hidden="true">' + icon + '</span><span class="option-text">' +
+        '<span class="option-label">' + esc(o.label) + '</span>' +
+        (o.desc ? '<span class="option-desc">' + esc(o.desc) + '</span>' : '') + '</span></button>';
+    }).join('');
+  };
+
+  Configurator.prototype._renderChoice = function (st) {
+    var grid = st.layout === 'grid';
+    var html = '<div class="' + (grid ? 'toggle-grid' : 'options') + '" role="radiogroup" aria-labelledby="' + this._id('q') + '">' +
+      this._renderRadios(st.field, st.options || [], this.state[st.field], 'option-btn') + '</div>';
 
     if (st.followUp && test(st.followUp.when === undefined ? { field: st.field, op: 'truthy' } : st.followUp.when, this._scope())) {
-      html += '<div class="followup-label">' + esc(st.followUp.label || '') + '</div><div class="options">' +
-        (st.followUp.options || []).map(function (o) {
-          var sel = self.state[st.followUp.field] === o.value;
-          return '<div class="option-btn' + (sel ? ' selected' : '') + '" data-action="setField" data-field="' + esc(st.followUp.field) + '" data-value="' + esc(o.value) + '" data-type="' + esc(typeof o.value) + '">' +
-            '<div class="option-icon">' + (o.icon || '') + '</div><div class="option-text">' +
-            '<div class="option-label">' + esc(o.label) + '</div>' +
-            (o.desc ? '<div class="option-desc">' + esc(o.desc) + '</div>' : '') + '</div></div>';
-        }).join('') + '</div>';
+      var fid = this._id('fu');
+      html += '<div class="followup-label" id="' + fid + '">' + esc(st.followUp.label || '') + '</div>' +
+        '<div class="options" role="radiogroup" aria-labelledby="' + fid + '">' +
+        this._renderRadios(st.followUp.field, st.followUp.options || [], this.state[st.followUp.field], 'option-btn') + '</div>';
     }
     return html;
   };
 
   Configurator.prototype._renderCounters = function (st) {
     var cols = (st.counters || []).length === 1 ? 'cols-1' : (st.counters || []).length >= 3 ? 'cols-3' : '';
-    return '<div class="counters ' + cols + '">' + (st.counters || []).map(function (c) {
-      return '<div class="counter-item">' +
-        (c.icon ? '<div class="counter-emoji">' + c.icon + '</div>' : '') +
-        '<div class="counter-label">' + esc(c.label) + '</div>' +
+    var copy = this.cfg.copy || {}, self = this;
+    return '<div class="counters ' + cols + '" role="group" aria-labelledby="' + this._id('q') + '">' + (st.counters || []).map(function (c, i) {
+      var lid = self._id('c' + i), vid = self._id('cv' + i);
+      var val = Number(self.state[c.field]) || 0, min = c.min || 0, max = c.max || 99;
+      return '<div class="counter-item" role="group" aria-labelledby="' + lid + '">' +
+        (c.icon ? '<div class="counter-emoji" aria-hidden="true">' + c.icon + '</div>' : '') +
+        '<div class="counter-label" id="' + lid + '">' + esc(c.label) + '</div>' +
         '<div class="counter-controls">' +
-          '<button class="counter-btn" data-action="step" data-field="' + esc(c.field) + '" data-delta="-1" data-min="' + (c.min || 0) + '" data-max="' + (c.max || 99) + '">&#x2212;</button>' +
-          '<span class="counter-val">' + esc(this.state[c.field]) + '</span>' +
-          '<button class="counter-btn" data-action="step" data-field="' + esc(c.field) + '" data-delta="1" data-min="' + (c.min || 0) + '" data-max="' + (c.max || 99) + '">+</button>' +
+          '<button type="button" class="counter-btn" aria-label="' + esc(interpolate(copy.decreaseLabel || 'Fewer {label}', { label: c.label })) + '" aria-describedby="' + vid + '"' + (val <= min ? ' aria-disabled="true"' : '') + ' data-action="step" data-field="' + esc(c.field) + '" data-delta="-1" data-min="' + min + '" data-max="' + max + '">&#x2212;</button>' +
+          '<span class="counter-val" id="' + vid + '" aria-live="polite" aria-atomic="true">' + esc(val) + '</span>' +
+          '<button type="button" class="counter-btn" aria-label="' + esc(interpolate(copy.increaseLabel || 'More {label}', { label: c.label })) + '" aria-describedby="' + vid + '"' + (val >= max ? ' aria-disabled="true"' : '') + ' data-action="step" data-field="' + esc(c.field) + '" data-delta="1" data-min="' + min + '" data-max="' + max + '">+</button>' +
         '</div></div>';
-    }, this).join('') + '</div>';
+    }).join('') + '</div>';
   };
 
   /* The widget stamps nothing of its own. Both halves of the footer are the
@@ -526,6 +602,11 @@
     return '<div class="bcfg-footer">' +
       (b.name ? prefix + '<strong>' + esc(b.name) + '</strong>' + (txt ? ' &#x2014; ' : '') : '') +
       esc(txt) + '</div>';
+  };
+
+  Configurator.prototype._removedNote = function () {
+    var n = Object.keys(this.removed).length, copy = this.cfg.copy || {};
+    return interpolate(copy.removedNote || '{n} add-on{s} removed from your cart', { n: n, s: n === 1 ? '' : 's' });
   };
 
   /* ---------- result ---------- */
@@ -553,10 +634,10 @@
           '<div class="addon-icon">' + (a.image ? '<img src="' + esc(a.image) + '" alt="">' : '') + '</div>' +
           '<div class="addon-text">' + esc(a.text) + (a.oos ? ' <span class="addon-oos-badge">' + esc(copy.oosBadge || 'Out of stock') + '</span>' : '') + '</div>' +
           '<div class="addon-reason">' + esc(a.oos ? a.oosText : a.reason) + '</div>' +
-          ((a.variantId && !a.oos) ? '<button class="addon-remove-btn" data-action="removeAddon" data-key="' + esc(a.key) + '" aria-label="Remove this add-on">&#xD7;</button>' : '') +
+          ((a.variantId && !a.oos) ? '<button type="button" class="addon-remove-btn" data-action="removeAddon" data-key="' + esc(a.key) + '" aria-label="' + esc(interpolate(copy.removeAddonLabel || 'Remove {item}', { item: a.text })) + '">&#xD7;</button>' : '') +
           '</div>';
       }).join('') +
-      (Object.keys(this.removed).length ? '<div class="addon-removed-note visible">&#x2713; ' + Object.keys(this.removed).length + ' add-on' + (Object.keys(this.removed).length > 1 ? 's' : '') + ' removed from your cart</div>' : '') +
+      (Object.keys(this.removed).length ? '<div class="addon-removed-note visible"><span aria-hidden="true">&#x2713;</span> ' + esc(this._removedNote()) + '</div>' : '') +
       '</div>' : '';
 
     var callouts = (this.cfg.callouts || []).filter(function (c) { return test(c.when, self._scope()); }).map(function (c) {
@@ -577,7 +658,7 @@
       '<div class="result-header">' +
         (rec.bundle.image ? '<div class="bundle-hero hero-pop"><img src="' + esc(rec.bundle.image) + '" alt="' + esc(rec.bundle.title) + '"></div>' : '') +
         '<div class="rec-badge">' + esc(copy.recommendationBadge || 'Your recommendation') + '</div>' +
-        '<h2>' + esc(rec.bundle.title) + '</h2>' +
+        '<h2 tabindex="-1">' + esc(rec.bundle.title) + '</h2>' +
         (rec.bundle.subtitle ? '<div class="bundle-sub">' + esc(rec.bundle.subtitle) + '</div>' : '') +
         priceBlock +
       '</div>' +
@@ -602,7 +683,7 @@
           '<div class="cart-hint">' + esc(copy.cartHint || '') + '</div>' +
         '</div>' +
         '<div class="cta-row">' +
-          '<button class="btn-restart" data-action="restart">&#x21BB; ' + esc(copy.restartLabel || 'Start over') + '</button>' +
+          '<button type="button" class="btn-restart" data-action="restart"><span aria-hidden="true">&#x21BB;</span> ' + esc(copy.restartLabel || 'Start over') + '</button>' +
           '<a class="btn-cta" data-action="addToCart" href="' + esc(rec.cartUrl) + '"' + ((this.cfg.cart || {}).mode === 'ajax' ? '' : ' target="_blank" rel="noopener"') + '>' + esc(copy.ctaLabel || 'Add to cart') + ' &#x2192;</a>' +
         '</div>' +
       '</div></div>' + this._renderFooter();
@@ -631,7 +712,9 @@
       }
       case 'step': {
         var d = Number(el.getAttribute('data-delta'));
-        this.state[field] = clamp((Number(this.state[field]) || 0) + d, Number(el.getAttribute('data-min')), Number(el.getAttribute('data-max')));
+        var was = Number(this.state[field]) || 0;
+        this.state[field] = clamp(was + d, Number(el.getAttribute('data-min')), Number(el.getAttribute('data-max')));
+        if (this.state[field] === was) return;         // at the limit, nothing to re-render
         this._emit('answer', { field: field, value: this.state[field] });
         this.render(); break;
       }
@@ -649,32 +732,67 @@
         if (!this._canAdvance()) return;
         this.state.step++;
         this._emit('step', this.state.step);
-        this.render(); this._scrollTop(); break;
+        this._goToStep(); break;
       case 'back':
         this.state.step = Math.max(0, this.state.step - 1);
         this._emit('step', this.state.step);
-        this.render(); this._scrollTop(); break;
+        this._goToStep(); break;
       case 'restart':
         this.state = this._initialState(); this.removed = {};
-        this.render(); this._scrollTop(); break;
+        this._goToStep(); break;
       case 'toggleScene': {
-        this.sceneCollapsed = !this.sceneCollapsed;
         var panel = this.el.querySelector('[data-scene]');
-        if (panel) {
-          panel.classList.toggle('collapsed', this.sceneCollapsed);
-          var lab = panel.querySelector('.scene-toggle span');
-          var sc = this.cfg.scene || {};
-          if (lab) lab.textContent = this.sceneCollapsed ? (sc.showLabel || 'Show preview') : (sc.hideLabel || 'Hide preview');
-        }
+        if (!panel) break;
+        // read the real state off the panel: the flag can disagree after a resize
+        this.sceneCollapsed = !panel.classList.contains('collapsed');
+        panel.classList.toggle('collapsed', this.sceneCollapsed);
+        var lab = panel.querySelector('.scene-toggle span');
+        var sc = this.cfg.scene || {};
+        if (lab) lab.textContent = this.sceneCollapsed ? (sc.showLabel || 'Show preview') : (sc.hideLabel || 'Hide preview');
+        el.setAttribute('aria-expanded', this.sceneCollapsed ? 'false' : 'true');
         break;
       }
       case 'removeAddon':
         e.preventDefault();
         this.removed[el.getAttribute('data-key')] = true;
-        this.render(); break;
+        this._announce = this._removedNote();
+        this._focusTo = { selector: '.addon-remove-btn' };   // next remaining remove button, else nothing
+        this.render();
+        if (!this.el.querySelector('.addon-remove-btn')) this._restoreFocus({ selector: '.btn-cta' });
+        break;
       case 'addToCart':
         this._addToCart(e, el); break;
     }
+  };
+
+  /* Step change: focus the new question (or the result title) so assistive
+     tech reads it, and announce the position. */
+  Configurator.prototype._goToStep = function () {
+    var done = this._isDone();
+    this._focusTo = { selector: done ? '.result-header h2' : '.card-question' };
+    this._announce = done ? '' : this._stepLabel();
+    this.render(); this._scrollTop();
+  };
+
+  /* Arrow keys inside a radiogroup move selection (WAI-ARIA radio pattern).
+     Everything else is a native button and needs no help. */
+  Configurator.prototype._handleKey = function (e) {
+    var t = e.target;
+    if (!t || t.getAttribute('role') !== 'radio') return;
+    var group = t.closest('[role="radiogroup"]');
+    if (!group) return;
+    var radios = Array.prototype.slice.call(group.querySelectorAll('[role="radio"]'));
+    var i = radios.indexOf(t), next = -1;
+    switch (e.key) {
+      case 'ArrowRight': case 'ArrowDown': next = (i + 1) % radios.length; break;
+      case 'ArrowLeft': case 'ArrowUp': next = (i - 1 + radios.length) % radios.length; break;
+      case 'Home': next = 0; break;
+      case 'End': next = radios.length - 1; break;
+      default: return;
+    }
+    e.preventDefault();
+    radios[next].focus();                 // move focus first so the re-render restores it here
+    radios[next].click();                 // selects; focus follows the data-* identity through render
   };
 
   Configurator.prototype._scrollTop = function () {

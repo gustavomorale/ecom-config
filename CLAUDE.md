@@ -19,10 +19,13 @@ and analytics endpoint are mocked in the harness and not built.
 | `configs/categories.js` | Category registry. The merchant's first decision. Adding a category = adding one object to the array. |
 | `configs/templates/*.js` | Full templates (house accessories, subscription boxes, cosmetics). The UK niche categories are expanded by `starter()`. |
 | `demo/index.html` + `harness.*` | The MVP harness: Storefront, Merchant admin (mock), Theme sync, Analytics (mock), MVP model tabs. `demo/bundle-configurator.mvp.html` is the single-file build of the same thing. |
+| `shopify-app/` | The Shopify app: embedded admin (React Router + Polaris, Shopify's current app template) and `shopify.app.toml` (name "Bundle Configurator", handle `bundle-configurator`, dev store `funrackets.myshopify.com`). `client_id` is filled in by the first `shopify app dev`. |
 | `shopify-app/extensions/bundle-configurator/` | Theme app extension: app block + assets. Assets are copied from `src/` by `npm run build:extension` and are gitignored. |
 | `scripts/` | Build helpers. |
 
 Run locally: `npm run dev` then open `http://localhost:8765/demo/`. Syntax check: `npm run check`.
+Run the Shopify app against the dev store: `cd shopify-app && npm install && npm run dev`
+(first run logs into Partners in the browser and creates the app there; see `shopify-app/README.md`).
 
 Claude Code: `.claude/settings.json` pre-approves the npm scripts and read-only git. Slash
 commands: `/check`, `/build-extension`, `/sync-mvp`, `/next-blocker [n]`. Personal overrides go in
@@ -49,13 +52,13 @@ commands: `/check`, `/build-extension`, `/sync-mvp`, `/next-blocker [n]`. Person
    store" runs theme sync), Questions, Products (variant IDs; the only step that gates a
    real checkout), Go live. One decision per step, one sentence of why, one primary
    action, always a "Skip for now". Progress and the config in progress persist, so a
-   refresh resumes. The mock in `demo/harness.js` (`Setup`) is the spec for the Remix +
+   refresh resumes. The mock in `demo/harness.js` (`Setup`) is the spec for the React Router +
    Polaris admin. The bar is a top-tier Shopify App Store listing.
 
 ## Conventions
 
 - Plain ES5-style IIFEs on `window`, no bundler, no framework in the runtime. Keep it that
-  way until the admin app (Remix + Polaris) is built; the admin can be modern, the
+  way until the admin app (React Router + Polaris) is built; the admin can be modern, the
   storefront runtime must stay dependency-free and tiny.
 - Zero brand, product, price, illustration colour or copy in `src/`. If you find yourself
   typing a product name into the engine, it belongs in a config.

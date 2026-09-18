@@ -4,15 +4,27 @@ import { AppProvider } from "@shopify/shopify-app-react-router/react";
 import { authenticate, PLAN, billingEnabled, billingIsTest } from "../shopify.server";
 
 export const loader = async ({ request }) => {
-  const { billing } = await authenticate.admin(request);
+  const { admin, billing } = await authenticate.admin(request);
 
   // Subscription gate. With billing on, a shop without an active or trialing
   // subscription is sent to Shopify's approval page and comes back here.
+  // Development stores (ours, and the ones Shopify's reviewers install on) can
+  // only accept test charges, so the charge is a test one there and real
+  // everywhere else.
   if (billingEnabled) {
+    let isTest = billingIsTest;
+    if (!isTest) {
+      try {
+        const res = await admin.graphql(`#graphql
+          query bcfgPlan { shop { plan { partnerDevelopment } } }`);
+        const { data } = await res.json();
+        isTest = !!data?.shop?.plan?.partnerDevelopment;
+      } catch (e) { /* fall through to a real charge */ }
+    }
     await billing.require({
       plans: [PLAN],
-      isTest: billingIsTest,
-      onFailure: async () => billing.request({ plan: PLAN, isTest: billingIsTest, returnUrl: "/app" }),
+      isTest,
+      onFailure: async () => billing.request({ plan: PLAN, isTest, returnUrl: "/app" }),
     });
   }
 

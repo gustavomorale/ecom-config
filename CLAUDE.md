@@ -137,7 +137,9 @@ commands: `/check`, `/build-extension`, `/sync-mvp`, `/next-blocker [n]`. Person
 ## Commercials
 
 One plan via the Billing API: 14-day free trial, then USD 25 a month (about GBP 19), never
-per order. Off during beta (`BCFG_BILLING=on` enables it; dev stores get test charges).
+per order. On in production since 2026-09-18 (`BCFG_BILLING=on` in Netlify; development
+stores, reviewers' included, are detected by plan and get a test charge). Submission pack:
+`shopify-app/REVIEW.md`.
 Scopes: `read_products`, `read_themes`; the app writes one shop metafield. No theme write
 scope; app blocks do not modify the theme. Running costs are fixed (one small app server
 and database, roughly USD 7 to 20 a month): the widget is served from Shopify's CDN and

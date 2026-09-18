@@ -112,3 +112,38 @@ export function contrastOf(fg, bg) {
   const a = u.parse(fg), b = u.parse(bg);
   return a && b ? Math.round(u.contrast(a, b) * 100) / 100 : null;
 }
+
+/* Is our app block on the published theme, and where? Reads the theme's JSON
+   templates and looks for a block whose type points at this app's extension.
+   Best effort: null when the theme cannot be read. */
+export async function blockOnTheme(admin) {
+  try {
+    const res = await admin.graphql(`#graphql
+      query bcfgBlock {
+        themes(first: 1, roles: [MAIN]) {
+          nodes {
+            id name
+            files(filenames: ["templates/*.json"], first: 50) {
+              nodes { filename body { ... on OnlineStoreThemeFileBodyText { content } } }
+            }
+          }
+        }
+      }`);
+    const { data } = await res.json();
+    const theme = data?.themes?.nodes?.[0];
+    if (!theme) return null;
+    const pretty = (f) => {
+      const n = f.replace(/^templates\//, "").replace(/\.json$/, "");
+      if (n === "index") return "Home page";
+      return n.split(".")[0].replace(/[-_]/g, " ").replace(/^\w/, (c) => c.toUpperCase()) + (n.includes(".") ? ` (${n.split(".").slice(1).join(".")})` : "");
+    };
+    const where = [];
+    for (const f of theme.files?.nodes || []) {
+      const content = f.body?.content || "";
+      if (/shopify:\/\/apps\/[^"]*\/blocks\/configurator\//.test(content) && /bundle-configurator/.test(content)) where.push(pretty(f.filename));
+    }
+    return { theme: theme.name, installed: where.length > 0, where };
+  } catch (e) {
+    return null;
+  }
+}

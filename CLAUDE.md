@@ -52,8 +52,11 @@ commands: `/check`, `/build-extension`, `/sync-mvp`, `/next-blocker [n]`. Person
    add-to-cart button and links, reduces them to six readings (accent, ink, paper, font,
    radius, light/dark) and derives the rest. Text on accent is chosen by measured contrast.
 4. **Nothing is stamped.** `brand.id`, `brand.name`, `brand.footerText` are empty in every
-   template; the footer is not rendered unless filled. Default headline: *Build custom
-   widget for configured check out*. Illustrations carry no palette of their own.
+   template; the footer is not rendered unless filled. Headlines are unbranded but
+   natural per template ("Find your routine", "Build your home security kit", starters
+   via `spec.title`, blank: "Build your bundle"); the overview nudges merchants to write
+   their own and offers the template's in one click where the pre-0.9 placeholder is still
+   saved. Illustrations carry no palette of their own.
 5. **Visuals are per-option config**, edited on the Questions page: `icon` (emoji), or
    `image` from one of three sources: a product's or collection's picture chosen with the
    Shopify resource picker (`imageSource` records which), or a custom https link. Per

@@ -9,8 +9,8 @@
 window.BCFG_CONFIG_COSMETICS = {
   brand: { id: '', name: '', footerText: '', theme: {} },
   copy: {
-    title: 'Build custom widget for configured check out',
-    titleHighlight: 'configured check out',
+    title: 'Find your routine',
+    titleHighlight: 'your routine',
     subtitle: 'Five quick questions about your skin and your routine, and we will put the right set in your basket.',
     resultSubtitle: 'Your routine, ready to go.',
     stepLabel: 'Step {current} of {total}',

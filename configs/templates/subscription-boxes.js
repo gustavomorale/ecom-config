@@ -6,8 +6,8 @@
 window.BCFG_CONFIG_COFFEE = {
   brand: { id: '', name: '', footerText: '', theme: {} },
   copy: {
-    title: 'Build custom widget for configured check out',
-    titleHighlight: 'configured check out',
+    title: 'Build your coffee box',
+    titleHighlight: 'coffee box',
     subtitle: 'Four questions and we will put together a box that matches how you actually drink coffee.',
     resultSubtitle: 'Your box, ready to go.',
     finishLabel: 'See my box', ctaLabel: 'Add box to cart',

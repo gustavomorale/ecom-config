@@ -19,8 +19,8 @@ window.BCFG_CONFIG_HOUSE_ACCESSORIES = {
   },
 
   copy: {
-    title: 'Build custom widget for configured check out',
-    titleHighlight: 'configured check out',
+    title: 'Build your home security kit',
+    titleHighlight: 'home security kit',
     subtitle: "Answer a few quick questions about your home and we'll recommend the right setup.",
     resultSubtitle: "Here's your personalised recommendation.",
     footerPrefix: '',

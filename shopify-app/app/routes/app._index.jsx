@@ -8,11 +8,12 @@
    expanded task at a time, quick actions into every editor page, and the
    live preview, plan and help on the side.
    ============================================================ */
-import { useState } from "react";
-import { useLoaderData, useRouteError } from "react-router";
+import { useEffect, useState } from "react";
+import { useFetcher, useLoaderData, useRouteError } from "react-router";
+import { useAppBridge } from "@shopify/app-bridge-react";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { authenticate, billingEnabled, PLAN_PRICE_USD, PLAN_TRIAL_DAYS } from "../shopify.server";
-import { listCategories, readConfig, themeEditorUrl } from "../config.server";
+import { listCategories, buildCategory, readConfig, saveConfig, themeEditorUrl } from "../config.server";
 import { blockOnTheme } from "../theme.server";
 import { BETA, SUPPORT_EMAIL } from "../components/SetupRail";
 import { WidgetPreview } from "../components/WidgetPreview";
@@ -24,7 +25,36 @@ export const loader = async ({ request }) => {
   const current = config ? categories.find((c) => c.id === config.meta?.category) || null : null;
   const billing = { enabled: billingEnabled, price: PLAN_PRICE_USD, trialDays: PLAN_TRIAL_DAYS };
   const block = config ? await blockOnTheme(admin) : null;
-  return { config, current, editorUrl: themeEditorUrl(domain), storeUrl: `https://${domain}/`, billing, block };
+  return { config, current, editorUrl: themeEditorUrl(domain), storeUrl: `https://${domain}/`, billing, block, headline: config ? headlineState(config) : null };
+};
+
+/* The headline shoppers read first. "placeholder" is the pre-0.9 default that
+   said nothing about the store; "template" is the category's own suggestion,
+   fine to ship but better made personal. */
+const PLACEHOLDER_TITLE = "Build custom widget for configured check out";
+function templateCopy(config) {
+  try { return buildCategory(config.meta?.category).copy || {}; } catch (e) { return {}; }
+}
+function headlineState(config) {
+  const title = config.copy?.title || "";
+  const tpl = templateCopy(config);
+  const state = !title || title === PLACEHOLDER_TITLE ? "placeholder" : title === tpl.title ? "template" : "custom";
+  return { title, state, suggestion: tpl.title || "" };
+}
+
+export const action = async ({ request }) => {
+  const { admin } = await authenticate.admin(request);
+  const form = await request.formData();
+  if (form.get("intent") !== "adopt-headline") return { ok: false, error: "Unknown action" };
+  const { shopId, config } = await readConfig(admin);
+  if (!config) return { ok: false, error: "No configuration yet" };
+  const tpl = templateCopy(config);
+  if (!tpl.title) return { ok: false, error: "This template has no suggested headline" };
+  try {
+    config.copy = { ...(config.copy || {}), title: tpl.title, titleHighlight: tpl.titleHighlight || "" };
+    await saveConfig(admin, shopId, config);
+  } catch (e) { return { ok: false, error: e.message }; }
+  return { ok: true };
 };
 
 function Welcome({ billing }) {
@@ -129,7 +159,14 @@ export default function Index() {
   return data.config ? <Overview {...data} /> : <Welcome billing={data.billing} />;
 }
 
-function Overview({ config, current, editorUrl, storeUrl, billing, block }) {
+function Overview({ config, current, editorUrl, storeUrl, billing, block, headline }) {
+  const fetcher = useFetcher();
+  const shopify = useAppBridge();
+  useEffect(() => {
+    if (!fetcher.data) return;
+    if (fetcher.data.ok) shopify.toast.show("Headline updated");
+    else shopify.toast.show(fetcher.data.error || "Something went wrong", { isError: true });
+  }, [fetcher.data, shopify]);
 
   const setup = config.meta?.setup || {};
   const steps = (config.steps || []).length;
@@ -210,6 +247,28 @@ function Overview({ config, current, editorUrl, storeUrl, billing, block }) {
           </s-stack>
         </s-section>
       )}
+
+      {headline && headline.state !== "custom" ? (
+        <s-section>
+          <s-stack direction="block" gap="small">
+            <s-stack direction="inline" gap="small" alignItems="center">
+              <s-badge tone={headline.state === "placeholder" ? "warning" : "info"}>{headline.state === "placeholder" ? "Placeholder headline" : "Template headline"}</s-badge>
+              <s-text type="strong">{`“${headline.title || "No headline"}”`}</s-text>
+            </s-stack>
+            <s-paragraph color="subdued">
+              {headline.state === "placeholder"
+                ? "This is the first thing shoppers read, and right now it says nothing about your store."
+                : "This is the template's suggestion. It works, and one written in your own voice works better."}
+            </s-paragraph>
+            <s-stack direction="inline" gap="small">
+              <s-button variant="primary" href="/app/copy">Write your headline</s-button>
+              {headline.state === "placeholder" && headline.suggestion ? (
+                <s-button variant="secondary" onClick={() => fetcher.submit({ intent: "adopt-headline" }, { method: "POST" })} {...(fetcher.state !== "idle" ? { loading: true } : {})}>{`Use “${headline.suggestion}”`}</s-button>
+              ) : null}
+            </s-stack>
+          </s-stack>
+        </s-section>
+      ) : null}
 
       <s-section heading={current ? `${current.icon} ${current.label}` : "Your questionnaire"}>
         <s-paragraph color="subdued">Everything shoppers see and everything that decides their cart. Changes save to your store and go live at once.</s-paragraph>

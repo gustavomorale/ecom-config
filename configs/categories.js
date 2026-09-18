@@ -17,8 +17,8 @@
   'use strict';
 
   var BASE_COPY = {
-    title: 'Build custom widget for configured check out',
-    titleHighlight: 'configured check out',
+    title: 'Build your bundle',
+    titleHighlight: 'your bundle',
     stepLabel: 'Step {current} of {total}',
     nextLabel: 'Continue',
     finishLabel: 'See my bundle',
@@ -43,6 +43,8 @@
     return {
       brand: { id: '', name: '', footerText: '', theme: {} },
       copy: Object.assign({}, BASE_COPY, {
+        title: spec.title || BASE_COPY.title,
+        titleHighlight: spec.titleHighlight || BASE_COPY.titleHighlight,
         subtitle: spec.subtitle,
         resultSubtitle: 'Here is what we would put together.',
         priceSuffix: spec.priceSuffix || ''
@@ -110,6 +112,7 @@
       blurb: 'A frame plus the parts that have to match it. Rules keep incompatible components out of the cart.',
       scene: 'Answer summary',
       build: function () { return starter({
+        title: 'Build your bike', titleHighlight: 'your bike',
         subtitle: 'Tell us how and where you ride and we will spec the build.',
         sceneTitle: 'Your build so far', emptyTitle: 'Pick a riding style',
         priceSuffix: 'complete build',
@@ -186,6 +189,7 @@
       blurb: 'Desk, chair, monitor arms, audio, cable management. Sizes from how many screens and how many hours.',
       scene: 'Answer summary',
       build: function () { return starter({
+        title: 'Set up your desk', titleHighlight: 'your desk',
         subtitle: 'Four questions about how you work and we will spec the desk.',
         sceneTitle: 'Your setup so far', emptyTitle: 'Pick how you work',
         priceSuffix: 'complete setup',
@@ -264,6 +268,7 @@
       blurb: 'Capsule wardrobes, outfit sets, occasion dressing. Sizes from how often it is worn and what it has to go with.',
       scene: 'Answer summary',
       build: function () { return starter({
+        title: 'Build your capsule wardrobe', titleHighlight: 'capsule wardrobe',
         subtitle: 'Three questions about how you dress and we will put a capsule together.',
         sceneTitle: 'Your capsule so far',
         emptyTitle: 'Pick what it is for',
@@ -580,6 +585,7 @@
       blurb: 'Hampers, meal kits, pantry bundles. Sizes from how many people eat and how many meals it has to cover.',
       scene: 'Answer summary',
       build: function () { return starter({
+        title: 'Fill your hamper', titleHighlight: 'your hamper',
         subtitle: 'Tell us who is eating and we will fill the hamper.',
         sceneTitle: 'Your hamper so far',
         emptyTitle: 'Pick the occasion',
@@ -917,6 +923,7 @@
       blurb: 'Garden kits, planters, outdoor furniture, lighting. Sizes from the space and how much sun it gets.',
       scene: 'Answer summary',
       build: function () { return starter({
+        title: 'Plan your garden kit', titleHighlight: 'garden kit',
         subtitle: 'Tell us about the space and we will kit it out.',
         sceneTitle: 'Your garden so far',
         emptyTitle: 'Pick the space',
@@ -1251,6 +1258,7 @@
       blurb: 'Home audio, smart home, phone and laptop kits. Sizes from rooms, devices and what has to talk to what.',
       scene: 'Answer summary',
       build: function () { return starter({
+        title: 'Spec your home setup', titleHighlight: 'home setup',
         subtitle: 'Tell us what you are setting up and we will spec the kit.',
         sceneTitle: 'Your setup so far',
         emptyTitle: 'Pick the setup',
@@ -1571,6 +1579,7 @@
       blurb: 'Starter kits, food plans, grooming. Sizes from species, size and how many animals.',
       scene: 'Answer summary',
       build: function () { return starter({
+        title: 'Pack your pet starter kit', titleHighlight: 'pet starter kit',
         subtitle: 'Tell us about your pet and we will pack the kit.',
         sceneTitle: 'Your kit so far',
         emptyTitle: 'Pick your pet',
@@ -1914,6 +1923,7 @@
       blurb: 'Camping, hiking, running, gym. Sizes from trip length, conditions and how many people.',
       scene: 'Answer summary',
       build: function () { return starter({
+        title: 'Pack for your trip', titleHighlight: 'your trip',
         subtitle: 'Tell us about the trip and we will pack for it.',
         sceneTitle: 'Your pack so far',
         emptyTitle: 'Pick the activity',
@@ -2259,6 +2269,7 @@
       blurb: 'Nursery, feeding, travel systems. Sizes from due date, space and how the household gets around.',
       scene: 'Answer summary',
       build: function () { return starter({
+        title: 'Build your nursery list', titleHighlight: 'nursery list',
         subtitle: 'Tell us where you are and we will build the list.',
         sceneTitle: 'Your nursery so far',
         emptyTitle: 'Pick the stage',
@@ -2598,6 +2609,7 @@
       blurb: 'Gift sets, stacking rings, personalised pieces. Sizes from occasion, budget and who it is for.',
       scene: 'Answer summary',
       build: function () { return starter({
+        title: 'Put together the perfect gift', titleHighlight: 'perfect gift',
         subtitle: 'Tell us who it is for and we will put the set together.',
         sceneTitle: 'Your gift so far',
         emptyTitle: 'Pick the occasion',
@@ -2917,6 +2929,7 @@
       blurb: 'Tool kits, project bundles, workshop setups. Sizes from the job, the material and how often it is used.',
       scene: 'Answer summary',
       build: function () { return starter({
+        title: 'Kit yourself out for the job', titleHighlight: 'for the job',
         subtitle: 'Tell us about the job and we will kit you out for it.',
         sceneTitle: 'Your kit so far',
         emptyTitle: 'Pick the kind of work',
@@ -3252,6 +3265,7 @@
       blurb: 'Vitamin stacks, protein, sleep and gut support. Sizes from goal, routine and how many people.',
       scene: 'Answer summary',
       build: function () { return starter({
+        title: 'Build your daily stack', titleHighlight: 'daily stack',
         subtitle: 'Tell us what you are working on and we will build the stack.',
         sceneTitle: 'Your stack so far',
         emptyTitle: 'Pick your goal',

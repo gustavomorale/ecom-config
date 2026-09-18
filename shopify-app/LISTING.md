@@ -69,7 +69,8 @@ are implemented.
 
 https://bundle-configurator.netlify.app/privacy (source: `app/routes/privacy.jsx`; keep it in
 step with the code). Have it read by whoever advises CraftFrame on data protection before
-submitting, and add the registered office address and company number if required.
+submitting. Company details on the page come from Companies House (16669774); update them
+there if the registered office changes.
 
 ## Support
 

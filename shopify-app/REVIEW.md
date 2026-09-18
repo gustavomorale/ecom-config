@@ -115,7 +115,8 @@ listing.
       trial starts, the app opens after approval, declining returns to Shopify without a loop.
 - [ ] Fresh install on a clean dev store end to end, following section 1 exactly.
 - [ ] Uninstall and reinstall: no errors, welcome page appears, old session gone.
-- [ ] Privacy policy read by CraftFrame's adviser; registered address and company number added.
+- [ ] Privacy policy read by CraftFrame's adviser. Registered address and company number
+      added 2026-09-18 from Companies House (16669774); confirm they are current.
 - [ ] Privacy webhooks respond 200 to a signed test and 401/400 unsigned (verified 2026-09-16).
 - [ ] Storefront on a slow phone and with reduced motion / reduced transparency.
 - [ ] No console errors in the admin or on the storefront.

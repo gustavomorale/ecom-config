@@ -42,7 +42,7 @@ export default function Landing() {
           This app runs inside the Shopify admin. Open it from <strong>Apps</strong> in your store, or write to{" "}
           <a href="mailto:contact@craftframe.agency" style={{ color: "#3d5ee6" }}>contact@craftframe.agency</a>.
         </p>
-        <p style={{ margin: "14px 0 0", fontSize: 13 }}><a href="/privacy" style={{ color: "#5c5f62" }}>Privacy policy</a></p>
+        <p style={{ margin: "14px 0 0", fontSize: 13, color: "#5c5f62" }}><a href="/privacy" style={{ color: "#5c5f62" }}>Privacy policy</a> · CraftFrame WORKS Ltd, company number 16669774, registered in England and Wales.</p>
       </div>
     </main>
   );

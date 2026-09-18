@@ -297,6 +297,7 @@ function Overview({ config, current, editorUrl, storeUrl, billing, block, headli
           <s-paragraph>{`Version ${BETA.version}. We answer every email within a working day.`}</s-paragraph>
           <s-link href={`mailto:${SUPPORT_EMAIL}?subject=Bundle%20Configurator%20beta`}>{SUPPORT_EMAIL}</s-link>
           <s-paragraph color="subdued">The app reads your products and theme settings and writes one setting that holds your setup. It stores no customer data.</s-paragraph>
+          <s-link href="https://bundle-configurator.netlify.app/privacy" target="_blank">Privacy policy</s-link>
         </s-stack>
       </s-section>
     </s-page>

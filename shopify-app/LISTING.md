@@ -65,6 +65,12 @@ answers stay in their browser, and a shared link contains only the answers the s
 chose to share. Privacy webhooks (customers/data_request, customers/redact, shop/redact)
 are implemented.
 
+## Privacy policy URL
+
+https://bundle-configurator.netlify.app/privacy (source: `app/routes/privacy.jsx`; keep it in
+step with the code). Have it read by whoever advises CraftFrame on data protection before
+submitting, and add the registered office address and company number if required.
+
 ## Support
 
 Email: contact@craftframe.agency

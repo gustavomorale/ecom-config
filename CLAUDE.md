@@ -31,7 +31,7 @@ Analytics endpoint and price sync are not built. Listing copy in
 | `shopify-app/extensions/bundle-configurator/` | Theme app extension: app block + assets. Assets are copied from `src/` by `npm run build:extension` and are gitignored. |
 | `scripts/` | Build helpers. |
 
-Run locally: `npm run dev` then open `http://localhost:8765/demo/`. Syntax check: `npm run check`.
+Run locally: `npm run dev` then open `http://localhost:8765/demo/`. Syntax check: `npm run check`. Single-file demo: `npm run sync:mvp`.
 Run the Shopify app against the dev store: `cd shopify-app && npm install && npm run dev`
 (first run logs into Partners in the browser and creates the app there; see `shopify-app/README.md`).
 
@@ -54,8 +54,13 @@ commands: `/check`, `/build-extension`, `/sync-mvp`, `/next-blocker [n]`. Person
 4. **Nothing is stamped.** `brand.id`, `brand.name`, `brand.footerText` are empty in every
    template; the footer is not rendered unless filled. Default headline: *Build custom
    widget for configured check out*. Illustrations carry no palette of their own.
-5. **Icons are per-option config**, edited in the admin: `icon` (emoji or inline SVG) or
-   `image` (URL to the merchant's asset). Real admin gets the Shopify asset picker.
+5. **Visuals are per-option config**, edited on the Questions page: `icon` (emoji), or
+   `image` from one of three sources: a product's or collection's picture chosen with the
+   Shopify resource picker (`imageSource` records which), or a custom https link. Per
+   question, `display: 'cards'` renders options as picture cards (image or large icon on
+   top) instead of compact rows; tokens `--bcfg-card-media-ratio`, `--bcfg-card-min`.
+   Works for single choice, multiple choice and toggles. No file upload in the app: that
+   would need the `write_files` scope.
 6. **First access is a five-step setup, then the full editor.** Category, Look ("Match my
    store" runs theme sync), Questions, Products (variant IDs; the only step that gates a
    real checkout), Go live. One decision per step, one sentence of why, one primary

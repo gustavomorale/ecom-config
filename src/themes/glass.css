@@ -170,6 +170,8 @@
 .bcfg.bcfg-theme-glass .option-btn:hover .option-icon {
   background: color-mix(in srgb, var(--bcfg-accent) 18%, transparent);
 }
+.bcfg.bcfg-theme-glass .as-cards .option-icon,
+.bcfg.bcfg-theme-glass .as-cards .tile-icon { border: 0; border-radius: 0; background: var(--g-surface-3); -webkit-backdrop-filter: none; backdrop-filter: none; }
 .bcfg.bcfg-theme-glass .option-label { font-weight: 600; letter-spacing: -.01em; color: var(--g-ink); }
 .bcfg.bcfg-theme-glass .option-desc  { color: var(--g-ink-3); }
 .bcfg.bcfg-theme-glass .tile-text    { font-weight: 600; color: var(--g-ink); }

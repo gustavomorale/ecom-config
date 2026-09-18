@@ -601,6 +601,10 @@
     var copy = this.cfg.copy || {}, body = '';
     var last = this.state.step === (this.cfg.steps || []).length - 1;
     var qid = this._id('q');
+    // display: 'cards' shows each option as a picture card (image on top, label
+    // below) instead of a compact row. Any option may carry an image or an icon.
+    var cards = st.display === 'cards' ? ' as-cards' : '';
+    var media = function (o) { return o.image ? '<img src="' + esc(o.image) + '" alt="" loading="lazy">' : (o.icon || ''); };
 
     switch (st.type) {
       case 'choice':
@@ -611,19 +615,19 @@
         body = this._renderCounters(st);
         break;
       case 'toggles':
-        body = '<div class="tile-grid" role="group" aria-labelledby="' + qid + '"' + (st.columns ? ' style="grid-template-columns:repeat(' + st.columns + ',1fr)"' : '') + '>' +
+        body = '<div class="tile-grid' + cards + '" role="group" aria-labelledby="' + qid + '"' + (st.columns ? ' style="grid-template-columns:repeat(' + st.columns + ',1fr)"' : '') + '>' +
           (st.toggles || []).map(function (t) {
             var on = !!this.state[t.field];
             return '<button type="button" class="tile-btn' + (on ? ' selected' : '') + '" aria-pressed="' + on + '" data-action="toggleField" data-field="' + esc(t.field) + '">' +
-              '<span class="tile-icon" aria-hidden="true">' + (t.icon || '') + '</span><span class="tile-text">' + esc(t.label) + '</span></button>';
+              '<span class="tile-icon" aria-hidden="true">' + media(t) + '</span><span class="tile-text">' + esc(t.label) + '</span></button>';
           }, this).join('') + '</div>';
         break;
       case 'multi':
-        body = '<div class="tile-grid" role="group" aria-labelledby="' + qid + '"' + (st.columns ? ' style="grid-template-columns:repeat(' + st.columns + ',1fr)"' : '') + '>' +
+        body = '<div class="tile-grid' + cards + '" role="group" aria-labelledby="' + qid + '"' + (st.columns ? ' style="grid-template-columns:repeat(' + st.columns + ',1fr)"' : '') + '>' +
           (st.options || []).map(function (o) {
             var on = (this.state[st.field] || []).indexOf(o.value) > -1;
             return '<button type="button" class="tile-btn' + (on ? ' selected' : '') + '" aria-pressed="' + on + '" data-action="toggleMulti" data-field="' + esc(st.field) + '" data-value="' + esc(o.value) + '">' +
-              '<span class="tile-icon" aria-hidden="true">' + (o.icon || '') + '</span><span class="tile-text">' + esc(o.label) + '</span></button>';
+              '<span class="tile-icon" aria-hidden="true">' + media(o) + '</span><span class="tile-text">' + esc(o.label) + '</span></button>';
           }, this).join('') + '</div>';
         break;
     }
@@ -648,7 +652,7 @@
     return opts.map(function (o, i) {
       var sel = current === o.value;
       var tab = sel || (!anySel && i === 0) ? '0' : '-1';
-      var icon = o.image ? '<img src="' + esc(o.image) + '" alt="">' : (o.icon || '');
+      var icon = o.image ? '<img src="' + esc(o.image) + '" alt="" loading="lazy">' : (o.icon || '');
       return '<button type="button" role="radio" aria-checked="' + sel + '" tabindex="' + tab + '" class="' + cls + (sel ? ' selected' : '') + '" data-action="setField" data-field="' + esc(field) + '" data-value="' + esc(o.value) + '" data-type="' + esc(typeof o.value) + '">' +
         '<span class="option-icon" aria-hidden="true">' + icon + '</span><span class="option-text">' +
         '<span class="option-label">' + esc(o.label) + '</span>' +
@@ -658,7 +662,7 @@
 
   Configurator.prototype._renderChoice = function (st) {
     var grid = st.layout === 'grid';
-    var html = '<div class="' + (grid ? 'toggle-grid' : 'options') + '" role="radiogroup" aria-labelledby="' + this._id('q') + '">' +
+    var html = '<div class="' + (grid ? 'toggle-grid' : 'options') + (st.display === 'cards' ? ' as-cards' : '') + '" role="radiogroup" aria-labelledby="' + this._id('q') + '">' +
       this._renderRadios(st.field, st.options || [], this.state[st.field], 'option-btn') + '</div>';
 
     if (st.followUp && test(st.followUp.when === undefined ? { field: st.field, op: 'truthy' } : st.followUp.when, this._scope())) {

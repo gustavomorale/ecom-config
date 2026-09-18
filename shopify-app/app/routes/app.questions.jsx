@@ -1,7 +1,9 @@
 /* ============================================================
    Setup step 3: Questions.
-   Retitle, reorder, remove, add. Option labels, descriptions, icons (emoji or
-   an https image) and whether an answer is required are all edited here. Saved as one array, the server keeps
+   Retitle, reorder, remove, add. Per question: compact rows or picture cards.
+   Per option: label, description and a visual, which is an emoji, a picture
+   picked from the store (a product's or a collection's image) or a custom https
+   link. Whether an answer is required is set here too. Saved as one array, the server keeps
    the structure it knows and drops anything else.
    ============================================================ */
 import { useEffect, useState } from "react";
@@ -65,6 +67,7 @@ function mergeSteps(saved, incoming) {
     if (typeof inc.question === "string") st.question = inc.question.slice(0, 160);
     if (typeof inc.sub === "string") st.sub = inc.sub.slice(0, 240);
     if (typeof inc.required === "boolean" && "field" in st) st.required = inc.required;
+    if (inc.display === "cards") st.display = "cards"; else if (inc.display === "list") delete st.display;
     for (const kind of ["options", "counters", "toggles"]) {
       if (!Array.isArray(st[kind]) || !Array.isArray(inc[kind])) continue;
       st[kind].forEach((o, i) => {
@@ -74,6 +77,9 @@ function mergeSteps(saved, incoming) {
         // The storefront prints icons as HTML, so only plain characters (an emoji) get through.
         if (typeof e.icon === "string") o.icon = cleanIcon(e.icon);
         if (typeof e.image === "string") { const u = e.image.trim(); if (/^https:\/\/[^\s"'<>]+$/.test(u)) o.image = u.slice(0, 500); else delete o.image; }
+        // where a store picture came from, so the editor can say "from product X"
+        if (o.image && e.imageSource && ["product", "collection"].includes(e.imageSource.type)) o.imageSource = { type: e.imageSource.type, title: String(e.imageSource.title || "").replace(/[<>]/g, "").slice(0, 120) };
+        else delete o.imageSource;
       });
     }
     out.push(st);
@@ -115,6 +121,19 @@ export default function Questions() {
   const updateKid = (i, kind, j, patch) => setSteps((s) => s.map((st, k) => k !== i ? st : { ...st, [kind]: st[kind].map((o, m) => (m === j ? { ...o, ...patch } : o)) }));
   const move = (i, d) => setSteps((s) => { const a = s.slice(); const t = a[i]; a[i] = a[i + d]; a[i + d] = t; return a; });
   const remove = (i) => setSteps((s) => s.filter((_, j) => j !== i));
+  /* Visual source per option: emoji, a picture from the store, or a custom link. */
+  const sourceOf = (o) => o._src || (o.image ? (o.imageSource ? "store" : "custom") : "emoji");
+  const sized = (url) => (/cdn\.shopify\.com/.test(url) && !/[?&]width=/.test(url) ? url + (url.includes("?") ? "&" : "?") + "width=600" : url);
+  const pickImage = async (i, kind, j, type) => {
+    let picked = null;
+    try { picked = await shopify.resourcePicker({ type, multiple: false }); } catch (e) { return; }
+    const r = picked && picked[0]; if (!r) return;
+    const img = type === "product"
+      ? (r.images && r.images[0] && (r.images[0].originalSrc || r.images[0].url))
+      : (r.image && (r.image.originalSrc || r.image.url));
+    if (!img) { shopify.toast.show(`That ${type} has no image yet`, { isError: true }); return; }
+    updateKid(i, kind, j, { image: sized(img), imageSource: { type, title: r.title || "" }, _src: "store" });
+  };
   const addStep = (t) => setSteps((s) => {
     let n = 1; while (s.some((st) => st.id === `${t.type === "counters" ? "count" : t.type === "boolean" ? "yesno" : t.type}${n}`)) n++;
     return s.concat([t.make(n)]);
@@ -151,29 +170,56 @@ export default function Questions() {
               {"field" in st ? (
                 <s-checkbox label="An answer is required to continue" checked={!!st.required} onChange={(e) => update(i, { required: e.currentTarget.checked })} />
               ) : null}
+              {kinds.some((k) => k !== "counters") ? (
+                <s-select label="Show options as" value={st.display === "cards" ? "cards" : "list"} onChange={(e) => update(i, { display: e.currentTarget.value })} details="Picture cards suit product or collection photos. Compact rows suit emoji.">
+                  <s-option value="list">Compact rows with a small icon</s-option>
+                  <s-option value="cards">Picture cards</s-option>
+                </s-select>
+              ) : null}
               {kinds.map((kind) => (
-                <s-stack key={kind} direction="block" gap="small-200">
+                <s-stack key={kind} direction="block" gap="small">
                   <s-text color="subdued">{kind === "options" ? "Options" : kind === "counters" ? "Counters" : "Toggles"}</s-text>
-                  {st[kind].map((o, j) => (
-                    <s-grid key={j} gridTemplateColumns={kind === "options" ? "72px 1.2fr 1.6fr" : "72px 1fr"} gap="small" alignItems="end">
-                      <s-text-field label="Icon" labelAccessibilityVisibility={j ? "exclusive" : "visible"} value={decodeIcon(o.icon)} placeholder="🙂" onInput={(e) => updateKid(i, kind, j, { icon: e.currentTarget.value })} />
-                      <s-text-field label="Label" labelAccessibilityVisibility={j ? "exclusive" : "visible"} value={o.label || ""} onInput={(e) => updateKid(i, kind, j, { label: e.currentTarget.value })} />
-                      {kind === "options" ? (
-                        <s-text-field label="Description (optional)" labelAccessibilityVisibility={j ? "exclusive" : "visible"} value={o.desc || ""} onInput={(e) => updateKid(i, kind, j, { desc: e.currentTarget.value })} />
-                      ) : null}
-                    </s-grid>
-                  ))}
-                  {kind === "options" ? (
-                    <details>
-                      <summary style={{ cursor: "pointer", fontSize: 13 }}>Use your own images instead of emoji</summary>
-                      <s-stack direction="block" gap="small-200">
-                        <s-text color="subdued">Paste an https image link per option (upload in Shopify, Content, Files, then copy the link). An image replaces the emoji.</s-text>
-                        {st[kind].map((o, j) => (
-                          <s-url-field key={j} label={o.label || `Option ${j + 1}`} value={o.image || ""} placeholder="https://cdn.shopify.com/…" onInput={(e) => updateKid(i, kind, j, { image: e.currentTarget.value })} />
-                        ))}
-                      </s-stack>
-                    </details>
-                  ) : null}
+                  {st[kind].map((o, j) => {
+                    const src = sourceOf(o);
+                    return (
+                      <s-box key={j} padding="small" borderWidth="base" borderRadius="base">
+                        <s-stack direction="block" gap="small">
+                          <s-grid gridTemplateColumns={kind === "options" ? "1.2fr 1.6fr" : "1fr"} gap="small" alignItems="end">
+                            <s-text-field label="Label" value={o.label || ""} onInput={(e) => updateKid(i, kind, j, { label: e.currentTarget.value })} />
+                            {kind === "options" ? <s-text-field label="Description (optional)" value={o.desc || ""} onInput={(e) => updateKid(i, kind, j, { desc: e.currentTarget.value })} /> : null}
+                          </s-grid>
+                          {kind !== "counters" ? (
+                            <s-grid gridTemplateColumns="56px 1fr 2fr" gap="small" alignItems="end">
+                              <s-grid-item>
+                                {o.image ? <s-thumbnail src={o.image} alt="" size="base" /> : <s-box inlineSize="56px" blockSize="56px" borderWidth="base" borderRadius="base" background="subdued"><div style={{ display: "grid", placeItems: "center", height: "100%", fontSize: 24 }}>{decodeIcon(o.icon)}</div></s-box>}
+                              </s-grid-item>
+                              <s-select label="Visual" value={src} onChange={(e) => {
+                                const v = e.currentTarget.value;
+                                updateKid(i, kind, j, v === "emoji" ? { _src: v, image: "", imageSource: null } : { _src: v });
+                              }}>
+                                <s-option value="emoji">Emoji icon</s-option>
+                                <s-option value="store">Picture from my store</s-option>
+                                <s-option value="custom">Custom image link</s-option>
+                              </s-select>
+                              {src === "emoji" ? (
+                                <s-text-field label="Emoji" value={decodeIcon(o.icon)} placeholder="🙂" onInput={(e) => updateKid(i, kind, j, { icon: e.currentTarget.value })} />
+                              ) : src === "store" ? (
+                                <s-stack direction="block" gap="small-200">
+                                  <s-stack direction="inline" gap="small">
+                                    <s-button variant="secondary" onClick={() => pickImage(i, kind, j, "product")}>Choose a product</s-button>
+                                    <s-button variant="secondary" onClick={() => pickImage(i, kind, j, "collection")}>Choose a collection</s-button>
+                                  </s-stack>
+                                  {o.imageSource ? <s-text color="subdued">{`From ${o.imageSource.type}: ${o.imageSource.title}`}</s-text> : <s-text color="subdued">Uses that product's or collection's main image.</s-text>}
+                                </s-stack>
+                              ) : (
+                                <s-url-field label="Image link (https)" value={o.imageSource ? "" : (o.image || "")} placeholder="https://cdn.shopify.com/…" details="Upload in Shopify, Content, Files, then copy the link." onInput={(e) => updateKid(i, kind, j, { image: e.currentTarget.value, imageSource: null })} />
+                              )}
+                            </s-grid>
+                          ) : null}
+                        </s-stack>
+                      </s-box>
+                    );
+                  })}
                 </s-stack>
               ))}
               <s-stack direction="inline" gap="small">

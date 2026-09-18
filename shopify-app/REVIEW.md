@@ -87,7 +87,12 @@ toolbar at 1600 x 1200 for admin pages.
 
 ## 4. App icon (1200 x 1200 px, PNG or JPG, under 1 MB)
 
-Brief: a simple mark that reads at 40 px. Suggested concept: three stacked rounded bars (the
+**Chosen 2026-09-18: concept A, "steps".** Files in `branding/`: `app-icon-1200.png` (upload this
+one to the Dev Dashboard app settings and to the listing), `app-icon-512.png`, `app-icon.svg`
+(source; also served as the app's favicon from `public/icon.svg`). The other concepts are kept
+as `icon-b/c/d-*.svg`.
+
+Original brief: a simple mark that reads at 40 px. Suggested concept: three stacked rounded bars (the
 questionnaire steps) resolving into a check or a basket, on a solid background in the brand
 blue `#3d5ee6` with a white mark. No text, no Shopify bag, no screenshots, square with the
 artwork inside a safe area of about 80%. Upload it in the Dev Dashboard app settings and in the

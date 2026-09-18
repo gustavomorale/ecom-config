@@ -114,8 +114,8 @@ listing.
 
 ## 6. Pre-flight
 
-- [ ] Client secret rotated after it appeared in a screenshot; new value set in Netlify;
-      redeployed; app still opens.
+- [x] Client secret rotated and the old one revoked (2026-09-18); new value set in Netlify;
+      redeployed; app opens.
 - [x] `BCFG_BILLING=on` in Netlify. Verified on MySuperStore 2026-09-18: the approval page shows
       Standard, 14-day trial, USD 25 every 30 days as a test charge; Approve opens the overview;
       Cancel returns to Settings, Apps without a loop. The return URL must be absolute.
@@ -123,7 +123,8 @@ listing.
 - [ ] Uninstall and reinstall: no errors, welcome page appears, old session gone.
 - [ ] Privacy policy read by CraftFrame's adviser. Registered address and company number
       added 2026-09-18 from Companies House (16669774); confirm they are current.
-- [ ] Privacy webhooks respond 200 to a signed test and 401/400 unsigned (verified 2026-09-16).
+- [x] Privacy webhooks respond 200 to a signed test and 400 unsigned (verified on production
+      2026-09-18, after the secret rotation).
 - [ ] Storefront on a slow phone and with reduced motion / reduced transparency.
 - [ ] No console errors in the admin or on the storefront.
 - [ ] `LISTING.md` beta wording matches what is true on submission day.

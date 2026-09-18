@@ -4,7 +4,7 @@ import { AppProvider } from "@shopify/shopify-app-react-router/react";
 import { authenticate, PLAN, billingEnabled, billingIsTest } from "../shopify.server";
 
 export const loader = async ({ request }) => {
-  const { admin, billing } = await authenticate.admin(request);
+  const { admin, billing, session } = await authenticate.admin(request);
 
   // Subscription gate. With billing on, a shop without an active or trialing
   // subscription is sent to Shopify's approval page and comes back here.
@@ -21,10 +21,15 @@ export const loader = async ({ request }) => {
         isTest = !!data?.shop?.plan?.partnerDevelopment;
       } catch (e) { /* fall through to a real charge */ }
     }
+    // Shopify requires an absolute return URL. After approving (or declining)
+    // the merchant lands back on the app inside their admin.
+    const store = session.shop.replace(/\.myshopify\.com$/, "");
+    // eslint-disable-next-line no-undef
+    const returnUrl = `https://admin.shopify.com/store/${store}/apps/${process.env.SHOPIFY_API_KEY}/app`;
     await billing.require({
       plans: [PLAN],
       isTest,
-      onFailure: async () => billing.request({ plan: PLAN, isTest, returnUrl: "/app" }),
+      onFailure: async () => billing.request({ plan: PLAN, isTest, returnUrl }),
     });
   }
 

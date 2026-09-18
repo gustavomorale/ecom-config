@@ -116,8 +116,9 @@ listing.
 
 - [ ] Client secret rotated after it appeared in a screenshot; new value set in Netlify;
       redeployed; app still opens.
-- [ ] `BCFG_BILLING=on` in Netlify (done 2026-09-18). Fresh install shows the plan approval, the
-      trial starts, the app opens after approval, declining returns to Shopify without a loop.
+- [x] `BCFG_BILLING=on` in Netlify. Verified on MySuperStore 2026-09-18: the approval page shows
+      Standard, 14-day trial, USD 25 every 30 days as a test charge; Approve opens the overview;
+      Cancel returns to Settings, Apps without a loop. The return URL must be absolute.
 - [ ] Fresh install on a clean dev store end to end, following section 1 exactly.
 - [ ] Uninstall and reinstall: no errors, welcome page appears, old session gone.
 - [ ] Privacy policy read by CraftFrame's adviser. Registered address and company number

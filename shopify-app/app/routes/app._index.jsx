@@ -157,6 +157,7 @@ function Overview({ config, current, editorUrl, storeUrl, billing, block }) {
     ["/app/products", "Products", `${linked} of ${products.length} linked to your catalogue.`],
     ["/app/look", "Look", `${config.brand?.preset === "base" ? "Base" : "Glass"}${config.brand?.matched ? ", matched to your theme" : ""}. Colours, corners, type.`],
     ["/app/copy", "Copy & cart", "Every word shoppers read, promo code, how the cart opens."],
+    ["/app/category", "Category", `${current ? current.label : "Template"}. Start again from a different template.`],
   ];
 
   return (

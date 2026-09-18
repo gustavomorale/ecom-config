@@ -45,12 +45,14 @@ function Frame({ json, view, maxWidth }) {
   // fit the fixed-size viewport into whatever room the column gives us
   useEffect(() => {
     const el = wrap.current; if (!el) return undefined;
-    const fit = () => setScale(Math.min(1, (Math.min(el.clientWidth, maxWidth || Infinity)) / v.width));
+    // the frame draws its own border outside the scaled viewport; leave room for it
+    const border = view === "mobile" ? 16 : 2;
+    const fit = () => setScale(Math.min(1, (Math.min(el.clientWidth, maxWidth || Infinity) - border) / v.width));
     fit();
     const ro = typeof ResizeObserver !== "undefined" ? new ResizeObserver(fit) : null;
     if (ro) ro.observe(el);
     return () => { if (ro) ro.disconnect(); };
-  }, [v.width, maxWidth]);
+  }, [v.width, maxWidth, view]);
 
   // hand the config to the frame when it is ready, and again whenever it changes
   useEffect(() => {

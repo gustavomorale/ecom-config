@@ -1,7 +1,7 @@
 /* ============================================================
    Setup step 3: Questions.
-   Retitle, reorder, remove. Option labels are editable; icons and new
-   questions belong to the full editor. Saved as one array, the server keeps
+   Retitle, reorder, remove, add. Option labels, descriptions, icons (emoji or
+   an https image) and whether an answer is required are all edited here. Saved as one array, the server keeps
    the structure it knows and drops anything else.
    ============================================================ */
 import { useEffect, useState } from "react";
@@ -14,6 +14,12 @@ import { SetupRail, doneSteps } from "../components/SetupRail";
 import { WidgetPreview } from "../components/WidgetPreview";
 
 const TYPES = ["choice", "boolean", "counters", "toggles", "multi"];
+
+/* Icons. Templates store emoji as HTML entities ("&#x1F4A7;"); the editor shows
+   the character. On save only plain characters survive, because the storefront
+   prints the icon as HTML. */
+const decodeIcon = (s) => String(s || "").replace(/&#x([0-9a-f]+);/gi, (m, h) => String.fromCodePoint(parseInt(h, 16)));
+const cleanIcon = (s) => [...decodeIcon(s).replace(/[<>&"'`]/g, "").trim()].slice(0, 4).join("");
 
 /* Templates for "Add a question". Ids get a suffix so two of a kind can coexist. */
 const NEW_STEPS = [
@@ -40,11 +46,11 @@ function sanitizeNew(inc) {
   if (!id) return null;
   const field = String(inc.field || id).replace(/[^a-z0-9_]/gi, "").slice(0, 40) || id;
   const st = { id, type: inc.type, question: String(inc.question || "").slice(0, 160), sub: String(inc.sub || "").slice(0, 240) };
-  const opt = (o, i) => ({ value: String(o.value ?? i).slice(0, 40), label: String(o.label || "").slice(0, 80), icon: typeof o.icon === "string" ? o.icon.slice(0, 200) : "" });
+  const opt = (o, i) => ({ value: String(o.value ?? i).slice(0, 40), label: String(o.label || "").slice(0, 80), icon: typeof o.icon === "string" ? cleanIcon(o.icon) : "" });
   if (inc.type === "choice" || inc.type === "multi") { st.field = field; st.required = !!inc.required; st.options = (inc.options || []).slice(0, 12).map(opt); if (inc.type === "multi") st.columns = 2; }
   if (inc.type === "boolean") { st.field = field; st.required = !!inc.required; st.layout = "grid"; st.options = [{ value: true, label: String(inc.options?.[0]?.label || "Yes").slice(0, 80) }, { value: false, label: String(inc.options?.[1]?.label || "No").slice(0, 80) }]; }
   if (inc.type === "counters") st.counters = (inc.counters || []).slice(0, 4).map((c, i) => ({ field: String(c.field || `${field}_${i}`).replace(/[^a-z0-9_]/gi, "").slice(0, 40), label: String(c.label || "").slice(0, 80), min: Number(c.min) || 0, max: Number(c.max) || 10, defaultValue: Number(c.defaultValue) || 0 }));
-  if (inc.type === "toggles") st.toggles = (inc.toggles || []).slice(0, 8).map((t, i) => ({ field: String(t.field || `${field}_${i}`).replace(/[^a-z0-9_]/gi, "").slice(0, 40), label: String(t.label || "").slice(0, 80), icon: typeof t.icon === "string" ? t.icon.slice(0, 200) : "" }));
+  if (inc.type === "toggles") st.toggles = (inc.toggles || []).slice(0, 8).map((t, i) => ({ field: String(t.field || `${field}_${i}`).replace(/[^a-z0-9_]/gi, "").slice(0, 40), label: String(t.label || "").slice(0, 80), icon: typeof t.icon === "string" ? cleanIcon(t.icon) : "" }));
   return st;
 }
 
@@ -58,9 +64,17 @@ function mergeSteps(saved, incoming) {
     const st = JSON.parse(JSON.stringify(base));
     if (typeof inc.question === "string") st.question = inc.question.slice(0, 160);
     if (typeof inc.sub === "string") st.sub = inc.sub.slice(0, 240);
+    if (typeof inc.required === "boolean" && "field" in st) st.required = inc.required;
     for (const kind of ["options", "counters", "toggles"]) {
       if (!Array.isArray(st[kind]) || !Array.isArray(inc[kind])) continue;
-      st[kind].forEach((o, i) => { if (inc[kind][i] && typeof inc[kind][i].label === "string") o.label = inc[kind][i].label.slice(0, 80); });
+      st[kind].forEach((o, i) => {
+        const e = inc[kind][i]; if (!e) return;
+        if (typeof e.label === "string") o.label = e.label.slice(0, 80);
+        if (typeof e.desc === "string" && kind === "options") { const d = e.desc.replace(/[<>]/g, "").slice(0, 120); if (d) o.desc = d; else delete o.desc; }
+        // The storefront prints icons as HTML, so only plain characters (an emoji) get through.
+        if (typeof e.icon === "string") o.icon = cleanIcon(e.icon);
+        if (typeof e.image === "string") { const u = e.image.trim(); if (/^https:\/\/[^\s"'<>]+$/.test(u)) o.image = u.slice(0, 500); else delete o.image; }
+      });
     }
     out.push(st);
   }
@@ -98,7 +112,7 @@ export default function Questions() {
   }, [fetcher.data, shopify]);
 
   const update = (i, patch) => setSteps((s) => s.map((st, j) => (j === i ? { ...st, ...patch } : st)));
-  const updateKid = (i, kind, j, label) => setSteps((s) => s.map((st, k) => k !== i ? st : { ...st, [kind]: st[kind].map((o, m) => (m === j ? { ...o, label } : o)) }));
+  const updateKid = (i, kind, j, patch) => setSteps((s) => s.map((st, k) => k !== i ? st : { ...st, [kind]: st[kind].map((o, m) => (m === j ? { ...o, ...patch } : o)) }));
   const move = (i, d) => setSteps((s) => { const a = s.slice(); const t = a[i]; a[i] = a[i + d]; a[i + d] = t; return a; });
   const remove = (i) => setSteps((s) => s.filter((_, j) => j !== i));
   const addStep = (t) => setSteps((s) => {
@@ -134,12 +148,32 @@ export default function Questions() {
             <s-stack direction="block" gap="base">
               <s-text-field label="Question" value={st.question || ""} onInput={(e) => update(i, { question: e.currentTarget.value })} />
               <s-text-field label="Helper text" value={st.sub || ""} onInput={(e) => update(i, { sub: e.currentTarget.value })} />
+              {"field" in st ? (
+                <s-checkbox label="An answer is required to continue" checked={!!st.required} onChange={(e) => update(i, { required: e.currentTarget.checked })} />
+              ) : null}
               {kinds.map((kind) => (
                 <s-stack key={kind} direction="block" gap="small-200">
                   <s-text color="subdued">{kind === "options" ? "Options" : kind === "counters" ? "Counters" : "Toggles"}</s-text>
                   {st[kind].map((o, j) => (
-                    <s-text-field key={j} label={`${j + 1}`} labelAccessibilityVisibility="exclusive" value={o.label || ""} onInput={(e) => updateKid(i, kind, j, e.currentTarget.value)} />
+                    <s-grid key={j} gridTemplateColumns={kind === "options" ? "72px 1.2fr 1.6fr" : "72px 1fr"} gap="small" alignItems="end">
+                      <s-text-field label="Icon" labelAccessibilityVisibility={j ? "exclusive" : "visible"} value={decodeIcon(o.icon)} placeholder="🙂" onInput={(e) => updateKid(i, kind, j, { icon: e.currentTarget.value })} />
+                      <s-text-field label="Label" labelAccessibilityVisibility={j ? "exclusive" : "visible"} value={o.label || ""} onInput={(e) => updateKid(i, kind, j, { label: e.currentTarget.value })} />
+                      {kind === "options" ? (
+                        <s-text-field label="Description (optional)" labelAccessibilityVisibility={j ? "exclusive" : "visible"} value={o.desc || ""} onInput={(e) => updateKid(i, kind, j, { desc: e.currentTarget.value })} />
+                      ) : null}
+                    </s-grid>
                   ))}
+                  {kind === "options" ? (
+                    <details>
+                      <summary style={{ cursor: "pointer", fontSize: 13 }}>Use your own images instead of emoji</summary>
+                      <s-stack direction="block" gap="small-200">
+                        <s-text color="subdued">Paste an https image link per option (upload in Shopify, Content, Files, then copy the link). An image replaces the emoji.</s-text>
+                        {st[kind].map((o, j) => (
+                          <s-url-field key={j} label={o.label || `Option ${j + 1}`} value={o.image || ""} placeholder="https://cdn.shopify.com/…" onInput={(e) => updateKid(i, kind, j, { image: e.currentTarget.value })} />
+                        ))}
+                      </s-stack>
+                    </details>
+                  ) : null}
                 </s-stack>
               ))}
               <s-stack direction="inline" gap="small">
@@ -153,7 +187,7 @@ export default function Questions() {
       })}
 
       <s-section heading="Add a question">
-        <s-paragraph color="subdued">Starts with placeholder options you can rename here. Rules that use the answer are set in the full editor.</s-paragraph>
+        <s-paragraph color="subdued">Starts with placeholder options you can rename here. Then use the answer in <s-link href="/app/rules">Rules</s-link> to decide what goes in the cart.</s-paragraph>
         <s-stack direction="inline" gap="small">
           {NEW_STEPS.map((t) => <s-button key={t.type} variant="secondary" onClick={() => addStep(t)}>{t.label}</s-button>)}
         </s-stack>

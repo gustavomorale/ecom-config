@@ -76,7 +76,7 @@ function Welcome({ billing }) {
       </s-section>
 
       <s-section slot="aside" heading="This is a beta">
-        <s-paragraph>You are among the first stores using it. Things may change between updates, and some editing (rules, icons, copy) is not in the app yet.</s-paragraph>
+        <s-paragraph>You are among the first stores using it. Things may change between updates, and a few things are still to come: live price sync and the drop-off analytics.</s-paragraph>
         <s-paragraph>Found something broken or missing? <s-link href={`mailto:${SUPPORT_EMAIL}?subject=Bundle%20Configurator%20beta`}>{SUPPORT_EMAIL}</s-link>. Replies within a working day.</s-paragraph>
       </s-section>
     </s-page>
@@ -130,6 +130,8 @@ export default function Index() {
         </s-paragraph>
         <s-stack direction="inline" gap="base">
           {finished ? (missing ? <s-button href="/app/products" variant="primary">Connect products</s-button> : null) : <s-button href="/app/look" variant="primary">Continue setup</s-button>}
+          <s-button href="/app/rules" variant="secondary">Edit rules</s-button>
+          <s-button href="/app/copy" variant="secondary">Edit copy &amp; cart</s-button>
           <s-button href="/app/category" variant="tertiary" tone="critical">Change category</s-button>
         </s-stack>
       </s-section>

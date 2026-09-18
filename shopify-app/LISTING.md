@@ -30,7 +30,7 @@ your products, done. Beta: free while we finish it, and we answer every email.
 - Category templates: a working questionnaire the moment you pick what you sell
 - Match my store: reads your theme's colours, type and corners, with a confidence check
 - Every product linked from your catalogue with the product picker, no IDs to type
-- Rules build the bundle: base set plus add-ons that follow from the answers
+- Rules editor in plain rows: no code, no JSON, quantities can be calculated from answers
 - Result screen with reasons, price preview and a pre-filled checkout link
 - Shoppers' answers survive a refresh and can be shared as a link
 - Accessible: keyboard navigation, screen reader announcements, focus management
@@ -40,9 +40,9 @@ your products, done. Beta: free while we finish it, and we answer every email.
 
 ## Beta notice (put at the top of the details, and in the support section)
 
-Bundle Configurator is in beta. It is free while in beta. Some editing (add-on rules,
-option icons, copy) is not yet in the app; it arrives in the next updates. Report anything
-broken or missing to contact@craftframe.agency and expect a reply within a working day.
+Bundle Configurator is in beta. Still to come: live price sync from your catalogue and
+drop-off analytics. Report anything broken or missing to contact@craftframe.agency and
+expect a reply within a working day.
 
 ## Pricing
 

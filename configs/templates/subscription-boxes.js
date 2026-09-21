@@ -25,7 +25,7 @@ window.BCFG_CONFIG_COFFEE = {
       rows: [
         { icon: '&#x2615;', label: '{cupsPerDay} cup(s) a day, {drinkers} drinker(s)', when: { field: 'brewMethod', op: 'truthy' } },
         { icon: '&#x1F3FA;', label: 'Brewing: {brewMethod}', when: { field: 'brewMethod', op: 'truthy' } },
-        { icon: '&#x1F525;', label: 'Roast: {roast}', when: { field: 'roast', op: 'truthy' } },
+        { icon: '&#x1F525;', label: 'Roast: {roast_label}', when: { field: 'roast', op: 'truthy' } },
         { icon: '&#x1F4E6;', label: '~{cupsPerWeek} cups a week', when: { field: 'step', op: 'gt', value: 1 } }
       ]
     }

@@ -1458,6 +1458,17 @@ table.spec td:first-child{white-space:nowrap;font-weight:550}
     for (k in s) if (typeof s[k] === 'boolean') s[k + '_n'] = s[k] ? 1 : 0;
     var derived = this.cfg.derived || {};
     Object.keys(derived).forEach(function (name) { s[name] = safeExpr(derived[name], s); });
+    // {field_label}: the chosen option's wording, for copy shown to shoppers.
+    // Rules keep testing the raw value; several choices read as "A, B".
+    var state = this.state;
+    var addLabels = function (st) {
+      if (!st || !st.field || !st.options) return;
+      var val = state[st.field], picked = Array.isArray(val) ? val : [val];
+      var names = [];
+      st.options.forEach(function (o) { if (picked.indexOf(o.value) !== -1) names.push(o.label); });
+      s[st.field + '_label'] = names.join(', ');
+    };
+    (this.cfg.steps || []).forEach(function (st) { addLabels(st); addLabels(st.followUp); });
     return s;
   };
 
@@ -3143,7 +3154,7 @@ window.BCFG_CONFIG_COFFEE = {
       rows: [
         { icon: '&#x2615;', label: '{cupsPerDay} cup(s) a day, {drinkers} drinker(s)', when: { field: 'brewMethod', op: 'truthy' } },
         { icon: '&#x1F3FA;', label: 'Brewing: {brewMethod}', when: { field: 'brewMethod', op: 'truthy' } },
-        { icon: '&#x1F525;', label: 'Roast: {roast}', when: { field: 'roast', op: 'truthy' } },
+        { icon: '&#x1F525;', label: 'Roast: {roast_label}', when: { field: 'roast', op: 'truthy' } },
         { icon: '&#x1F4E6;', label: '~{cupsPerWeek} cups a week', when: { field: 'step', op: 'gt', value: 1 } }
       ]
     }
@@ -3260,10 +3271,10 @@ window.BCFG_CONFIG_COSMETICS = {
     options: {
       emptyTitle: 'Tell us about your skin', emptySub: 'to start building your routine',
       rows: [
-        { icon: '&#x1F9F4;', label: 'Skin: {skin}', when: { field: 'skin', op: 'truthy' } },
-        { icon: '&#x1F3AF;', label: 'Goals: {goals}', when: { field: 'step', op: 'gt', value: 1 } },
-        { icon: '&#x1F305;', label: 'Routine: {routine}', when: { field: 'routine', op: 'truthy' } },
-        { icon: '&#x1F465;', label: 'Sharing: {people}', when: { field: 'step', op: 'gt', value: 3 } },
+        { icon: '&#x1F9F4;', label: 'Skin: {skin_label}', when: { field: 'skin', op: 'truthy' } },
+        { icon: '&#x1F3AF;', label: 'Goals: {goals_label}', when: { field: 'step', op: 'gt', value: 1 } },
+        { icon: '&#x1F305;', label: 'Routine: {routine_label}', when: { field: 'routine', op: 'truthy' } },
+        { icon: '&#x1F465;', label: 'People using it: {people}', when: { field: 'step', op: 'gt', value: 3 } },
         { icon: '&#x1F4C5;', label: 'Restock every {weeks} weeks', when: { field: 'step', op: 'gt', value: 3 } }
       ]
     }
@@ -3566,7 +3577,7 @@ window.BCFG_CONFIG_COSMETICS = {
         sceneTitle: 'Your build so far', emptyTitle: 'Pick a riding style',
         priceSuffix: 'complete build',
         sceneRows: [
-          { icon: '&#x1F6B2;', label: 'Riding: {level}', when: { field: 'level', op: 'truthy' } },
+          { icon: '&#x1F6B2;', label: 'Riding: {level_label}', when: { field: 'level', op: 'truthy' } },
           { icon: '&#x1F5FA;', label: '{weeklyKm} km a week', when: { field: 'level', op: 'truthy' } },
           { icon: '&#x1F9F0;', label: '{bikes} bike(s) in the household', when: { field: 'step', op: 'gt', value: 1 } }
         ],
@@ -3643,7 +3654,7 @@ window.BCFG_CONFIG_COSMETICS = {
         sceneTitle: 'Your setup so far', emptyTitle: 'Pick how you work',
         priceSuffix: 'complete setup',
         sceneRows: [
-          { icon: '&#x1F4BC;', label: 'Setup: {level}', when: { field: 'level', op: 'truthy' } },
+          { icon: '&#x1F4BC;', label: 'Setup: {level_label}', when: { field: 'level', op: 'truthy' } },
           { icon: '&#x1F5A5;', label: '{screens} screen(s)', when: { field: 'level', op: 'truthy' } },
           { icon: '&#x23F1;', label: '{hours} hours a day', when: { field: 'step', op: 'gt', value: 1 } }
         ],
@@ -3725,7 +3736,7 @@ window.BCFG_CONFIG_COSMETICS = {
         sceneRows: [
           {
             icon: '&#x1F455;',
-            label: 'For: {level}',
+            label: 'For: {level_label}',
             when: {
               field: 'level',
               op: 'truthy'
@@ -4042,7 +4053,7 @@ window.BCFG_CONFIG_COSMETICS = {
         sceneRows: [
           {
             icon: '&#x1F9FA;',
-            label: 'For: {level}',
+            label: 'For: {level_label}',
             when: {
               field: 'level',
               op: 'truthy'
@@ -4380,7 +4391,7 @@ window.BCFG_CONFIG_COSMETICS = {
         sceneRows: [
           {
             icon: '&#x1F33B;',
-            label: 'Space: {level}',
+            label: 'Space: {level_label}',
             when: {
               field: 'level',
               op: 'truthy'
@@ -4715,7 +4726,7 @@ window.BCFG_CONFIG_COSMETICS = {
         sceneRows: [
           {
             icon: '&#x1F3A7;',
-            label: 'Setup: {level}',
+            label: 'Setup: {level_label}',
             when: {
               field: 'level',
               op: 'truthy'
@@ -5036,7 +5047,7 @@ window.BCFG_CONFIG_COSMETICS = {
         sceneRows: [
           {
             icon: '&#x1F43E;',
-            label: 'Pet: {level}',
+            label: 'Pet: {level_label}',
             when: {
               field: 'level',
               op: 'truthy'
@@ -5380,7 +5391,7 @@ window.BCFG_CONFIG_COSMETICS = {
         sceneRows: [
           {
             icon: '&#x26FA;',
-            label: 'Activity: {level}',
+            label: 'Activity: {level_label}',
             when: {
               field: 'level',
               op: 'truthy'
@@ -5726,7 +5737,7 @@ window.BCFG_CONFIG_COSMETICS = {
         sceneRows: [
           {
             icon: '&#x1F476;',
-            label: 'Stage: {level}',
+            label: 'Stage: {level_label}',
             when: {
               field: 'level',
               op: 'truthy'
@@ -6066,7 +6077,7 @@ window.BCFG_CONFIG_COSMETICS = {
         sceneRows: [
           {
             icon: '&#x1F381;',
-            label: 'Occasion: {level}',
+            label: 'Occasion: {level_label}',
             when: {
               field: 'level',
               op: 'truthy'
@@ -6386,7 +6397,7 @@ window.BCFG_CONFIG_COSMETICS = {
         sceneRows: [
           {
             icon: '&#x1F527;',
-            label: 'Work: {level}',
+            label: 'Work: {level_label}',
             when: {
               field: 'level',
               op: 'truthy'
@@ -6722,7 +6733,7 @@ window.BCFG_CONFIG_COSMETICS = {
         sceneRows: [
           {
             icon: '&#x1F3AF;',
-            label: 'Goal: {level}',
+            label: 'Goal: {level_label}',
             when: {
               field: 'level',
               op: 'truthy'
@@ -7055,7 +7066,7 @@ window.BCFG_CONFIG_COSMETICS = {
           }),
           scene: { type: 'summary', title: 'Your answers', options: {
             emptyTitle: 'Answer the first question', emptySub: 'to start building',
-            rows: [{ icon: '&#x25C8;', label: 'Choice: {choice}', when: { field: 'choice', op: 'truthy' } },
+            rows: [{ icon: '&#x25C8;', label: 'Choice: {choice_label}', when: { field: 'choice', op: 'truthy' } },
                    { icon: '&#x1F522;', label: 'Quantity: {quantity}', when: { field: 'choice', op: 'truthy' } }] } },
           steps: [
             { id: 'q1', type: 'choice', field: 'choice', required: true,

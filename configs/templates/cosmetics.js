@@ -33,10 +33,10 @@ window.BCFG_CONFIG_COSMETICS = {
     options: {
       emptyTitle: 'Tell us about your skin', emptySub: 'to start building your routine',
       rows: [
-        { icon: '&#x1F9F4;', label: 'Skin: {skin}', when: { field: 'skin', op: 'truthy' } },
-        { icon: '&#x1F3AF;', label: 'Goals: {goals}', when: { field: 'step', op: 'gt', value: 1 } },
-        { icon: '&#x1F305;', label: 'Routine: {routine}', when: { field: 'routine', op: 'truthy' } },
-        { icon: '&#x1F465;', label: 'Sharing: {people}', when: { field: 'step', op: 'gt', value: 3 } },
+        { icon: '&#x1F9F4;', label: 'Skin: {skin_label}', when: { field: 'skin', op: 'truthy' } },
+        { icon: '&#x1F3AF;', label: 'Goals: {goals_label}', when: { field: 'step', op: 'gt', value: 1 } },
+        { icon: '&#x1F305;', label: 'Routine: {routine_label}', when: { field: 'routine', op: 'truthy' } },
+        { icon: '&#x1F465;', label: 'People using it: {people}', when: { field: 'step', op: 'gt', value: 3 } },
         { icon: '&#x1F4C5;', label: 'Restock every {weeks} weeks', when: { field: 'step', op: 'gt', value: 3 } }
       ]
     }

@@ -117,7 +117,7 @@
         sceneTitle: 'Your build so far', emptyTitle: 'Pick a riding style',
         priceSuffix: 'complete build',
         sceneRows: [
-          { icon: '&#x1F6B2;', label: 'Riding: {level}', when: { field: 'level', op: 'truthy' } },
+          { icon: '&#x1F6B2;', label: 'Riding: {level_label}', when: { field: 'level', op: 'truthy' } },
           { icon: '&#x1F5FA;', label: '{weeklyKm} km a week', when: { field: 'level', op: 'truthy' } },
           { icon: '&#x1F9F0;', label: '{bikes} bike(s) in the household', when: { field: 'step', op: 'gt', value: 1 } }
         ],
@@ -194,7 +194,7 @@
         sceneTitle: 'Your setup so far', emptyTitle: 'Pick how you work',
         priceSuffix: 'complete setup',
         sceneRows: [
-          { icon: '&#x1F4BC;', label: 'Setup: {level}', when: { field: 'level', op: 'truthy' } },
+          { icon: '&#x1F4BC;', label: 'Setup: {level_label}', when: { field: 'level', op: 'truthy' } },
           { icon: '&#x1F5A5;', label: '{screens} screen(s)', when: { field: 'level', op: 'truthy' } },
           { icon: '&#x23F1;', label: '{hours} hours a day', when: { field: 'step', op: 'gt', value: 1 } }
         ],
@@ -276,7 +276,7 @@
         sceneRows: [
           {
             icon: '&#x1F455;',
-            label: 'For: {level}',
+            label: 'For: {level_label}',
             when: {
               field: 'level',
               op: 'truthy'
@@ -593,7 +593,7 @@
         sceneRows: [
           {
             icon: '&#x1F9FA;',
-            label: 'For: {level}',
+            label: 'For: {level_label}',
             when: {
               field: 'level',
               op: 'truthy'
@@ -931,7 +931,7 @@
         sceneRows: [
           {
             icon: '&#x1F33B;',
-            label: 'Space: {level}',
+            label: 'Space: {level_label}',
             when: {
               field: 'level',
               op: 'truthy'
@@ -1266,7 +1266,7 @@
         sceneRows: [
           {
             icon: '&#x1F3A7;',
-            label: 'Setup: {level}',
+            label: 'Setup: {level_label}',
             when: {
               field: 'level',
               op: 'truthy'
@@ -1587,7 +1587,7 @@
         sceneRows: [
           {
             icon: '&#x1F43E;',
-            label: 'Pet: {level}',
+            label: 'Pet: {level_label}',
             when: {
               field: 'level',
               op: 'truthy'
@@ -1931,7 +1931,7 @@
         sceneRows: [
           {
             icon: '&#x26FA;',
-            label: 'Activity: {level}',
+            label: 'Activity: {level_label}',
             when: {
               field: 'level',
               op: 'truthy'
@@ -2277,7 +2277,7 @@
         sceneRows: [
           {
             icon: '&#x1F476;',
-            label: 'Stage: {level}',
+            label: 'Stage: {level_label}',
             when: {
               field: 'level',
               op: 'truthy'
@@ -2617,7 +2617,7 @@
         sceneRows: [
           {
             icon: '&#x1F381;',
-            label: 'Occasion: {level}',
+            label: 'Occasion: {level_label}',
             when: {
               field: 'level',
               op: 'truthy'
@@ -2937,7 +2937,7 @@
         sceneRows: [
           {
             icon: '&#x1F527;',
-            label: 'Work: {level}',
+            label: 'Work: {level_label}',
             when: {
               field: 'level',
               op: 'truthy'
@@ -3273,7 +3273,7 @@
         sceneRows: [
           {
             icon: '&#x1F3AF;',
-            label: 'Goal: {level}',
+            label: 'Goal: {level_label}',
             when: {
               field: 'level',
               op: 'truthy'
@@ -3606,7 +3606,7 @@
           }),
           scene: { type: 'summary', title: 'Your answers', options: {
             emptyTitle: 'Answer the first question', emptySub: 'to start building',
-            rows: [{ icon: '&#x25C8;', label: 'Choice: {choice}', when: { field: 'choice', op: 'truthy' } },
+            rows: [{ icon: '&#x25C8;', label: 'Choice: {choice_label}', when: { field: 'choice', op: 'truthy' } },
                    { icon: '&#x1F522;', label: 'Quantity: {quantity}', when: { field: 'choice', op: 'truthy' } }] } },
           steps: [
             { id: 'q1', type: 'choice', field: 'choice', required: true,

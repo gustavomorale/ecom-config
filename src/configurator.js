@@ -154,6 +154,17 @@
     for (k in s) if (typeof s[k] === 'boolean') s[k + '_n'] = s[k] ? 1 : 0;
     var derived = this.cfg.derived || {};
     Object.keys(derived).forEach(function (name) { s[name] = safeExpr(derived[name], s); });
+    // {field_label}: the chosen option's wording, for copy shown to shoppers.
+    // Rules keep testing the raw value; several choices read as "A, B".
+    var state = this.state;
+    var addLabels = function (st) {
+      if (!st || !st.field || !st.options) return;
+      var val = state[st.field], picked = Array.isArray(val) ? val : [val];
+      var names = [];
+      st.options.forEach(function (o) { if (picked.indexOf(o.value) !== -1) names.push(o.label); });
+      s[st.field + '_label'] = names.join(', ');
+    };
+    (this.cfg.steps || []).forEach(function (st) { addLabels(st); addLabels(st.followUp); });
     return s;
   };
 

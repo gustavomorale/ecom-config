@@ -158,13 +158,17 @@ export async function deleteConfig(admin, shopId) {
   if (errors.length) throw new Error("Reset failed: " + errors.map((e) => e.message).join("; "));
 }
 
-/* Theme editor links. The deep link drops our block straight in, but the
-   editor refuses it for dev-preview extensions and shows a red error, so the
-   plain editor is used until the app is deployed (BCFG_DEEP_LINK=1). */
+/* Theme editor links. The deep link opens the editor on the home page with our
+   block ready to drop into a new Apps section. Shopify's format is
+   addAppBlockId={app client id}/{block file name}. The editor refuses it for
+   dev-preview extensions and shows a red error, so local dev can turn it off
+   with BCFG_DEEP_LINK=0. The pages keep the manual instructions either way. */
 export const EXTENSION_UID = "01a0aa66-c9b0-7531-ab18-ec6df9e3c716"; // registered id, seen in the CDN asset path
 export function themeEditorUrl(domain) {
   const base = `https://${domain}/admin/themes/current/editor`;
   // eslint-disable-next-line no-undef
-  if (process.env.BCFG_DEEP_LINK === "1") return `${base}?template=index&addAppBlockId=${EXTENSION_UID}/configurator&target=newAppsSection`;
-  return base;
+  const key = process.env.SHOPIFY_API_KEY;
+  // eslint-disable-next-line no-undef
+  if (!key || process.env.BCFG_DEEP_LINK === "0") return base;
+  return `${base}?template=index&addAppBlockId=${key}/configurator&target=newAppsSection`;
 }

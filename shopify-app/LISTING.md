@@ -23,7 +23,7 @@ answer four to six questions in a block on any page; your rules pick the base bu
 the add-ons that fit; the result shows what is in the set and why, then opens checkout
 with everything loaded. Pick a category to start from a working template (skincare, home
 security, subscription boxes and more), match your store's colours in one click, link
-your products, done. 14-day free trial, and we answer every email within a working day.
+your products, done. We answer every email within a working day.
 
 ## Feature list (each max 80 characters)
 
@@ -39,7 +39,10 @@ your products, done. 14-day free trial, and we answer every email within a worki
 - Sample catalogue import for stores that want to try it before adding products
 - No theme edits, no code, and no customer data stored
 
-## Beta notice (put at the top of the details, and in the support section)
+## Beta notice (in-app only; keep the word "beta" and all pricing out of the listing text)
+
+Shopify wants pricing only in the Pricing section, and a listing that reads as unfinished
+invites a rejection. The notice below stays inside the app.
 
 Bundle Configurator is in beta. Still to come: live price sync from your catalogue and
 drop-off analytics. Report anything broken or missing to contact@craftframe.agency and
@@ -78,15 +81,11 @@ Email: contact@craftframe.agency
 Reply time: within one working day
 Developer: CraftFrame WORKS Ltd
 
-## Screenshots to take (5, 1600 x 1200)
+## Screenshots and screencast
 
-1. Storefront: the questionnaire, step 1, glass look on the cosmetics demo.
-2. Storefront: the result screen with bundle, add-ons and the cart panel.
-3. Admin: the welcome page.
-4. Admin: Look step with "Good match" and the live preview.
-5. Admin: Products step with everything linked.
+Shopify asks for 3 to 6 desktop screenshots at 1600 x 900 (16:9) and a screencast of setup.
+The shot list, captions and the screencast script are in `REVIEW.md` sections 3 and 3b.
 
 ## Demo store
 
-The MySuperStore dev store with the cosmetics template and the sample catalogue is the
-screenshot and video set. Rename products before recording if the placeholder images show.
+`bundle-configurator-demo` (see `REVIEW.md` section 2) is the screenshot and screencast set.

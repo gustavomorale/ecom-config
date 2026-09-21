@@ -67,7 +67,7 @@ is what the screenshots come from.
 - [ ] Add the block to the home page in its own Apps section. Check mobile and desktop.
 - [ ] Put the demo store URL and its storefront password in the submission form.
 
-## 3. Screenshots (1600 x 1200 px, PNG, no browser chrome, no personal data)
+## 3. Screenshots (1600 x 900 px, 16:9, 3 to 6, PNG, no browser chrome, no personal data)
 
 1. **Storefront, question 1** as picture cards, desktop. Caption: "Ask what matters, in your
    store's own look."
@@ -83,7 +83,19 @@ is what the screenshots come from.
 Mobile screenshot (optional, 900 x 1600): the questionnaire on a phone with the sticky bar.
 
 Tip: use the app's Enlarge preview for clean storefront captures, and the browser's device
-toolbar at 1600 x 1200 for admin pages.
+toolbar at 1600 x 900 for admin pages.
+
+## 3b. Screencast (required by review; English, 2 to 4 minutes, captions are enough)
+
+Record on the demo store, one take per scene, in this order:
+1. Install from the link, approve the plan (test charge), land on the welcome page.
+2. The five setup steps: Category, Look with Match my store, Questions with one picture
+   card, Products with the picker, Go live.
+3. Theme editor: Add section, Apps, Bundle Configurator, Save.
+4. Storefront: answer the questions, reach the result, Add to cart, the cart opens filled.
+5. Back in the app: change one rule, show the change on the storefront.
+
+Upload unlisted to YouTube or Loom and paste the link in the submission form.
 
 ## 4. App icon (1200 x 1200 px, PNG or JPG, under 1 MB)
 
@@ -108,6 +120,8 @@ listing.
 | Pricing | Recurring: USD 25 / 30 days, 14-day free trial. No usage charges |
 | Privacy policy URL | https://bundle-configurator.netlify.app/privacy |
 | Support email | contact@craftframe.agency |
+| Screencast | link from section 3b |
+| Emergency developer contact | set in the Partner Dashboard settings (phone and email) |
 | Demo store | `bundle-configurator-demo` URL plus storefront password |
 | Languages | English |
 | Works with | Online Store 2.0 themes (app blocks) |

@@ -30,6 +30,13 @@
   <style>
     .shopify-app-block:has(> #bcfg-{{ block.id }}) { width: 100%; max-width: 100%; flex: 1 1 100%; align-self: stretch; }
     #bcfg-{{ block.id }} { width: 100%; max-width: {{ bcfg_max }}; margin-inline: auto; box-sizing: border-box; }
+    {%- if block.settings.width == 'full' %}
+    /* Edge to edge on any theme: themes wrap app blocks in a page-width container
+       (Dawn) or a centred flex row (Horizon), so step out of it. --bcfg-vw is the
+       viewport without the scrollbar, set by the script below; 100vw alone would
+       add a horizontal scrollbar on Windows. */
+    #bcfg-{{ block.id }} { width: var(--bcfg-vw, 100vw); max-width: none; margin-left: calc(50% - var(--bcfg-vw, 100vw) / 2); margin-right: 0; }
+    {%- endif %}
   </style>
   <div id="bcfg-{{ block.id }}" class="bcfg-mount" data-preset="{{ block.settings.preset }}" data-performance="{{ block.settings.performance }}" data-currency="{{ cart.currency.iso_code }}" data-locale="{{ request.locale.iso_code }}"></div>
 
@@ -38,6 +45,10 @@
   <script src="{{ 'theme-inherit.js' | asset_url }}" defer></script>
   <script type="application/json" id="bcfg-config-{{ block.id }}">{{ bcfg_config | json }}</script>
   <script>
+    (function () {
+      var setVw = function () { document.documentElement.style.setProperty('--bcfg-vw', document.documentElement.clientWidth + 'px'); };
+      setVw(); window.addEventListener('resize', setVw);
+    })();
     document.addEventListener('DOMContentLoaded', function () {
       var el = document.getElementById('bcfg-{{ block.id }}');
       var raw = document.getElementById('bcfg-config-{{ block.id }}').textContent;
@@ -80,8 +91,8 @@
       "info": "Glass adds translucency and depth. Base is flat.",
       "options": [ { "value": "glass", "label": "Glass" }, { "value": "base", "label": "Base" } ] },
     { "type": "select", "id": "width", "label": "Width", "default": "full",
-      "info": "How much of the section the questionnaire fills on desktop.",
-      "options": [ { "value": "full", "label": "Fill the section" }, { "value": "page", "label": "Page width" }, { "value": "narrow", "label": "Narrow" } ] },
+      "info": "Full width ignores the theme's page margins. The questions stay centred.",
+      "options": [ { "value": "full", "label": "Full width, edge to edge" }, { "value": "section", "label": "Fill the section" }, { "value": "page", "label": "Page width" }, { "value": "narrow", "label": "Narrow" } ] },
     { "type": "select", "id": "performance", "label": "Performance", "default": "auto",
       "info": "Auto steps Glass down to flat surfaces on slow devices.",
       "options": [ { "value": "auto", "label": "Auto" }, { "value": "full", "label": "Always full" }, { "value": "lite", "label": "Always lite" } ] }

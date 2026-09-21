@@ -10,7 +10,7 @@ export const loader = async ({ request }) => {
   const { admin } = await authenticate.admin(request);
   const { config } = await readConfig(admin);
   if (!config) return new Response("No configuration yet", { status: 404 });
-  const name = `bundle-configurator-samples-${config.meta?.category || "template"}.csv`;
+  const name = `bundle-quiz-samples-${config.meta?.category || "template"}.csv`;
   return new Response(sampleCsv(config), {
     headers: {
       "Content-Type": "text/csv; charset=utf-8",

@@ -100,6 +100,27 @@ export default function Products() {
   const fetcher = useFetcher();
   const shopify = useAppBridge();
   const [links, setLinks] = useState({ bundles: {}, accessories: {} });
+  const [downloading, setDownloading] = useState(false);
+
+  // A plain link would open outside the embedded app, without the session
+  // token, and be refused. App Bridge signs fetch(), so fetch the file here
+  // and hand it to the browser as a download.
+  const downloadCsv = async () => {
+    setDownloading(true);
+    try {
+      const res = await fetch("/app/samples.csv");
+      if (!res.ok) throw new Error(String(res.status));
+      const name = (res.headers.get("Content-Disposition") || "").match(/filename="([^"]+)"/)?.[1] || "sample-products.csv";
+      const url = URL.createObjectURL(await res.blob());
+      const a = document.createElement("a");
+      a.href = url; a.download = name;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 4000);
+      shopify.toast.show("Sample CSV downloaded");
+    } catch (e) {
+      shopify.toast.show("Could not download the CSV. Reload the page and try again.", { isError: true });
+    } finally { setDownloading(false); }
+  };
   const busy = fetcher.state !== "idle";
 
   useEffect(() => {
@@ -165,7 +186,7 @@ export default function Products() {
               <s-list-item>Come back here and press Link imported samples.</s-list-item>
             </s-ordered-list>
             <s-stack direction="inline" gap="base">
-              <s-button href="/app/samples.csv" target="_blank" variant="secondary">Download sample CSV</s-button>
+              <s-button onClick={downloadCsv} variant="secondary" {...(downloading ? { loading: true } : {})}>Download sample CSV</s-button>
               <s-button href={importUrl} target="_blank" variant="tertiary">Open Products import</s-button>
               <s-button onClick={() => fetcher.submit({ intent: "link-samples" }, { method: "POST" })} {...(busy ? { loading: true } : {})}>Link imported samples</s-button>
             </s-stack>

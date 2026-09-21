@@ -116,6 +116,20 @@ export function contrastOf(fg, bg) {
 /* Is our app block on the published theme, and where? Reads the theme's JSON
    templates and looks for a block whose type points at this app's extension.
    Best effort: null when the theme cannot be read. */
+/* Themes record an app block as shopify://apps/<app handle>/blocks/<block>/<extension id>.
+   The handle follows the app's name, so it changed when the app was renamed; the
+   extension id does not. Match the id first, and fall back to the handles this app
+   has had, so an install made under any of them is recognised. */
+const BLOCK_IDS = ["01a0aacd-d373-7741-9543-994369a0c89f", "01a0aa66-c9b0-7531-ab18-ec6df9e3c716"];
+const APP_HANDLES = /^(craftframe-bundle-quiz|bundle-configurator)/;
+export function hasOurBlock(content) {
+  const text = String(content || "").replace(/\\\//g, "/");
+  const re = /shopify:\/\/apps\/([^"\/]+)\/blocks\/configurator\/([0-9a-f-]+)/g;
+  let m;
+  while ((m = re.exec(text))) if (BLOCK_IDS.includes(m[2]) || APP_HANDLES.test(m[1])) return true;
+  return false;
+}
+
 export async function blockOnTheme(admin) {
   try {
     const res = await admin.graphql(`#graphql
@@ -140,7 +154,7 @@ export async function blockOnTheme(admin) {
     const where = [];
     for (const f of theme.files?.nodes || []) {
       const content = f.body?.content || "";
-      if (/shopify:\/\/apps\/[^"]*\/blocks\/configurator\//.test(content) && /bundle-configurator/.test(content)) where.push(pretty(f.filename));
+      if (hasOurBlock(content)) where.push(pretty(f.filename));
     }
     return { theme: theme.name, installed: where.length > 0, where };
   } catch (e) {

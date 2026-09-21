@@ -11,7 +11,7 @@ import { useAppBridge } from "@shopify/app-bridge-react";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { authenticate } from "../shopify.server";
 import { readConfig, saveConfig } from "../config.server";
-import { linkSamples } from "../samples.server";
+import { linkSamples, refreshLinked } from "../samples.server";
 import { SetupRail, doneSteps } from "../components/SetupRail";
 import { money } from "../lib/money";
 
@@ -36,6 +36,11 @@ export const action = async ({ request }) => {
       if (!r.found) return { ok: false, intent, error: "No imported samples found yet. Import the CSV first, then try again." };
       await saveConfig(admin, shopId, config);
       return { ok: true, intent, linked: r.linked, found: r.found };
+    }
+    if (intent === "refresh") {
+      const r = await refreshLinked(admin, config);
+      if (r.checked) await saveConfig(admin, shopId, config);
+      return { ok: true, intent, ...r };
     }
     let links = {};
     try { links = JSON.parse(String(form.get("links") || "{}")); } catch (e) { return { ok: false, error: "Could not read the product links" }; }
@@ -127,6 +132,11 @@ export default function Products() {
   useEffect(() => {
     if (!fetcher.data) return;
     if (fetcher.data.ok && fetcher.data.intent === "link-samples") shopify.toast.show(`Linked ${fetcher.data.linked} sample product${fetcher.data.linked === 1 ? "" : "s"}`);
+    else if (fetcher.data.ok && fetcher.data.intent === "refresh") {
+      const d = fetcher.data;
+      if (d.missing) shopify.toast.show(`${d.missing} linked product${d.missing === 1 ? " no longer exists" : "s no longer exist"}. Choose ${d.missing === 1 ? "it" : "them"} again.`, { isError: true });
+      else shopify.toast.show(d.changed ? `Updated ${d.changed} product${d.changed === 1 ? "" : "s"} from your catalogue` : "Prices and pictures are already up to date");
+    }
     else if (fetcher.data.ok) { shopify.toast.show("Products saved"); setLinks({ bundles: {}, accessories: {} }); }
     else shopify.toast.show(fetcher.data.error || "Something went wrong", { isError: true });
   }, [fetcher.data, shopify]);
@@ -175,6 +185,12 @@ export default function Products() {
           <s-badge tone={linked === all.length ? "success" : "warning"}>{linked === all.length ? `All ${all.length} products connected` : `${all.length - linked} of ${all.length} still need a product`}</s-badge>
           {pendingCount ? <s-text color="subdued">{`${pendingCount} unsaved change${pendingCount === 1 ? "" : "s"}`}</s-text> : <s-text color="subdued">Checkout works once they are all set. You can finish setup and come back.</s-text>}
         </s-stack>
+        {linked ? (
+          <s-stack direction="inline" gap="small" alignItems="center">
+            <s-button variant="secondary" onClick={() => fetcher.submit({ intent: "refresh" }, { method: "POST" })} {...(busy || pendingCount ? { disabled: true } : {})}>Refresh prices and pictures</s-button>
+            <s-text color="subdued">Changed a product's photo or price? This pulls the latest into the questionnaire.</s-text>
+          </s-stack>
+        ) : null}
       </s-section>
 
       {linked < all.length ? (

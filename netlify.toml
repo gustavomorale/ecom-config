@@ -15,6 +15,8 @@
   base = "shopify-app"
   command = "npm run netlify:build"
   publish = "build/client"
+  # Build when the app or the runtime it bundles changed (the base directory alone is not enough).
+  ignore = "git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF -- . ../src ../configs ../scripts ../netlify.toml"
 
 [build.environment]
   NODE_VERSION = "22"

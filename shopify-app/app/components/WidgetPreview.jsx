@@ -32,7 +32,13 @@ const FRAME_HTML = `<!doctype html><html><head><meta charset="utf-8">
     cfg.persist = { mode: 'none' };           // never carry answers between edits
     inst = window.BundleConfigurator.mount(document.getElementById('mount'), cfg);
   });
-  parent.postMessage({ type: 'bcfg-ready' }, '*');
+  // The frame is in the server-rendered HTML, so with cached assets it can be ready
+  // before the page has hydrated and started listening. Keep announcing until the
+  // config arrives (about 20 seconds at most).
+  var tries = 0;
+  var announce = function () { parent.postMessage({ type: 'bcfg-ready' }, '*'); };
+  var timer = setInterval(function () { if (inst || ++tries > 50) return clearInterval(timer); announce(); }, 400);
+  announce();
 </script></body></html>`;
 
 function Frame({ json, view, maxWidth }) {

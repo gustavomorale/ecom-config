@@ -121,7 +121,7 @@ listing.
 | Privacy policy URL | https://bundle-configurator.netlify.app/privacy |
 | Support email | contact@craftframe.agency |
 | Screencast | link from section 3b |
-| Emergency developer contact | set in the Partner Dashboard settings (phone and email) |
+| Emergency developer contact | contact@craftframe.agency, plus a phone number, in the Partner Dashboard settings |
 | Demo store | `bundle-configurator-demo` URL plus storefront password |
 | Languages | English |
 | Works with | Online Store 2.0 themes (app blocks) |

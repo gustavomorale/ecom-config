@@ -4,7 +4,7 @@ White-label Shopify app: a shopper answers a short questionnaire and gets a conf
 bundle/cart. Any merchant installs it, picks a category, edits the template, and the widget
 wears their store's colours. **A store is a JSON config, not a fork.**
 
-Owner: Gustavo (CraftFrame). Current version: engine v1.2, app 0.9 beta. Status: the Shopify
+Owner: Gustavo (CraftFrame). Current version: engine v1.2, app 0.9. Status: the Shopify
 app (`shopify-app/`, React Router + Polaris web components) runs on the dev store with the
 five-step setup, metafield config, theme block, sample catalogue and compliance webhooks.
 The full editor is in the app: Rules (bundles and add-on rules with a row-based condition
@@ -12,8 +12,9 @@ builder, `app/lib/conditions.js`; conditions the rows cannot represent are kept 
 and shown in words), Questions (labels, descriptions, emoji or https image icons, required,
 add/remove/reorder) and Copy & cart (all copy, footer, promo, cart mode, answer memory).
 Analytics endpoint and price sync are not built. Listing copy in
-`shopify-app/LISTING.md`; the beta status and support email live in
-`shopify-app/app/components/SetupRail.jsx` (`BETA`, `SUPPORT_EMAIL`).
+`shopify-app/LISTING.md`; the version label and support email live in
+`shopify-app/app/components/SetupRail.jsx` (`VERSION`, `SUPPORT_EMAIL`). No "beta" wording in
+the app or the listing: Shopify reviews it as a finished product.
 
 ## Layout
 

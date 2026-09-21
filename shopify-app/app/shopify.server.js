@@ -11,8 +11,8 @@ import prisma from "./db.server";
 /* ---------- billing ----------
    One plan: 14 days free, then USD 25 a month, charged through the
    merchant's Shopify bill. App charges are always set in USD; Shopify shows
-   merchants an approximate local amount. Off during the beta: set
-   BCFG_BILLING=on to enforce it. Dev stores only ever see test charges. */
+   merchants an approximate local amount. Enforced when
+   BCFG_BILLING=on (production). Dev stores only ever see test charges. */
 export const PLAN = "Standard";
 export const PLAN_PRICE_USD = 25;
 export const PLAN_TRIAL_DAYS = 14;

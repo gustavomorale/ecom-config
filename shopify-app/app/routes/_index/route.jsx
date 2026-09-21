@@ -28,7 +28,7 @@ export default function Landing() {
   return (
     <main style={wrap}>
       <div style={card}>
-        <p style={{ margin: 0, fontSize: 12, fontWeight: 600, letterSpacing: ".08em", textTransform: "uppercase", color: "#5c5f62" }}>Shopify app · Beta</p>
+        <p style={{ margin: 0, fontSize: 12, fontWeight: 600, letterSpacing: ".08em", textTransform: "uppercase", color: "#5c5f62" }}>Shopify app</p>
         <h1 style={{ margin: "8px 0 10px", fontSize: 28, lineHeight: 1.2 }}>Bundle Configurator</h1>
         <p style={{ margin: "0 0 18px", fontSize: 16, lineHeight: 1.55, color: "#44474a" }}>
           A short questionnaire on your storefront that turns a shopper's answers into a ready-made cart: the right bundle, the right add-ons, one click to checkout.

@@ -9,7 +9,7 @@ application_url = "https://bundle-configurator.netlify.app"
 embedded = true
 
 [webhooks]
-api_version = "2026-10"
+api_version = "2026-07"
 
   # App lifecycle. Routes live in app/routes/webhooks.*.jsx.
   [[webhooks.subscriptions]]

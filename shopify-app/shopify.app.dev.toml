@@ -10,7 +10,7 @@ embedded = true
 name = "bundle-configurator-dev"
 
 [webhooks]
-api_version = "2026-10"
+api_version = "2026-07"
 
   [[webhooks.subscriptions]]
   topics = [ "app/uninstalled" ]

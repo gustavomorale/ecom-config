@@ -1,7 +1,7 @@
 /* The five-step rail. One line per step, the current one highlighted, done
    ones marked. Mirrors the mock in demo/harness.js. */
-/* Beta status shown on every page, and where merchants reach us. */
-export const BETA = { version: "0.9 beta" };
+/* Version label shown in the app, and where merchants reach us. */
+export const VERSION = "0.9";
 export const SUPPORT_EMAIL = "contact@craftframe.agency";
 
 export const STEPS = [
@@ -25,7 +25,7 @@ export function SetupRail({ current, done = [] }) {
         );
       })}
       <span style={{ marginLeft: "auto" }} />
-      <s-badge tone="info">Beta</s-badge>
+      <s-text color="subdued">{`Version ${VERSION}`}</s-text>
     </s-stack>
   );
 }

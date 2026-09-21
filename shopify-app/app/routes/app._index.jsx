@@ -1,7 +1,7 @@
 /* ============================================================
    Home.
    No configuration yet: the welcome. What the app does, how the five-step
-   setup goes, what it can access, and that this is a beta. One button.
+   setup goes and what it can access. One button.
    Configuration saved: the overview, laid out the way Shopify's own apps do
    it. A status banner that says whether the block is really on the theme
    (read from the theme, not assumed), a setup guide with progress and one
@@ -15,7 +15,7 @@ import { boundary } from "@shopify/shopify-app-react-router/server";
 import { authenticate, billingEnabled, PLAN_PRICE_USD, PLAN_TRIAL_DAYS } from "../shopify.server";
 import { listCategories, buildCategory, readConfig, saveConfig, themeEditorUrl } from "../config.server";
 import { blockOnTheme } from "../theme.server";
-import { BETA, SUPPORT_EMAIL } from "../components/SetupRail";
+import { VERSION, SUPPORT_EMAIL } from "../components/SetupRail";
 import { WidgetPreview } from "../components/WidgetPreview";
 
 export const loader = async ({ request }) => {
@@ -65,8 +65,7 @@ function Welcome({ billing }) {
       <s-section>
         <s-stack direction="block" gap="base">
           <s-stack direction="inline" gap="small" alignItems="center">
-            <s-badge tone="info">Beta</s-badge>
-            <s-text color="subdued">{billing.enabled ? `Version ${BETA.version}. ${billing.trialDays} days free, then USD ${billing.price} a month.` : `Version ${BETA.version}. Free while in beta.`}</s-text>
+            <s-text color="subdued">{billing.enabled ? `Version ${VERSION}. ${billing.trialDays} days free, then USD ${billing.price} a month.` : `Version ${VERSION}.`}</s-text>
           </s-stack>
           <s-paragraph>
             A short questionnaire on your storefront that turns a shopper's answers into a ready-made cart: the right bundle, the right add-ons, one click to checkout. You choose what to ask, the rules decide what goes in the basket, and the widget wears your store's colours.
@@ -115,9 +114,9 @@ function Welcome({ billing }) {
         <s-paragraph color="subdued">It never edits your theme, your products or your orders, and it stores no customer data. Shoppers' answers stay in their own browser.</s-paragraph>
       </s-section>
 
-      <s-section slot="aside" heading="This is a beta">
-        <s-paragraph>You are among the first stores using it. Still to come: live price sync and drop-off analytics.</s-paragraph>
-        <s-paragraph>Something broken or missing? <s-link href={`mailto:${SUPPORT_EMAIL}?subject=Bundle%20Configurator%20beta`}>{SUPPORT_EMAIL}</s-link>. Replies within a working day.</s-paragraph>
+      <s-section slot="aside" heading="Help">
+        <s-paragraph>{`Version ${VERSION}. Coming next: live price sync and drop-off analytics.`}</s-paragraph>
+        <s-paragraph>Something broken or missing? <s-link href={`mailto:${SUPPORT_EMAIL}?subject=Bundle%20Configurator`}>{SUPPORT_EMAIL}</s-link>. Replies within a working day.</s-paragraph>
       </s-section>
     </s-page>
   );
@@ -221,7 +220,6 @@ function Overview({ config, current, editorUrl, storeUrl, billing, block, headli
           <s-stack direction="block" gap="base">
             <s-stack direction="inline" gap="small" alignItems="center">
               <s-heading>Setup guide</s-heading>
-              <s-badge tone="info">Beta</s-badge>
               <span style={{ marginLeft: "auto" }} />
               {doneCount === tasks.length ? <s-button variant="tertiary" onClick={() => setGuideHidden(true)}>Hide</s-button> : null}
             </s-stack>
@@ -289,13 +287,13 @@ function Overview({ config, current, editorUrl, storeUrl, billing, block, headli
       </s-section>
 
       <s-section slot="aside" heading="Plan">
-        <s-paragraph>{billing.enabled ? `${billing.trialDays}-day free trial, then USD ${billing.price} a month, on your Shopify bill.` : "Free while in beta. When the beta ends: 14 days free, then USD 25 a month, on your Shopify bill."}</s-paragraph>
+        <s-paragraph>{billing.enabled ? `${billing.trialDays}-day free trial, then USD ${billing.price} a month, on your Shopify bill.` : "Free for now. Later: 14 days free, then USD 25 a month, on your Shopify bill."}</s-paragraph>
       </s-section>
 
       <s-section slot="aside" heading="Help">
         <s-stack direction="block" gap="small-200">
-          <s-paragraph>{`Version ${BETA.version}. We answer every email within a working day.`}</s-paragraph>
-          <s-link href={`mailto:${SUPPORT_EMAIL}?subject=Bundle%20Configurator%20beta`}>{SUPPORT_EMAIL}</s-link>
+          <s-paragraph>{`Version ${VERSION}. We answer every email within a working day.`}</s-paragraph>
+          <s-link href={`mailto:${SUPPORT_EMAIL}?subject=Bundle%20Configurator`}>{SUPPORT_EMAIL}</s-link>
           <s-paragraph color="subdued">The app reads your products and theme settings and writes one setting that holds your setup. It stores no customer data.</s-paragraph>
           <s-link href="https://bundle-configurator.netlify.app/privacy" target="_blank">Privacy policy</s-link>
         </s-stack>

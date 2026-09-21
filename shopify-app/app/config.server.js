@@ -86,6 +86,7 @@ const SHOP_QUERY = `#graphql
     shop {
       id
       myshopifyDomain
+      currencyCode
       metafield(namespace: "${NAMESPACE}", key: "${KEY}") { id value }
     }
   }`;
@@ -97,6 +98,8 @@ export async function readConfig(admin) {
   let config = null;
   if (shop.metafield && shop.metafield.value) {
     try { config = JSON.parse(shop.metafield.value); } catch (e) { config = null; }
+    // Prices are the store's, so the currency is too (templates default to GBP).
+    if (config && shop.currencyCode) config.cart = { ...(config.cart || {}), currency: shop.currencyCode, useIntl: true };
   }
   return { shopId: shop.id, domain: shop.myshopifyDomain, config, metafieldId: shop.metafield ? shop.metafield.id : null };
 }

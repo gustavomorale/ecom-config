@@ -19,7 +19,7 @@
   {{ 'configurator.css' | asset_url | stylesheet_tag }}
   {% if block.settings.preset == 'glass' %}{{ 'glass.css' | asset_url | stylesheet_tag }}{% endif %}
 
-  <div id="bcfg-{{ block.id }}" class="bcfg-mount" data-preset="{{ block.settings.preset }}" data-performance="{{ block.settings.performance }}"></div>
+  <div id="bcfg-{{ block.id }}" class="bcfg-mount" data-preset="{{ block.settings.preset }}" data-performance="{{ block.settings.performance }}" data-currency="{{ cart.currency.iso_code }}" data-locale="{{ request.locale.iso_code }}"></div>
 
   <script src="{{ 'configurator.js' | asset_url }}" defer></script>
   <script src="{{ 'scenes.js' | asset_url }}" defer></script>
@@ -35,6 +35,13 @@
       cfg.brand = cfg.brand || {};
       cfg.brand.preset = el.dataset.preset || cfg.brand.preset || 'glass';
       if (el.dataset.performance) cfg.brand.performance = el.dataset.performance;
+      // Prices are the store's, so show them in the store's currency and the page's locale.
+      if (el.dataset.currency) {
+        cfg.cart = cfg.cart || {};
+        cfg.cart.currency = el.dataset.currency;
+        cfg.cart.useIntl = true;
+        if (el.dataset.locale) cfg.cart.locale = el.dataset.locale;
+      }
       // Theme sync: inherit the storefront look. When the sniffer reports a weak
       // match (neutral buttons, no accent found) keep only type and corners and let
       // the widget use its own colours. brand.inheritTheme: false | 'always' overrides.

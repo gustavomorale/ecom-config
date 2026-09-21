@@ -163,10 +163,7 @@ export default function Copy() {
             <s-option value="permalink">Checkout link (works everywhere)</s-option>
             <s-option value="ajax">Add on the page, then open the cart</s-option>
           </s-select>
-          <s-grid gridTemplateColumns="1fr 1fr" gap="base">
-            <s-text-field label="Currency symbol" value={cart.currencySymbol} onInput={(e) => setCart((c) => ({ ...c, currencySymbol: e.currentTarget.value }))} />
-            <s-text-field label="Currency code" value={cart.currency} placeholder="GBP" onInput={(e) => setCart((c) => ({ ...c, currency: e.currentTarget.value }))} />
-          </s-grid>
+          <s-text color="subdued">{`Prices show in your store's currency (${cart.currency}), formatted for each shopper's language.`}</s-text>
           <s-select label="Remember a shopper's answers" value={persist.mode} onChange={(e) => setPersist((p) => ({ ...p, mode: e.currentTarget.value }))} details="Answers never leave the shopper's browser.">
             <s-option value="session">Until they close the tab</s-option>
             <s-option value="local">Until they clear their browser</s-option>

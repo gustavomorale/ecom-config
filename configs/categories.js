@@ -1939,7 +1939,7 @@
           },
           {
             icon: '&#x1F319;',
-            label: '{nights} night(s)',
+            label: 'Nights: {nights}',
             when: {
               field: 'level',
               op: 'truthy'
@@ -2056,7 +2056,7 @@
             title: 'Camp Kit',
             sub: 'Tent, sleep, cook',
             price: 449,
-            why: '{nights} nights for {people} means a tent with room to spare and a sleep system that works.',
+            why: 'Camping for {people} means a tent with room to spare and a sleep system that works.',
             includes: {
               shell: 0,
               stove: 1

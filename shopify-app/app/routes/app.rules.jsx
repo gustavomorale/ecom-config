@@ -15,6 +15,7 @@ import { boundary } from "@shopify/shopify-app-react-router/server";
 import { authenticate } from "../shopify.server";
 import { readConfig, saveConfig } from "../config.server";
 import { fieldCatalog, toRows, fromRows, describe, validateQty, qtyToText } from "../lib/conditions";
+import { money } from "../lib/money";
 import { ConditionBuilder } from "../components/ConditionBuilder";
 import { WidgetPreview } from "../components/WidgetPreview";
 
@@ -149,7 +150,7 @@ export default function Rules() {
                     <s-text-field label="Subtitle" value={b.subtitle} onInput={(e) => upB(i, { subtitle: e.currentTarget.value })} />
                   </s-grid>
                   <s-text-area label="Why this bundle (shown on the result)" value={b.why} rows={2} onInput={(e) => upB(i, { why: e.currentTarget.value })} />
-                  {b.linked ? <s-text color="subdued">{`Price £${Number(b.price).toFixed(2)} comes from the linked product.`}</s-text> : (
+                  {b.linked ? <s-text color="subdued">{`Price ${money(b.price, config.cart?.currency)} comes from the linked product.`}</s-text> : (
                     <s-number-field label="Preview price" value={b.price} min="0" step="0.01" onInput={(e) => upB(i, { price: e.currentTarget.value })} />
                   )}
                   {last ? <s-text color="subdued">Shown when no bundle above matches.</s-text> : (

@@ -360,6 +360,9 @@
   outline-offset: 2px;
   box-shadow: 0 0 0 2px var(--g-canvas-1), 0 0 0 7px color-mix(in srgb, var(--bcfg-accent) 35%, transparent);
 }
+/* Headings take focus on step change so they are announced; they are not controls. */
+.bcfg.bcfg-theme-glass .card-question:focus-visible,
+.bcfg.bcfg-theme-glass .result-header h2:focus-visible { outline: none; box-shadow: none; }
 .bcfg.bcfg-theme-glass .option-btn.selected:focus-visible,
 .bcfg.bcfg-theme-glass .tile-btn.selected:focus-visible {
   box-shadow: 0 0 0 2px var(--g-canvas-1), 0 0 0 7px color-mix(in srgb, var(--bcfg-accent) 35%, transparent), var(--g-lift), var(--g-gloss);

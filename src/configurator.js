@@ -89,7 +89,7 @@
   function makeMoney(cfg) {
     var c = (cfg && cfg.cart) || {};
     var symbol = c.currencySymbol != null ? c.currencySymbol : '£';
-    var locale = c.locale || 'en-GB';
+    var locale = c.locale || (c.useIntl ? undefined : 'en-GB');
     var code = c.currency || 'GBP';
     return function (n) {
       if (!isNum(n)) n = 0;

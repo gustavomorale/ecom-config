@@ -1054,6 +1054,9 @@ table.spec td:first-child{white-space:nowrap;font-weight:550}
   outline-offset: 2px;
   box-shadow: 0 0 0 2px var(--g-canvas-1), 0 0 0 7px color-mix(in srgb, var(--bcfg-accent) 35%, transparent);
 }
+/* Headings take focus on step change so they are announced; they are not controls. */
+.bcfg.bcfg-theme-glass .card-question:focus-visible,
+.bcfg.bcfg-theme-glass .result-header h2:focus-visible { outline: none; box-shadow: none; }
 .bcfg.bcfg-theme-glass .option-btn.selected:focus-visible,
 .bcfg.bcfg-theme-glass .tile-btn.selected:focus-visible {
   box-shadow: 0 0 0 2px var(--g-canvas-1), 0 0 0 7px color-mix(in srgb, var(--bcfg-accent) 35%, transparent), var(--g-lift), var(--g-gloss);
@@ -1390,7 +1393,7 @@ table.spec td:first-child{white-space:nowrap;font-weight:550}
   function makeMoney(cfg) {
     var c = (cfg && cfg.cart) || {};
     var symbol = c.currencySymbol != null ? c.currencySymbol : '£';
-    var locale = c.locale || 'en-GB';
+    var locale = c.locale || (c.useIntl ? undefined : 'en-GB');
     var code = c.currency || 'GBP';
     return function (n) {
       if (!isNum(n)) n = 0;
@@ -5385,7 +5388,7 @@ window.BCFG_CONFIG_COSMETICS = {
           },
           {
             icon: '&#x1F319;',
-            label: '{nights} night(s)',
+            label: 'Nights: {nights}',
             when: {
               field: 'level',
               op: 'truthy'
@@ -5502,7 +5505,7 @@ window.BCFG_CONFIG_COSMETICS = {
             title: 'Camp Kit',
             sub: 'Tent, sleep, cook',
             price: 449,
-            why: '{nights} nights for {people} means a tent with room to spare and a sleep system that works.',
+            why: 'Camping for {people} means a tent with room to spare and a sleep system that works.',
             includes: {
               shell: 0,
               stove: 1

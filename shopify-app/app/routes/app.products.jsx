@@ -13,6 +13,7 @@ import { authenticate } from "../shopify.server";
 import { readConfig, saveConfig } from "../config.server";
 import { linkSamples } from "../samples.server";
 import { SetupRail, doneSteps } from "../components/SetupRail";
+import { money } from "../lib/money";
 
 export const loader = async ({ request }) => {
   const { admin } = await authenticate.admin(request);
@@ -55,7 +56,7 @@ export const action = async ({ request }) => {
   return { ok: true, intent };
 };
 
-function ProductRow({ item, kind, link, onPick, onClear, onVariant }) {
+function ProductRow({ item, kind, link, currency, onPick, onClear, onVariant }) {
   const cleared = link && link.clear;
   const variantId = cleared ? "" : link ? link.variantId : item.variantId;
   const productTitle = cleared ? "" : link ? link.productTitle : item.productTitle;
@@ -75,11 +76,11 @@ function ProductRow({ item, kind, link, onPick, onClear, onVariant }) {
               {variantId ? <s-badge tone="success">Linked</s-badge> : <s-badge tone="warning">Needs a product</s-badge>}
             </s-stack>
             <s-text color="subdued">
-              {kind === "bundle" ? (item.subtitle || "Bundle") : "Add-on"}{price != null ? ` · £${Number(price).toFixed(2)}` : ""}{productTitle ? ` · ${productTitle}` : ""}
+              {kind === "bundle" ? (item.subtitle || "Bundle") : "Add-on"}{price != null ? ` · ${money(price, currency)}` : ""}{productTitle ? ` · ${productTitle}` : ""}
             </s-text>
             {variants ? (
               <s-select label="Variant" labelAccessibilityVisibility="exclusive" value={variantId} onChange={(e) => onVariant(e.currentTarget.value)}>
-                {variants.map((v) => <s-option key={v.id} value={v.id}>{`${v.title} · £${Number(v.price).toFixed(2)}`}</s-option>)}
+                {variants.map((v) => <s-option key={v.id} value={v.id}>{`${v.title} · ${money(v.price, currency)}`}</s-option>)}
               </s-select>
             ) : null}
           </s-stack>
@@ -198,14 +199,14 @@ export default function Products() {
       <s-section heading={`Bundles (${bundles.length})`}>
         <s-paragraph color="subdued">The base sets a shopper can be recommended. The first matching one wins; the last is the fallback.</s-paragraph>
         <s-stack direction="block" gap="small">
-          {bundles.map((b) => <ProductRow key={b.id} item={b} kind="bundle" link={links.bundles[b.id]} onPick={() => pick("bundles", b.id)} onClear={() => clear("bundles", b.id)} onVariant={(id) => setVariant("bundles", b.id, id)} />)}
+          {bundles.map((b) => <ProductRow key={b.id} item={b} kind="bundle" currency={config.cart?.currency} link={links.bundles[b.id]} onPick={() => pick("bundles", b.id)} onClear={() => clear("bundles", b.id)} onVariant={(id) => setVariant("bundles", b.id, id)} />)}
         </s-stack>
       </s-section>
 
       <s-section heading={`Add-ons (${accessories.length})`}>
         <s-paragraph color="subdued">Products the rules add on top of the bundle, one per rule.</s-paragraph>
         <s-stack direction="block" gap="small">
-          {accessories.map(([k, a]) => <ProductRow key={k} item={a} kind="accessory" link={links.accessories[k]} onPick={() => pick("accessories", k)} onClear={() => clear("accessories", k)} onVariant={(id) => setVariant("accessories", k, id)} />)}
+          {accessories.map(([k, a]) => <ProductRow key={k} item={a} kind="accessory" currency={config.cart?.currency} link={links.accessories[k]} onPick={() => pick("accessories", k)} onClear={() => clear("accessories", k)} onVariant={(id) => setVariant("accessories", k, id)} />)}
         </s-stack>
       </s-section>
 

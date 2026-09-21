@@ -1,5 +1,5 @@
 {% comment %}
-  Bundle Configurator app block.
+  CraftFrame Bundle Quiz app block.
   The config JSON lives in an app-owned metafield (namespace: bundle_configurator,
   key: config). Nothing in this block is brand-specific; the merchant's choices arrive
   through the metafield and the theme's computed styles via theme-inherit.js.
@@ -11,8 +11,8 @@
 {% if bcfg_config == blank %}
   {% if request.design_mode %}
     <div class="bcfg-unconfigured" style="padding:24px;border:1px dashed #999;border-radius:12px;text-align:center;font:14px/1.5 system-ui,sans-serif;color:#555">
-      <strong style="display:block;color:#222;margin-bottom:4px">Bundle Configurator</strong>
-      Finish the five-step setup in the Bundle Configurator app and this block will show your questionnaire here.
+      <strong style="display:block;color:#222;margin-bottom:4px">CraftFrame Bundle Quiz</strong>
+      Finish the five-step setup in the CraftFrame Bundle Quiz app and this block will show your questionnaire here.
     </div>
   {% endif %}
 {% else %}
@@ -54,7 +54,7 @@
 
 {% schema %}
 {
-  "name": "Bundle Configurator",
+  "name": "CraftFrame Bundle Quiz",
   "target": "section",
   "settings": [
     { "type": "select", "id": "preset", "label": "Look", "default": "glass",

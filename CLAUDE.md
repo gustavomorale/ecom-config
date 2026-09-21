@@ -28,7 +28,7 @@ the app or the listing: Shopify reviews it as a finished product.
 | `configs/categories.js` | Category registry. The merchant's first decision. Adding a category = adding one object to the array. |
 | `configs/templates/*.js` | Full templates (house accessories, subscription boxes, cosmetics). The UK niche categories are expanded by `starter()`. |
 | `demo/index.html` + `harness.*` | The MVP harness: Storefront, Merchant admin (mock), Theme sync, Analytics (mock), MVP model tabs. `demo/bundle-configurator.mvp.html` is the single-file build of the same thing. |
-| `shopify-app/` | The Shopify app: embedded admin (React Router + Polaris, Shopify's current app template) and `shopify.app.toml` (name "Bundle Configurator", handle `bundle-configurator`, dev store `funrackets.myshopify.com`). `client_id` is filled in by the first `shopify app dev`. |
+| `shopify-app/` | The Shopify app: embedded admin (React Router + Polaris, Shopify's current app template) and `shopify.app.toml` (name "CraftFrame Bundle Quiz", the App Store name since 2026-09-21; the repo and engine keep the working name Bundle Configurator, handle `bundle-configurator`, dev store `funrackets.myshopify.com`). `client_id` is filled in by the first `shopify app dev`. |
 | `shopify-app/extensions/bundle-configurator/` | Theme app extension: app block + assets. Assets are copied from `src/` by `npm run build:extension` and are gitignored. |
 | `scripts/` | Build helpers. |
 

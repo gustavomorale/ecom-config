@@ -1,7 +1,7 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
 client_id = "a1b72ae7a95a6312f1f0587db9042df4"
-name = "Bundle Configurator"
+name = "CraftFrame Bundle Quiz"
 # Production URL on Netlify. `shopify app dev` overrides it with the tunnel
 # while running (automatically_update_urls_on_dev), then this is what
 # `shopify app deploy` pushes. Change <site> once the Netlify site exists.

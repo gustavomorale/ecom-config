@@ -6,8 +6,8 @@
    src/configurator.js (persistence, share links). */
 
 export const meta = () => [
-  { title: "Privacy policy · Bundle Configurator" },
-  { name: "description", content: "What Bundle Configurator collects, where it is kept and how to have it removed." },
+  { title: "Privacy policy · CraftFrame Bundle Quiz" },
+  { name: "description", content: "What CraftFrame Bundle Quiz collects, where it is kept and how to have it removed." },
 ];
 
 const UPDATED = "18 September 2026";
@@ -30,12 +30,12 @@ export default function Privacy() {
   return (
     <main style={S.page}>
       <article style={S.card}>
-        <p style={S.eyebrow}>Bundle Configurator · Shopify app</p>
+        <p style={S.eyebrow}>CraftFrame Bundle Quiz · Shopify app</p>
         <h1 style={S.h1}>Privacy policy</h1>
         <p style={S.muted}>Last updated {UPDATED}</p>
 
         <p>
-          Bundle Configurator is a Shopify app made by CraftFrame WORKS Ltd ("CraftFrame", "we"). It adds a questionnaire to a merchant's
+          CraftFrame Bundle Quiz is a Shopify app made by CraftFrame WORKS Ltd ("CraftFrame", "we"). It adds a questionnaire to a merchant's
           storefront that recommends a bundle and opens a pre-filled cart. This page says what the app collects, where it is kept and how
           to have it removed. The short version: we keep the minimum needed to run the app for a store, and nothing about that store's shoppers.
         </p>

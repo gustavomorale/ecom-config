@@ -54,7 +54,7 @@ export default function Live() {
 
       <s-section>
         <SetupRail current="live" done={done} />
-        <s-paragraph>Add the Bundle Configurator block to any page in the theme editor. It picks up this setup automatically, and you can keep editing here.</s-paragraph>
+        <s-paragraph>Add the CraftFrame Bundle Quiz block to any page in the theme editor. It picks up this setup automatically, and you can keep editing here.</s-paragraph>
       </s-section>
 
       <s-section heading="What you set up">
@@ -77,7 +77,7 @@ export default function Live() {
 
       <s-section heading="Put it on your store">
         <s-stack direction="block" gap="base">
-          <s-paragraph>Open the theme editor, choose the section where the questionnaire should live, then Add block, Apps, Bundle Configurator. Save the theme.</s-paragraph>
+          <s-paragraph>Open the theme editor, choose the section where the questionnaire should live, then Add block, Apps, CraftFrame Bundle Quiz. Save the theme.</s-paragraph>
           <s-stack direction="inline" gap="base">
             <s-button href={editorUrl} target="_blank">Open theme editor</s-button>
             <s-button variant="secondary" href={storeUrl} target="_blank">Try it as a shopper</s-button>

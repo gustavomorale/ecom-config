@@ -1,11 +1,11 @@
 # App Store submission pack
 
-Everything needed to submit Bundle Configurator for review. Listing copy is in `LISTING.md`.
+Everything needed to submit CraftFrame Bundle Quiz for review. Listing copy is in `LISTING.md`.
 Production app in the Dev Dashboard: **bundle-configurator-2** (client ID `a1b72ae7…`).
 
 ## 1. Test instructions (paste into "Testing instructions" in the submission form)
 
-Bundle Configurator adds a questionnaire block to the storefront. A shopper answers a few
+CraftFrame Bundle Quiz adds a questionnaire block to the storefront. A shopper answers a few
 questions, the app's rules choose a bundle and add-ons, and the result opens a pre-filled cart.
 No account or credentials are needed beyond installing the app.
 
@@ -25,7 +25,7 @@ No account or credentials are needed beyond installing the app.
    under Products, Import, return and click **Link imported samples**. Otherwise use
    **Choose product** on each row. **Save and continue**.
 7. **Go live**: click **Open theme editor**. In any section choose Add block, Apps,
-   **Bundle Configurator** (or Add section, Apps). Save the theme. **Finish setup**.
+   **CraftFrame Bundle Quiz** (or Add section, Apps). Save the theme. **Finish setup**.
 
 **Storefront**
 8. Open the storefront page with the block. Answer the questions and reach the result: a bundle,
@@ -91,7 +91,7 @@ Record on the demo store, one take per scene, in this order:
 1. Install from the link, approve the plan (test charge), land on the welcome page.
 2. The five setup steps: Category, Look with Match my store, Questions with one picture
    card, Products with the picker, Go live.
-3. Theme editor: Add section, Apps, Bundle Configurator, Save.
+3. Theme editor: Add section, Apps, CraftFrame Bundle Quiz, Save.
 4. Storefront: answer the questions, reach the result, Add to cart, the cart opens filled.
 5. Back in the app: change one rule, show the change on the storefront.
 
@@ -114,7 +114,7 @@ listing.
 
 | Field | Value |
 |---|---|
-| App name | Bundle Configurator |
+| App name | CraftFrame Bundle Quiz |
 | Tagline, introduction, details, features | `LISTING.md` |
 | Category | Store design, or Selling products: Product bundles |
 | Pricing | Recurring: USD 25 / 30 days, 14-day free trial. No usage charges |

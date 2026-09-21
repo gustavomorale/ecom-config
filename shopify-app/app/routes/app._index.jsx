@@ -59,7 +59,7 @@ export const action = async ({ request }) => {
 
 function Welcome({ billing }) {
   return (
-    <s-page heading="Welcome to Bundle Configurator">
+    <s-page heading="Welcome to CraftFrame Bundle Quiz">
       <s-button slot="primary-action" href="/app/category">Start setup</s-button>
 
       <s-section>
@@ -179,7 +179,7 @@ function Overview({ config, current, editorUrl, storeUrl, billing, block, headli
     { key: "look", done: !!setup.look, title: "Match your store's look", text: "One click reads your theme's colours, type and corners. Your own choices always win over the match.", href: "/app/look", actionLabel: "Set the look", editLabel: "Edit the look" },
     { key: "questions", done: !!setup.questions, title: "Check your questions", badge: `${steps}`, text: "Rename, reorder, add or remove. Show options as emoji rows or as picture cards with your product photos.", href: "/app/questions", actionLabel: "Review questions", editLabel: "Edit questions" },
     { key: "products", done: products.length > 0 && linked === products.length, title: "Connect your products", badge: `${linked} of ${products.length}`, badgeTone: linked === products.length ? "success" : "warning", text: "Each bundle and add-on needs the product it puts in the cart. No products yet? Import the sample catalogue from that page.", href: "/app/products", actionLabel: "Connect products", editLabel: "Edit product links" },
-    { key: "live", done: live, title: "Add the block to your theme", text: "In the theme editor choose a section, then Add block, Apps, Bundle Configurator. Or Add section, Apps, for a full-width one. Save the theme.", href: editorUrl, external: true, actionLabel: "Open theme editor", editLabel: "Open theme editor", secondary: { href: storeUrl, label: "View storefront", external: true } },
+    { key: "live", done: live, title: "Add the block to your theme", text: "In the theme editor choose a section, then Add block, Apps, CraftFrame Bundle Quiz. Or Add section, Apps, for a full-width one. Save the theme.", href: editorUrl, external: true, actionLabel: "Open theme editor", editLabel: "Open theme editor", secondary: { href: storeUrl, label: "View storefront", external: true } },
   ];
   const doneCount = tasks.filter((t) => t.done).length;
   const firstOpen = tasks.find((t) => !t.done);
@@ -197,7 +197,7 @@ function Overview({ config, current, editorUrl, storeUrl, billing, block, headli
   ];
 
   return (
-    <s-page heading="Bundle Configurator">
+    <s-page heading="CraftFrame Bundle Quiz">
       <s-button slot="primary-action" href={editorUrl} target="_blank">Customize in theme editor</s-button>
       <s-button slot="secondary-actions" href={storeUrl} target="_blank">View storefront</s-button>
 
@@ -210,7 +210,7 @@ function Overview({ config, current, editorUrl, storeUrl, billing, block, headli
           <s-banner tone="info" heading="Not on your theme yet">
             {`Everything is set up, but shoppers cannot see it until the block is on the ${block.theme} theme. `}
             <s-link href={editorUrl} target="_blank">Open the theme editor</s-link>
-            , choose a section, then Add block, Apps, Bundle Configurator.
+            , choose a section, then Add block, Apps, CraftFrame Bundle Quiz.
           </s-banner>
         )
       ) : null}

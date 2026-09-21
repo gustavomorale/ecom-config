@@ -1,12 +1,11 @@
 # App Store listing copy
 
 Paste into the Partner Dashboard listing. Character limits are Shopify's at the time of
-writing; trim rather than rewrite if they change. Keep the beta status visible until the
-first paid version ships.
+writing; trim rather than rewrite if they change. The app is presented as a finished product (version 0.9).
 
 ## App name
 
-Bundle Configurator
+CraftFrame Bundle Quiz
 
 ## Tagline (max 62 characters)
 
@@ -39,14 +38,12 @@ your products, done. We answer every email within a working day.
 - Sample catalogue import for stores that want to try it before adding products
 - No theme edits, no code, and no customer data stored
 
-## Beta notice (in-app only; keep the word "beta" and all pricing out of the listing text)
+## Wording rules
 
-Shopify wants pricing only in the Pricing section, and a listing that reads as unfinished
-invites a rejection. The notice below stays inside the app.
-
-Bundle Configurator is in beta. Still to come: live price sync from your catalogue and
-drop-off analytics. Report anything broken or missing to contact@craftframe.agency and
-expect a reply within a working day.
+Keep the word "beta" and all pricing out of the listing text: Shopify wants pricing only in
+the Pricing section, and a listing that reads as unfinished invites a rejection. The name was
+chosen 2026-09-21: brand first, 22 characters (the limit is 30), and "quiz" plus "bundle" are
+the two terms merchants search for.
 
 ## Pricing
 

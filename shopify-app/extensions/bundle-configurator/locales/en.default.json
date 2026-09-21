@@ -1,8 +1,8 @@
 {
   "blocks": {
     "configurator": {
-      "name": "Bundle Configurator",
-      "unconfigured": "Finish the five-step setup in the Bundle Configurator app and this block will show your questionnaire here."
+      "name": "CraftFrame Bundle Quiz",
+      "unconfigured": "Finish the five-step setup in the CraftFrame Bundle Quiz app and this block will show your questionnaire here."
     }
   }
 }

@@ -421,7 +421,10 @@
 
   function interpolate(str, tokens) {
     if (!str) return '';
-    return String(str).replace(/\{(\w+)\}/g, function (m, k) { return k in tokens ? tokens[k] : m; });
+    return String(str).replace(/\{(\w+)\}/g, function (m, k) {
+      if (tokens[k + '_label']) return tokens[k + '_label'];
+      return k in tokens ? tokens[k] : m;
+    });
   }
 
   Configurator.prototype.buildCartUrl = function (bundle, lines) {

@@ -19,6 +19,18 @@
   {{ 'configurator.css' | asset_url | stylesheet_tag }}
   {% if block.settings.preset == 'glass' %}{{ 'glass.css' | asset_url | stylesheet_tag }}{% endif %}
 
+  {%- liquid
+    assign bcfg_max = 'none'
+    if block.settings.width == 'page'
+      assign bcfg_max = '1200px'
+    elsif block.settings.width == 'narrow'
+      assign bcfg_max = '960px'
+    endif
+  -%}
+  <style>
+    .shopify-app-block:has(> #bcfg-{{ block.id }}) { width: 100%; max-width: 100%; flex: 1 1 100%; align-self: stretch; }
+    #bcfg-{{ block.id }} { width: 100%; max-width: {{ bcfg_max }}; margin-inline: auto; box-sizing: border-box; }
+  </style>
   <div id="bcfg-{{ block.id }}" class="bcfg-mount" data-preset="{{ block.settings.preset }}" data-performance="{{ block.settings.performance }}" data-currency="{{ cart.currency.iso_code }}" data-locale="{{ request.locale.iso_code }}"></div>
 
   <script src="{{ 'configurator.js' | asset_url }}" defer></script>
@@ -67,6 +79,9 @@
     { "type": "select", "id": "preset", "label": "Look", "default": "glass",
       "info": "Glass adds translucency and depth. Base is flat.",
       "options": [ { "value": "glass", "label": "Glass" }, { "value": "base", "label": "Base" } ] },
+    { "type": "select", "id": "width", "label": "Width", "default": "full",
+      "info": "How much of the section the questionnaire fills on desktop.",
+      "options": [ { "value": "full", "label": "Fill the section" }, { "value": "page", "label": "Page width" }, { "value": "narrow", "label": "Narrow" } ] },
     { "type": "select", "id": "performance", "label": "Performance", "default": "auto",
       "info": "Auto steps Glass down to flat surfaces on slow devices.",
       "options": [ { "value": "auto", "label": "Auto" }, { "value": "full", "label": "Always full" }, { "value": "lite", "label": "Always lite" } ] }

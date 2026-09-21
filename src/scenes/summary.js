@@ -22,7 +22,7 @@
     var h = 46, pad = 18, W = 360, H = pad * 2 + rows.length * h;
     var body = rows.map(function (r, i) {
       var y = pad + i * h;
-      var label = String(r.label || '').replace(/\{(\w+)\}/g, function (m, k) { return k in scope ? scope[k] : m; });
+      var label = String(r.label || '').replace(/\{(\w+)\}/g, function (m, k) { return scope[k + '_label'] ? scope[k + '_label'] : (k in scope ? scope[k] : m); });
       return '<g class="scene-pop">' +
         '<rect x="16" y="' + y + '" width="' + (W - 32) + '" height="' + (h - 8) + '" rx="10" fill="#fff" stroke="#efece8"/>' +
         '<circle cx="42" cy="' + (y + (h - 8) / 2) + '" r="12" fill="' + accent + '" opacity="0.12"/>' +

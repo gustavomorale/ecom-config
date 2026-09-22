@@ -136,8 +136,8 @@ listing.
 - [x] `BCFG_BILLING=on` in Netlify. Verified on MySuperStore 2026-09-18: the approval page shows
       Standard, 14-day trial, USD 25 every 30 days as a test charge; Approve opens the overview;
       Cancel returns to Settings, Apps without a loop. The return URL must be absolute.
-- [ ] Fresh install on a clean dev store end to end, following section 1 exactly.
-- [ ] Uninstall and reinstall: no errors, welcome page appears, old session gone.
+- [x] Fresh install on a clean dev store end to end (craftframe-bundle-quiz-demo, 2026-09-21).
+- [x] Uninstall and reinstall: verified 2026-09-21, session deleted on uninstall, plan re-approved.
 - [ ] Privacy policy read by CraftFrame's adviser. Registered address and company number
       added 2026-09-18 from Companies House (16669774); confirm they are current.
 - [x] Privacy webhooks respond 200 to a signed test and 400 unsigned (verified on production
@@ -145,4 +145,6 @@ listing.
 - [ ] Storefront on a slow phone and with reduced motion / reduced transparency.
 - [ ] No console errors in the admin or on the storefront.
 - [ ] `LISTING.md` beta wording matches what is true on submission day.
-- [ ] Submit. Expect 1 to 2 weeks and at least one round of feedback; answer within a day.
+- [ ] Submit. Listing form completed 2026-09-22; all preliminary checks green except the
+      two-hourly "Use theme app extensions" scan, which enables the Submit button when it
+      runs. Expect 1 to 2 weeks and at least one round of feedback; answer within a day.

@@ -88,7 +88,7 @@ mute. Source text is `voiceover-script.txt` with the break tags removed.
 
 Upload to YouTube as unlisted with the title "CraftFrame Bundle Quiz Demo" and replace the
 video on the existing link (YouTube Studio, the video, Editor, Replace) so
-https://youtu.be/674VwioNeDY keeps working. If replace is unavailable, upload new, set
+https://youtu.be/VPd381BuGe4 keeps working. If replace is unavailable, upload new, set
 unlisted, allow embedding, and update the Screencast URL in the App Store submission form.
 
 ## How v2 was actually built (2026-09-22)

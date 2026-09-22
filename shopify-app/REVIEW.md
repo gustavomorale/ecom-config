@@ -123,7 +123,7 @@ listing.
 | Pricing | Recurring: USD 25 / 30 days, 14-day free trial. No usage charges |
 | Privacy policy URL | https://bundle-configurator.netlify.app/privacy |
 | Support email | contact@craftframe.agency |
-| Screencast | https://youtu.be/674VwioNeDY (unlisted, 3 min 20 s, recorded 2026-09-22) |
+| Screencast | https://youtu.be/VPd381BuGe4 (unlisted, 3 min 20 s, recorded 2026-09-22) |
 | Emergency developer contact | contact@craftframe.agency, plus a phone number, in the Partner Dashboard settings |
 | Demo store | `bundle-configurator-demo` URL plus storefront password |
 | Languages | English |

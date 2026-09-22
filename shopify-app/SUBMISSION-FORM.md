@@ -37,7 +37,7 @@ your products, done. Email support within two working days.
 6. No theme edits, no customer data stored, keyboard and screen reader friendly
 
 **Feature media (the hero image or video shown at the top of the listing):**
-Video: https://youtu.be/674VwioNeDY
+Video: https://youtu.be/VPd381BuGe4
 If it asks for an image instead, use `branding/screenshots/03-storefront-result.png`.
 
 **Screenshots (desktop, 1600 x 900), in this order with these alt texts:**
@@ -108,7 +108,7 @@ Enter:
 - Username / password fields for the app itself: write "Not required. The app has no
   login of its own; installing it on any development store is enough."
 
-**Screencast URL:** https://youtu.be/674VwioNeDY
+**Screencast URL:** https://youtu.be/VPd381BuGe4
 
 **Testing instructions:** paste section 1 of `REVIEW.md` in full. Add this line at the
 top: "A demo store with the app installed and configured is available at the URL above;

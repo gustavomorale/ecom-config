@@ -201,8 +201,8 @@ export default function Rules() {
           {newAcc.map((a, i) => (
             <s-box key={a.tempKey} padding="base" borderWidth="base" borderRadius="base" background="subdued">
               <s-grid gridTemplateColumns="2fr 1fr auto" gap="base" alignItems="end">
-                <s-text-field label="New product name" value={a.title} onInput={(e) => setNewAcc((xs) => xs.map((x, j) => (j === i ? { ...x, title: e.currentTarget.value } : x)))} />
-                <s-number-field label="Preview price" value={a.price} min="0" step="0.01" onInput={(e) => setNewAcc((xs) => xs.map((x, j) => (j === i ? { ...x, price: e.currentTarget.value } : x)))} />
+                <s-text-field label="New product name" value={a.title} onInput={(e) => { const v = e.currentTarget.value; setNewAcc((xs) => xs.map((x, j) => (j === i ? { ...x, title: v } : x))); }} />
+                <s-number-field label="Preview price" value={a.price} min="0" step="0.01" onInput={(e) => { const v = e.currentTarget.value; setNewAcc((xs) => xs.map((x, j) => (j === i ? { ...x, price: v } : x))); }} />
                 <s-button variant="tertiary" onClick={() => setNewAcc((xs) => xs.filter((_, j) => j !== i))}>Cancel</s-button>
               </s-grid>
               <s-text color="subdued">Save, then link it to a real product on the Products step.</s-text>

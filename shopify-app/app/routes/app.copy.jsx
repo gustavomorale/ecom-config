@@ -133,7 +133,7 @@ export default function Copy() {
         <s-section key={g.heading} heading={g.heading}>
           <s-stack direction="block" gap="base">
             {g.fields.map(([k, label, placeholder]) => (
-              <s-text-field key={k} label={label} value={copy[k]} placeholder={placeholder} onInput={(e) => setCopy((c) => ({ ...c, [k]: e.currentTarget.value }))} />
+              <s-text-field key={k} label={label} value={copy[k]} placeholder={placeholder} onInput={(e) => { const v = e.currentTarget.value; setCopy((c) => ({ ...c, [k]: v })); }} />
             ))}
           </s-stack>
         </s-section>
@@ -142,29 +142,29 @@ export default function Copy() {
       <s-section heading="Footer attribution">
         <s-paragraph color="subdued">Optional. Leave all three empty and the widget shows no footer at all.</s-paragraph>
         <s-grid gridTemplateColumns="1fr 1fr" gap="base">
-          <s-text-field label="Words before your name" value={brand.footerPrefix} placeholder="e.g. Curated by" onInput={(e) => setBrand((b) => ({ ...b, footerPrefix: e.currentTarget.value }))} />
-          <s-text-field label="Your store name" value={brand.name} onInput={(e) => setBrand((b) => ({ ...b, name: e.currentTarget.value }))} />
+          <s-text-field label="Words before your name" value={brand.footerPrefix} placeholder="e.g. Curated by" onInput={(e) => { const v = e.currentTarget.value; setBrand((b) => ({ ...b, footerPrefix: v })); }} />
+          <s-text-field label="Your store name" value={brand.name} onInput={(e) => { const v = e.currentTarget.value; setBrand((b) => ({ ...b, name: v })); }} />
         </s-grid>
-        <s-text-field label="Footer note" value={brand.footerText} placeholder="e.g. Free returns within 30 days" onInput={(e) => setBrand((b) => ({ ...b, footerText: e.currentTarget.value }))} />
+        <s-text-field label="Footer note" value={brand.footerText} placeholder="e.g. Free returns within 30 days" onInput={(e) => { const v = e.currentTarget.value; setBrand((b) => ({ ...b, footerText: v })); }} />
       </s-section>
 
       <s-section heading="Promo code">
         <s-paragraph color="subdued">Shown on the result and added to the checkout link. Create the matching discount code in Shopify, Discounts; this only displays and applies it.</s-paragraph>
         <s-grid gridTemplateColumns="2fr 1fr 1.4fr" gap="base">
-          <s-text-field label="Code" value={promo.code} placeholder="WELCOME10" onInput={(e) => setPromo((p) => ({ ...p, code: e.currentTarget.value }))} />
-          <s-number-field label="Percent off" value={promo.pct} min="0" max="90" onInput={(e) => setPromo((p) => ({ ...p, pct: e.currentTarget.value }))} />
-          <s-date-field label="Ends on (optional)" value={promo.endsAt} onChange={(e) => setPromo((p) => ({ ...p, endsAt: e.currentTarget.value }))} />
+          <s-text-field label="Code" value={promo.code} placeholder="WELCOME10" onInput={(e) => { const v = e.currentTarget.value; setPromo((p) => ({ ...p, code: v })); }} />
+          <s-number-field label="Percent off" value={promo.pct} min="0" max="90" onInput={(e) => { const v = e.currentTarget.value; setPromo((p) => ({ ...p, pct: v })); }} />
+          <s-date-field label="Ends on (optional)" value={promo.endsAt} onChange={(e) => { const v = e.currentTarget.value; setPromo((p) => ({ ...p, endsAt: v })); }} />
         </s-grid>
       </s-section>
 
       <s-section heading="Cart and answers">
         <s-stack direction="block" gap="base">
-          <s-select label="How the cart opens" value={cart.mode} onChange={(e) => setCart((c) => ({ ...c, mode: e.currentTarget.value }))} details="Checkout link works on every theme. On-page add keeps the shopper on the page and then opens the cart.">
+          <s-select label="How the cart opens" value={cart.mode} onChange={(e) => { const v = e.currentTarget.value; setCart((c) => ({ ...c, mode: v })); }} details="Checkout link works on every theme. On-page add keeps the shopper on the page and then opens the cart.">
             <s-option value="permalink">Checkout link (works everywhere)</s-option>
             <s-option value="ajax">Add on the page, then open the cart</s-option>
           </s-select>
           <s-text color="subdued">{`Prices show in your store's currency (${cart.currency}), formatted for each shopper's language.`}</s-text>
-          <s-select label="Remember a shopper's answers" value={persist.mode} onChange={(e) => setPersist((p) => ({ ...p, mode: e.currentTarget.value }))} details="Answers never leave the shopper's browser.">
+          <s-select label="Remember a shopper's answers" value={persist.mode} onChange={(e) => { const v = e.currentTarget.value; setPersist((p) => ({ ...p, mode: v })); }} details="Answers never leave the shopper's browser.">
             <s-option value="session">Until they close the tab</s-option>
             <s-option value="local">Until they clear their browser</s-option>
             <s-option value="none">Do not remember</s-option>

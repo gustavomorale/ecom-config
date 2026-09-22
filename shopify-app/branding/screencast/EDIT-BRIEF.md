@@ -106,3 +106,12 @@ Desktop (`Bundle - FILM`). Run `node build/make.js` from that folder after copyi
 - Effects are peak-normalised at trim time (−10 dBFS, sting −8) rather than gained in the mix.
 - Measured master: −18 LUFS, −3.8 dBTP; voice −6.6 dB peak, music alone −19 dB peak.
 - The end card is rendered from `endcard.html` with headless Chrome (this ffmpeg has no drawtext).
+
+## v3, tight cut (2026-09-22)
+
+`make-tight.js` removes the dead time: each of 13 segments shows the recording from a
+screen change for the length of its narration plus a 0.9 s beat, then jumps to the next.
+Segment in-points come from ffmpeg scene detection on the recording. Runtime 3:10 (from
+3:26), same mix levels (−18 LUFS, voice −6.5 dB peak, music alone about −19 dB, effects
+−5 to −7 dB). The install segment starts at 5.5 s in the recording, before the page reload
+that left it blank for four seconds. Output `craftframe-bundle-quiz-demo-v3.mp4`.

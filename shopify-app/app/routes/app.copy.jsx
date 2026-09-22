@@ -15,7 +15,7 @@ import { WidgetPreview } from "../components/WidgetPreview";
 const GROUPS = [
   { heading: "Opening", fields: [
     ["title", "Headline", "Build your bundle"],
-    ["titleHighlight", "Highlighted words in the headline", "Must appear in the headline exactly"],
+    ["titleHighlight", "Words to colour in the headline (optional)", "e.g. the last two words of the headline"],
     ["subtitle", "Sub-headline", ""],
   ] },
   { heading: "Questions", fields: [
@@ -66,8 +66,14 @@ export const action = async ({ request }) => {
     const v = clip(d.copy[k], 200);
     if (v === "" && k !== "priceNote") delete config.copy[k]; else config.copy[k] = v;
   }
-  if (config.copy.titleHighlight && !(config.copy.title || "").includes(config.copy.titleHighlight)) {
-    return { ok: false, error: "The highlighted words must appear in the headline exactly as typed." };
+  // The highlight names words inside the headline. Merchants often type the
+  // two halves separately ("Find your" + "beauty routine"), so join them
+  // rather than refuse the save. Case does not matter.
+  if (config.copy.titleHighlight) {
+    const title = config.copy.title || "", hl = config.copy.titleHighlight;
+    const at = title.toLowerCase().indexOf(hl.toLowerCase());
+    if (at === -1) config.copy.title = (title.trim() + " " + hl.trim()).trim().slice(0, 200);
+    else config.copy.titleHighlight = title.slice(at, at + hl.length);
   }
 
   config.brand = config.brand || {};

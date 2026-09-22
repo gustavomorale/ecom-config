@@ -92,6 +92,11 @@ commands: `/check`, `/build-extension`, `/sync-mvp`, `/next-blocker [n]`. Person
 - **v1.1:** analytics endpoint and drop-off funnel. Ajax cart.
 - **v1.2 (current):** answer persistence (`sessionStorage` + resumable link), done.
 - **v1.3:** price sync from the Storefront API. Metaobject-backed accessory catalogue.
+- **v1.4, AI draft (decided 2026-09-22, after approval):** an "AI draft" step at Category that
+  reads the catalogue (`read_products`, already granted), sends it with the chosen template to
+  an LLM and writes questions, bundles and add-on rules into the config for the merchant to
+  edit. Prompt spec in `shopify-app/AI-DRAFT.md`. Needs privacy policy and listing updates
+  (data sent to a model provider) before it ships; do not add during review.
 - **v2:** draft orders for high-value configs. Per-market/per-locale configs.
   Merchant-defined scenes.
 - **Not in v1:** multi-language, customer accounts, B2B price lists, anything needing an

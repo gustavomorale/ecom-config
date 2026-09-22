@@ -10,10 +10,9 @@ template, headline "Find your Beauty Routine"). Upload in this order with these 
 | 03-storefront-result.png | A ready-made set, with the reason it was chosen. |
 | 04-storefront-cart-panel.png | Targeted extras and a cart total before the shopper commits. |
 | 05-checkout-prefilled.png | One click opens checkout with everything loaded. |
-| 06-admin-overview.png | Set up in five minutes, edit any time. (still to capture) |
+| 06-admin-overview.png | Set up in five minutes, edit any time. |
 
-Still to capture, 1600 x 900 via Chrome DevTools device toolbar: the admin overview in
-its green "Live on your store" state. Optional extras: Rules page, Look page after
+All six captured 2026-09-22. Optional extras if wanted later: Rules page, Look page after
 Match my store.
 
 How these were made: Retina captures cropped to 16:9 around the widget and resized with

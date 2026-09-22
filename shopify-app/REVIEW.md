@@ -69,8 +69,8 @@ is what the screenshots come from.
 
 ## 3. Screenshots (1600 x 900 px, 16:9, 3 to 6, PNG, no browser chrome, no personal data)
 
-**Done 2026-09-22:** five storefront shots are in `branding/screenshots/` with captions in
-`CAPTIONS.md` there. The admin overview shot is still to capture.
+**Done 2026-09-22:** six shots (five storefront, one admin) are in `branding/screenshots/`
+with captions in `CAPTIONS.md` there.
 
 1. **Storefront, question 1** as picture cards, desktop. Caption: "Ask what matters, in your
    store's own look."

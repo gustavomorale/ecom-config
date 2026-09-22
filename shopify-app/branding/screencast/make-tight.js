@@ -13,7 +13,7 @@ const dur = (f) => parseFloat(execFileSync("ffprobe", ["-v", "error", "-show_ent
 const BEAT = 0.9;
 const segs = [
   [0, 11.7, 0.0, 6, []],                          // settings, uninstalled banner (intro line)
-  [11.7, 18.0, 5.5, 6, []],                      // install screen
+  [11.7, 18.0, 5.0, 6, [], 4.8],                      // install screen
   [18.0, 23.8, 19.8, 6, [[4.6, "confirm"]]],      // approve plan
   [23.8, 31.9, 30.0, 6, [[3.5, "success"]]],      // overview, setup complete
   [31.9, 49.7, 38.2, 8, [[0.2, "transition"]]],   // category templates (scrolling)
@@ -31,11 +31,11 @@ const CLOSING = [162.0, 166.77];
 
 // 1. Cut voice sections.
 let parts = [];
-segs.forEach(([a, b, picIn, minPic], i) => {
+segs.forEach(([a, b, picIn, minPic, , hold], i) => {
   const len = b - a;
   ff(["-ss", String(a), "-t", String(len), "-i", "build/voice.wav", "-af", `afade=t=in:d=0.05,afade=t=out:st=${(len - 0.08).toFixed(2)}:d=0.08`, `build/t_v${i}.wav`]);
   const picLen = Math.max(minPic, len + BEAT);
-  parts.push({ i, a, b, picIn, picLen, voiceLen: len });
+  parts.push({ i, a, b, picIn, picLen, voiceLen: len, hold });
 });
 ff(["-ss", String(CLOSING[0]), "-t", String(CLOSING[1] - CLOSING[0]), "-i", "build/voice.wav", "build/t_vclose.wav"]);
 
@@ -46,7 +46,7 @@ console.log("segments:", parts.map((p) => `${p.i}@${p.at.toFixed(1)}(${p.picLen.
 
 // 3. Picture: trim each segment from the recording, concatenate, then the end card.
 const vin = []; const vlab = [];
-parts.forEach((p, k) => { vin.push("-ss", String(p.picIn), "-t", String(p.picLen), "-i", "film_raw.mov"); vlab.push(`[${k}:v]`); });
+parts.forEach((p, k) => { vin.push("-ss", String(p.picIn), "-t", String(p.hold ? p.hold : p.picLen), "-i", "film_raw.mov"); vlab.push(`[${k}:v]`); });
 const cardIdx = parts.length;
 vin.push("-loop", "1", "-t", String(TOTAL - cardAt), "-i", "build/endcard.png");
 const musicIdx = cardIdx + 1; vin.push("-i", "build/music.wav");
@@ -62,7 +62,7 @@ const speaking = [...parts.map((p) => [p.at, p.at + p.voiceLen]), [cardAt + 0.3,
 const duck = "volume='" + speaking.reduce((acc, [s, e]) => acc.replace(/,1\)$/, `,if(between(t,${s.toFixed(2)},${e.toFixed(2)}),0.45,1))`), `if(between(t,${speaking[0][0].toFixed(2)},${speaking[0][1].toFixed(2)}),0.45,1)`) + "':eval=frame";
 
 const filter = [
-  ...parts.map((p, k) => `[${k}:v]scale=1920:1080:force_original_aspect_ratio=decrease,pad=1920:1080:(ow-iw)/2:(oh-ih)/2:color=0xf6f6f7,fps=30,settb=1/30,setsar=1,setpts=PTS-STARTPTS[p${k}]`),
+  ...parts.map((p, k) => `[${k}:v]scale=1920:1080:force_original_aspect_ratio=decrease,pad=1920:1080:(ow-iw)/2:(oh-ih)/2:color=0xf6f6f7,fps=30,settb=1/30,setsar=1,setpts=PTS-STARTPTS${p.hold ? `,tpad=stop_mode=clone:stop_duration=${(p.picLen - p.hold).toFixed(2)}` : ""}[p${k}]`),
   `${vlab.map((_, k) => `[p${k}]`).join("")}concat=n=${parts.length}:v=1:a=0,fps=30,settb=1/30,setsar=1[pic]`,
   `[${cardIdx}:v]format=yuv420p,fps=30,settb=1/30,setsar=1[card]`,
   `[pic][card]xfade=transition=fade:duration=0.5:offset=${(cardAt - 0.5).toFixed(2)}[vid0]`,

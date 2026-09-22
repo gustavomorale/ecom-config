@@ -26,7 +26,7 @@ answer four to six questions in a block on any page; your rules pick the base bu
 the add-ons that fit; the result shows what is in the set and why, then opens checkout
 with everything loaded. Pick a category to start from a working template (skincare, home
 security, subscription boxes and more), match your store's colours in one click, link
-your products, done. We answer every email within a working day.
+your products, done. Email support within one working day.
 
 **Features (each 80; the form usually takes 3 to 6):**
 1. Category templates: a working questionnaire the moment you pick what you sell

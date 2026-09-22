@@ -90,3 +90,19 @@ Upload to YouTube as unlisted with the title "CraftFrame Bundle Quiz Demo" and r
 video on the existing link (YouTube Studio, the video, Editor, Replace) so
 https://youtu.be/674VwioNeDY keeps working. If replace is unavailable, upload new, set
 unlisted, allow embedding, and update the Screencast URL in the App Store submission form.
+
+## How v2 was actually built (2026-09-22)
+
+`make.js` in this folder assembles the master with ffmpeg from the asset folder on the
+Desktop (`Bundle - FILM`). Run `node build/make.js` from that folder after copying it into
+`build/`. Notes from the build:
+- ElevenLabs shortened every `<break>` to under a second, so the narration (2:47) is cut into
+  14 sections at detected pauses and each is placed at its screen cue; the last clause of the
+  result section was dropped so "One click" lands on the checkout.
+- The recording's storefront part runs about 8 s later than the plan: result at 3:06,
+  checkout at 3:16, end card at 3:19, total 3:26.
+- Sidechain ducking in ffmpeg did not bite; the music dips −7 dB under each narration section
+  with an explicit volume expression instead.
+- Effects are peak-normalised at trim time (−10 dBFS, sting −8) rather than gained in the mix.
+- Measured master: −18 LUFS, −3.8 dBTP; voice −6.6 dB peak, music alone −19 dB peak.
+- The end card is rendered from `endcard.html` with headless Chrome (this ffmpeg has no drawtext).

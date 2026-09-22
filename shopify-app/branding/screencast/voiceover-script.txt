@@ -1,0 +1,27 @@
+This is CraftFrame Bundle Quiz, a Shopify app that turns "which one should I buy?" into a short quiz and a ready-made cart. <break time="0.4s" /> Here's the full journey, from install to checkout. <break time="1.5s" />
+
+Installation is standard. <break time="0.3s" /> The app asks to read your products and your theme, and nothing else. <break time="3.0s" />
+
+There's one plan: a fourteen-day free trial, then twenty-five dollars a month. <break time="0.4s" /> Approve it, and you're in. <break time="3.0s" />
+
+This is the overview. <break time="0.3s" /> Setup is five steps, and it takes about five minutes. <break time="2.0s" />
+
+Step one: what do you sell? <break time="0.5s" /> Pick a category, and you get a complete, working quiz straight away, with questions, bundles and rules already written. <break time="0.5s" /> There are sixteen templates, from skincare, to home security, to subscription boxes. <break time="0.5s" /> We'll use cosmetics. <break time="3.5s" />
+
+Step two: the look. <break time="0.5s" /> Click "Match my store", and the app reads your theme's colours, type and corner styles, and tells you how confident the match is. <break time="0.4s" /> You can set a brand colour if you'd rather. <break time="0.4s" /> The preview on the right updates as you go, in mobile and desktop. <break time="3.0s" />
+
+Step three: the questions. <break time="0.5s" /> Every word is editable. <break time="0.4s" /> Each option has a label, a short description, and a visual: an emoji, a photo from one of your products or collections, or your own image. <break time="0.5s" /> Questions can show as compact rows or picture cards. <break time="0.5s" /> You can add, remove and reorder, and mark which ones are required. <break time="6.0s" />
+
+Step four: products. <break time="0.5s" /> Every bundle and add-on links to a real product in your catalogue, chosen with Shopify's own picker. <break time="0.4s" /> No IDs to type. <break time="0.5s" /> If you're just trying it out, there's a sample catalogue you can import in one go. <break time="0.5s" /> Here, all sixteen are linked. <break time="3.0s" />
+
+Step five: go live. <break time="0.5s" /> One click opens the theme editor with the block ready to drop into any page. <break time="0.4s" /> Save the theme, and setup is complete. <break time="3.5s" />
+
+Back on the overview, the banner confirms the quiz is live on the home page. <break time="0.4s" /> Anything you change here appears on the storefront straight away. <break time="1.5s" />
+
+Now the shopper's side. <break time="0.5s" /> On the home page, the quiz sits in the store's own look. <break time="0.5s" /> A few quick questions: skin type, goals, how much of a routine they want, who it's for, and any preferences. <break time="3.0s" />
+
+The result: <break time="0.3s" /> a recommended set, the reason it was chosen, what's inside, and targeted extras with a one-line reason for each. <break time="0.4s" /> The cart panel shows the total before they commit. <break time="2.5s" />
+
+One click, and checkout opens with everything already in the cart. <break time="2.0s" />
+
+CraftFrame Bundle Quiz. <break time="0.5s" /> Five minutes to set up, no code, and no customer data stored.

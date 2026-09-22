@@ -22,7 +22,7 @@ answer four to six questions in a block on any page; your rules pick the base bu
 the add-ons that fit; the result shows what is in the set and why, then opens checkout
 with everything loaded. Pick a category to start from a working template (skincare, home
 security, subscription boxes and more), match your store's colours in one click, link
-your products, done. Email support within one working day.
+your products, done. Email support within two working days.
 
 ## Feature list (each max 80 characters)
 
@@ -75,7 +75,7 @@ there if the registered office changes.
 ## Support
 
 Email: contact@craftframe.agency
-Reply time: within one working day
+Reply time: within two working days
 Developer: CraftFrame WORKS Ltd
 
 ## Screenshots and screencast

@@ -44,7 +44,7 @@ export default function Privacy() {
         <p>
           CraftFrame WORKS Ltd is the controller for the merchant account data described below. It is a company registered in England and
           Wales, company number 16669774, with its registered office at Suite 206, Britannia House, 11 Glenthorne Road, London, W6 0LH.
-          For anything in this policy write to <a style={S.a} href={`mailto:${EMAIL}`}>{EMAIL}</a>. We reply within one working day.
+          For anything in this policy write to <a style={S.a} href={`mailto:${EMAIL}`}>{EMAIL}</a>. We reply within two working days.
         </p>
 
         <h2 style={S.h2}>Merchants: what we collect</h2>

@@ -26,7 +26,7 @@ answer four to six questions in a block on any page; your rules pick the base bu
 the add-ons that fit; the result shows what is in the set and why, then opens checkout
 with everything loaded. Pick a category to start from a working template (skincare, home
 security, subscription boxes and more), match your store's colours in one click, link
-your products, done. Email support within one working day.
+your products, done. Email support within two working days.
 
 **Features (each 80; the form usually takes 3 to 6):**
 1. Category templates: a working questionnaire the moment you pick what you sell
@@ -73,7 +73,7 @@ Mobile screenshots: leave empty (optional).
   - Unlimited questionnaires and shoppers
   - Category templates and theme matching
   - Rules editor, picture cards, share links
-  - Email support within a working day
+  - Email support within two working days
 **Additional charges description:** None. One plan, no per-order fees.
 
 ## App discovery content

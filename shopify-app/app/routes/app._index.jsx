@@ -116,7 +116,7 @@ function Welcome({ billing }) {
 
       <s-section slot="aside" heading="Help">
         <s-paragraph>{`Version ${VERSION}. Coming next: live price sync and drop-off analytics.`}</s-paragraph>
-        <s-paragraph>Something broken or missing? <s-link href={`mailto:${SUPPORT_EMAIL}?subject=Bundle%20Configurator`}>{SUPPORT_EMAIL}</s-link>. Replies within a working day.</s-paragraph>
+        <s-paragraph>Something broken or missing? <s-link href={`mailto:${SUPPORT_EMAIL}?subject=Bundle%20Configurator`}>{SUPPORT_EMAIL}</s-link>. Replies within two working days.</s-paragraph>
       </s-section>
     </s-page>
   );
@@ -292,7 +292,7 @@ function Overview({ config, current, editorUrl, storeUrl, billing, block, headli
 
       <s-section slot="aside" heading="Help">
         <s-stack direction="block" gap="small-200">
-          <s-paragraph>{`Version ${VERSION}. We answer every email within a working day.`}</s-paragraph>
+          <s-paragraph>{`Version ${VERSION}. We answer every email within two working days.`}</s-paragraph>
           <s-link href={`mailto:${SUPPORT_EMAIL}?subject=Bundle%20Configurator`}>{SUPPORT_EMAIL}</s-link>
           <s-paragraph color="subdued">The app reads your products and theme settings and writes one setting that holds your setup. It stores no customer data.</s-paragraph>
           <s-link href="https://bundle-configurator.netlify.app/privacy" target="_blank">Privacy policy</s-link>

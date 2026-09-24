@@ -142,9 +142,13 @@ commands: `/check`, `/build-extension`, `/sync-mvp`, `/next-blocker [n]`. Person
 
 ## Commercials
 
-One plan via the Billing API: 14-day free trial, then USD 25 a month (about GBP 19), never
-per order. On in production since 2026-09-18 (`BCFG_BILLING=on` in Netlify; development
-stores, reviewers' included, are detected by plan and get a test charge). Submission pack:
+One plan, Standard: 14-day free trial, then USD 25 a month (about GBP 19), never per
+order. Since the listing was created (2026-09-22) the app is on **Shopify App Pricing**: the
+plan lives in the listing, Shopify creates the subscription on its hosted plan page
+(`/store/<handle>/charges/<app handle>/pricing_plans`), and the app must never call
+`billing.request` or `appSubscriptionCreate` (the API refuses; the first review failed on a
+500 from exactly that). `app.jsx` only checks `billing.check` and redirects the top window
+to the plan page when nothing is active. Development stores see plans at no charge. Submission pack:
 `shopify-app/REVIEW.md`.
 Scopes: `read_products`, `read_themes`; the app writes one shop metafield. No theme write
 scope; app blocks do not modify the theme. Running costs are fixed (one small app server

@@ -106,6 +106,14 @@
       build: function () { return JSON.parse(JSON.stringify(root.BCFG_CONFIG_COFFEE)); }
     },
     {
+      id: 'gift-finder',
+      label: 'Gift finder',
+      icon: '&#x1F381;',
+      blurb: 'For any store in gifting season. Who it is for, budget and interests pick a gift set, with wrapping and extras to match.',
+      scene: 'Answer summary',
+      build: function () { return JSON.parse(JSON.stringify(root.BCFG_CONFIG_GIFT_FINDER)); }
+    },
+    {
       id: 'bike-build',
       label: 'Bike & e-mobility',
       icon: '&#x1F6B2;',

@@ -307,14 +307,26 @@
   };
 
   /* ---------- stock ---------- */
+  /* Variants to check: cfg.stockWatch (variantId -> product handle) plus every
+     bundle component that names its product handle. */
+  Configurator.prototype._watch = function () {
+    var watch = {}, w = this.cfg.stockWatch || {};
+    for (var k in w) watch[k] = w[k];
+    (this.cfg.bundles || []).forEach(function (b) {
+      (b.components || []).forEach(function (c) {
+        if (c.variantId && c.handle && !(c.variantId in watch)) watch[c.variantId] = c.handle;
+      });
+    });
+    return watch;
+  };
   Configurator.prototype._isOOS = function (variantId) {
-    var watch = this.cfg.stockWatch || {};
+    var watch = this._watch();
     if (!(variantId in watch)) return false;          // unwatched = assume sellable
     if (variantId in this.stock) return !this.stock[variantId];
     return true;                                       // watched, unconfirmed = fail safe
   };
   Configurator.prototype._checkStock = function () {
-    var watch = this.cfg.stockWatch || {}, self = this;
+    var watch = this._watch(), self = this;
     var base = (this.cfg.cart && this.cfg.cart.storeUrl) || '';
     if (typeof fetch !== 'function') return;
     Object.keys(watch).forEach(function (vid) {
@@ -398,7 +410,28 @@
     });
     var cartLines = order.map(function (v) { return { variantId: v, qty: lines[v] }; });
 
+    /* The bundle goes into the cart either as one bundle product (variantId) or,
+       for a gift set with no bundle product, as its components. Components
+       also drive "What's included" and, when every one has a price, the set
+       price. An out-of-stock component stays listed, marked, and out of the cart. */
+    var comps = (chosen.components || []).filter(function (c) { return c && c.variantId; })
+      .map(function (c) { var o = {}; for (var k in c) o[k] = c[k]; return o; });
+    var bundleLines = [], contents = chosen.contents || [];
     var bundlePrice = Number(chosen.price) || 0;
+    if (chosen.variantId) {
+      bundleLines.push({ variantId: chosen.variantId, qty: chosen.qty || 1 });
+    } else if (comps.length) {
+      comps.forEach(function (c) { c.oos = self._isOOS(String(c.variantId)); });
+      bundleLines = comps.filter(function (c) { return !c.oos; })
+        .map(function (c) { return { variantId: c.variantId, qty: c.qty || 1 }; });
+      contents = comps.map(function (c) {
+        return { name: c.title || c.name || '', detail: c.detail || '', qty: c.qty || 1, image: c.image || '', oos: c.oos };
+      });
+      if (comps.every(function (c) { return Number(c.price) > 0; })) {
+        bundlePrice = comps.reduce(function (sum, c) { return c.oos ? sum : sum + Number(c.price) * (c.qty || 1); }, 0);
+      }
+    }
+
     var addonsTotal = cartLines.reduce(function (sum, l) {
       var acc = null;
       for (var k in catalog) if (String(catalog[k].variantId) === String(l.variantId)) { acc = catalog[k]; break; }
@@ -407,14 +440,15 @@
 
     return {
       bundle: chosen,
-      contents: chosen.contents || [],
+      bundleLines: bundleLines,
+      contents: contents,
       addons: addons,
       cartLines: cartLines,
       addonCount: cartLines.length,
       bundlePrice: bundlePrice,
       addonsTotal: addonsTotal,
       orderTotal: bundlePrice + addonsTotal,
-      cartUrl: this.buildCartUrl(chosen, cartLines),
+      cartUrl: this.buildCartUrl(bundleLines, cartLines),
       why: interpolate(chosen.why, this._scope())
     };
   };
@@ -427,12 +461,16 @@
     });
   }
 
-  Configurator.prototype.buildCartUrl = function (bundle, lines) {
+  /* bundleLines: [{ variantId, qty }] for the bundle product or its components.
+     A bundle object is still accepted, as before components existed. */
+  Configurator.prototype.buildCartUrl = function (bundleLines, lines) {
     var c = this.cfg.cart || {};
     var base = (c.storeUrl || '').replace(/\/$/, '');
     var items = [];
-    if (bundle && bundle.variantId) items.push(bundle.variantId + ':' + (bundle.qty || 1));
-    lines.forEach(function (l) { items.push(l.variantId + ':' + l.qty); });
+    if (bundleLines && !Array.isArray(bundleLines)) {
+      bundleLines = bundleLines.variantId ? [{ variantId: bundleLines.variantId, qty: bundleLines.qty || 1 }] : [];
+    }
+    (bundleLines || []).concat(lines || []).forEach(function (l) { items.push(l.variantId + ':' + l.qty); });
     if (!items.length) return base + '/cart';
     return base + '/cart/' + items.join(',') + this._promoQuery();
   };
@@ -790,7 +828,8 @@
         (rec.contents.length ? '<div class="section-title">' + esc(copy.contentsTitle || "What's included") + '</div><div class="line-items">' +
           rec.contents.map(function (i) {
             return '<div class="line-item"><div class="line-item-img">' + (i.image ? '<img src="' + esc(i.image) + '" alt="">' : '') + '</div>' +
-              '<div class="line-item-text"><div class="line-item-name">' + esc(i.name) + '</div>' +
+              '<div class="line-item-text"><div class="line-item-name">' + esc(i.name) +
+                (i.oos ? ' <span class="addon-oos-badge">' + esc(copy.oosBadge || 'Out of stock') + '</span>' : '') + '</div>' +
               (i.detail ? '<div class="line-item-detail">' + esc(i.detail) + '</div>' : '') + '</div>' +
               '<div class="line-item-qty">&#xD7;' + (i.qty || 1) + '</div></div>';
           }).join('') + '</div>' : '') +
@@ -944,8 +983,7 @@
     if (c.mode !== 'ajax') return;                       // let the href navigate
     e.preventDefault();
     var items = [];
-    if (rec.bundle.variantId) items.push({ id: Number(rec.bundle.variantId), quantity: rec.bundle.qty || 1 });
-    rec.cartLines.forEach(function (l) { items.push({ id: Number(l.variantId), quantity: l.qty }); });
+    rec.bundleLines.concat(rec.cartLines).forEach(function (l) { items.push({ id: Number(l.variantId), quantity: l.qty }); });
     if (!items.length) return;
     link.classList.add('is-busy');
     fetch((c.storeUrl || '').replace(/\/$/, '') + '/cart/add.js', {

@@ -26,7 +26,7 @@ the app or the listing: Shopify reviews it as a finished product.
 | `src/theme-inherit.js` | Reads the host storefront's computed styles and derives the token set. Never imports merchant CSS. |
 | `src/scenes/summary.js`, `src/scenes/house.js` | Scenes: neutral answer-stack preview, and the property illustration. De-branded; colours come from `--bcfg-scene-*`. |
 | `configs/categories.js` | Category registry. The merchant's first decision. Adding a category = adding one object to the array. |
-| `configs/templates/*.js` | Full templates (house accessories, subscription boxes, cosmetics). The UK niche categories are expanded by `starter()`. |
+| `configs/templates/*.js` | Full templates (house accessories, subscription boxes, cosmetics, gift finder). The UK niche categories are expanded by `starter()`. |
 | `demo/index.html` + `harness.*` | The MVP harness: Storefront, Merchant admin (mock), Theme sync, Analytics (mock), MVP model tabs. `demo/bundle-configurator.mvp.html` is the single-file build of the same thing. |
 | `shopify-app/` | The Shopify app: embedded admin (React Router + Polaris, Shopify's current app template) and `shopify.app.toml` (name "CraftFrame Bundle Quiz", the App Store name since 2026-09-21; the repo and engine keep the working name Bundle Configurator, handle `bundle-configurator`, dev store `funrackets.myshopify.com`). `client_id` is filled in by the first `shopify app dev`. |
 | `shopify-app/extensions/bundle-configurator/` | Theme app extension: app block + assets. Assets are copied from `src/` by `npm run build:extension` and are gitignored. |
@@ -39,6 +39,19 @@ Run the Shopify app against the dev store: `cd shopify-app && npm install && npm
 Claude Code: `.claude/settings.json` pre-approves the npm scripts and read-only git. Slash
 commands: `/check`, `/build-extension`, `/sync-mvp`, `/next-blocker [n]`. Personal overrides go in
 `.claude/settings.local.json` (gitignored).
+
+## Releases and branches
+
+- `app-0.9.0` (tag on `main`): the version in App Store review. `main` stays releasable; do
+  not merge feature work into it until the app is approved.
+- `q4-gifting`: the next release (Gift finder template, gift sets from components). Ship
+  after approval, ideally live by 2026-10-31 for Black Friday. A bundle can now list
+  `components: [{ variantId, qty, price, title, detail, image, handle }]` instead of one
+  `variantId`: each goes in the cart, out-of-stock components (checked when `handle` is
+  set) are marked and left out, and when every component has a price the set price is
+  their sum. Still to do on this branch: product picker for components on the Products
+  page, Gift finder first on the Category step in Q4, a Black Friday offer preset.
+  Automatic bundle discounts need `write_discounts` and a new review: January.
 
 ## Decisions (do not relitigate without a reason)
 

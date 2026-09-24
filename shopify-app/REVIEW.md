@@ -146,7 +146,8 @@ listing.
 - [ ] No console errors in the admin or on the storefront.
 - [ ] `LISTING.md` beta wording matches what is true on submission day.
 - [x] Submitted 2026-09-22. First feedback 2026-09-23: 500 on install (Billing API call under
-      Shopify App Pricing). Fixed 2026-09-24 in `ca990ca`; resubmitted with proof.
+      Shopify App Pricing). Fixed 2026-09-24 in `ca990ca`; resubmitted 2026-09-24 with proof at
+      https://bundle-configurator.netlify.app/proof/ (both findings marked resolved).
 - [ ] Listing form completed 2026-09-22; all preliminary checks green except the
       two-hourly "Use theme app extensions" scan, which enables the Submit button when it
       runs. Expect 1 to 2 weeks and at least one round of feedback; answer within a day.

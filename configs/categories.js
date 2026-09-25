@@ -111,6 +111,8 @@
       icon: '&#x1F381;',
       blurb: 'For any store in gifting season. Who it is for, budget and interests pick a gift set, with wrapping and extras to match.',
       scene: 'Answer summary',
+      // Listed first on the Category step between these dates (MM-DD, inclusive).
+      season: { from: '10-01', to: '12-24', label: 'Gifting season' },
       build: function () { return JSON.parse(JSON.stringify(root.BCFG_CONFIG_GIFT_FINDER)); }
     },
     {

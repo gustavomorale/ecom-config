@@ -49,9 +49,14 @@ commands: `/check`, `/build-extension`, `/sync-mvp`, `/next-blocker [n]`. Person
   `components: [{ variantId, qty, price, title, detail, image, handle }]` instead of one
   `variantId`: each goes in the cart, out-of-stock components (checked when `handle` is
   set) are marked and left out, and when every component has a price the set price is
-  their sum. Still to do on this branch: product picker for components on the Products
-  page, Gift finder first on the Category step in Q4, a Black Friday offer preset.
-  Automatic bundle discounts need `write_discounts` and a new review: January.
+  their sum. Done in the admin: Products builds a gift set with the resource picker
+  (quantities, variants, up to 12 products; `app/lib/links.js` decides what counts as
+  linked); a category's `season` (MM-DD range) lists it first with a badge, so Gift finder
+  leads from 1 Oct to 24 Dec; Copy & cart has a start date and "Use a Black Friday offer"
+  (Black Friday to Cyber Monday). A date-only `promo.endsAt` now runs to the end of that
+  day. Still to do: test on the dev app (`shopify.app.dev.toml`), listing screenshots and
+  copy after approval. Automatic bundle discounts need `write_discounts` and a new
+  review: January.
 
 ## Decisions (do not relitigate without a reason)
 

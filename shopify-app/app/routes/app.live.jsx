@@ -12,6 +12,7 @@ import { boundary } from "@shopify/shopify-app-react-router/server";
 import { authenticate } from "../shopify.server";
 import { readConfig, saveConfig, themeEditorUrl, listCategories } from "../config.server";
 import { SetupRail, doneSteps } from "../components/SetupRail";
+import { hasProduct, productSlots } from "../lib/links";
 
 export const loader = async ({ request }) => {
   const { admin } = await authenticate.admin(request);
@@ -40,8 +41,8 @@ export default function Live() {
   const busy = fetcher.state !== "idle";
   const brand = config.brand || {};
   const steps = (config.steps || []).length;
-  const products = [...(config.bundles || []), ...Object.values(config.accessories || {})];
-  const missing = products.filter((p) => !p.variantId).length;
+  const products = productSlots(config);
+  const missing = products.filter((p) => !hasProduct(p)).length;
   const look = [brand.preset === "base" ? "Base" : "Glass", brand.matched ? "matched to your theme" : null, brand.theme?.accent ? brand.theme.accent : null].filter(Boolean).join(", ");
 
   useEffect(() => {

@@ -89,8 +89,9 @@ export const action = async ({ request }) => {
 
   const pct = Math.max(0, Math.min(90, Number(d.promo?.pct) || 0));
   const code = clip(d.promo?.code, 40).replace(/\s+/g, "");
-  const endsAt = /^\d{4}-\d{2}-\d{2}$/.test(String(d.promo?.endsAt || "")) ? d.promo.endsAt : "";
-  config.promo = code && pct ? { code, pct, endsAt } : { code: "", pct: 0, endsAt: "" };
+  const day = (v) => (/^\d{4}-\d{2}-\d{2}$/.test(String(v || "")) ? v : "");
+  const startsAt = day(d.promo?.startsAt), endsAt = day(d.promo?.endsAt);
+  config.promo = code && pct ? { code, pct, endsAt, ...(startsAt ? { startsAt } : {}) } : { code: "", pct: 0, endsAt: "" };
 
   const mode = ["session", "local", "none"].includes(d.persist?.mode) ? d.persist.mode : "session";
   config.persist = { ...(config.persist || {}), mode, link: d.persist?.link !== false };
@@ -98,6 +99,23 @@ export const action = async ({ request }) => {
   try { await saveConfig(admin, shopId, config); } catch (e) { return { ok: false, error: e.message }; }
   return { ok: true };
 };
+
+/* Black Friday to Cyber Monday: the Friday after the fourth Thursday of
+   November, this year or next if it has passed. */
+function blackFriday(now = new Date()) {
+  const iso = (d) => d.toISOString().slice(0, 10);
+  for (const y of [now.getFullYear(), now.getFullYear() + 1]) {
+    const nov1 = new Date(Date.UTC(y, 10, 1));
+    const firstThu = 1 + ((4 - nov1.getUTCDay() + 7) % 7);
+    const fri = new Date(Date.UTC(y, 10, firstThu + 21 + 1));
+    const mon = new Date(Date.UTC(y, 10, firstThu + 21 + 4));
+    if (mon.getTime() + 864e5 > now.getTime()) {
+      const fmt = (d) => d.toLocaleDateString("en-GB", { day: "numeric", month: "long", timeZone: "UTC" });
+      return { start: iso(fri), end: iso(mon), label: `${fmt(fri)} to ${fmt(mon)} ${y}` };
+    }
+  }
+  return { start: "", end: "", label: "" };
+}
 
 export default function Copy() {
   const { config } = useLoaderData();
@@ -109,7 +127,8 @@ export default function Copy() {
   const [copy, setCopy] = useState(() => Object.fromEntries(COPY_KEYS.map((k) => [k, c0[k] ?? ""])));
   const [brand, setBrand] = useState({ name: config.brand?.name || "", footerText: config.brand?.footerText || "", footerPrefix: c0.footerPrefix || "" });
   const [cart, setCart] = useState({ mode: config.cart?.mode || "permalink", currencySymbol: config.cart?.currencySymbol ?? "£", currency: config.cart?.currency || "GBP" });
-  const [promo, setPromo] = useState({ code: config.promo?.code || "", pct: config.promo?.pct || "", endsAt: config.promo?.endsAt || "" });
+  const [promo, setPromo] = useState({ code: config.promo?.code || "", pct: config.promo?.pct || "", startsAt: config.promo?.startsAt || "", endsAt: config.promo?.endsAt || "" });
+  const bf = blackFriday();
   const [persist, setPersist] = useState({ mode: config.persist?.mode || "session", link: config.persist?.link !== false });
 
   useEffect(() => {
@@ -156,11 +175,17 @@ export default function Copy() {
 
       <s-section heading="Promo code">
         <s-paragraph color="subdued">Shown on the result and added to the checkout link. Create the matching discount code in Shopify, Discounts; this only displays and applies it.</s-paragraph>
-        <s-grid gridTemplateColumns="2fr 1fr 1.4fr" gap="base">
+        <s-stack direction="inline" gap="small" alignItems="center">
+          <s-button variant="secondary" onClick={() => setPromo({ code: `BLACKFRIDAY${promo.pct || 20}`, pct: promo.pct || 20, startsAt: bf.start, endsAt: bf.end })}>Use a Black Friday offer</s-button>
+          <s-text color="subdued">{`Black Friday to Cyber Monday, ${bf.label}. Create the same code in Shopify, Discounts, before it starts.`}</s-text>
+        </s-stack>
+        <s-grid gridTemplateColumns="2fr 1fr 1.4fr 1.4fr" gap="base">
           <s-text-field label="Code" value={promo.code} placeholder="WELCOME10" onInput={(e) => { const v = e.currentTarget.value; setPromo((p) => ({ ...p, code: v })); }} />
           <s-number-field label="Percent off" value={promo.pct} min="0" max="90" onInput={(e) => { const v = e.currentTarget.value; setPromo((p) => ({ ...p, pct: v })); }} />
+          <s-date-field label="Starts on (optional)" value={promo.startsAt} onChange={(e) => { const v = e.currentTarget.value; setPromo((p) => ({ ...p, startsAt: v })); }} />
           <s-date-field label="Ends on (optional)" value={promo.endsAt} onChange={(e) => { const v = e.currentTarget.value; setPromo((p) => ({ ...p, endsAt: v })); }} />
         </s-grid>
+        <s-text color="subdued">The code shows from the start date until the end of the end date. Leave both empty to show it now and until you remove it.</s-text>
       </s-section>
 
       <s-section heading="Cart and answers">

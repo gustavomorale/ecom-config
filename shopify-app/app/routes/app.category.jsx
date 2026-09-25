@@ -67,7 +67,10 @@ export default function Category() {
           {categories.map((c) => (
             <s-box key={c.id} padding="base" borderWidth="base" borderRadius="base" background="base">
               <s-stack direction="block" gap="small-200">
-                <s-text>{c.icon}</s-text>
+                <s-stack direction="inline" gap="small" alignItems="center">
+                  <s-text>{c.icon}</s-text>
+                  {c.seasonLabel ? <s-badge tone="info">{c.seasonLabel}</s-badge> : null}
+                </s-stack>
                 <s-heading>{c.label}</s-heading>
                 <s-paragraph color="subdued">{c.blurb}</s-paragraph>
                 <s-button
@@ -85,7 +88,7 @@ export default function Category() {
       </s-section>
       <s-section slot="aside" heading="Setup, step 1 of 5">
         <s-paragraph>Category, then Look, Questions, Products, Go live. One decision per step, about five minutes in all.</s-paragraph>
-        <s-paragraph color="subdued">Three categories ship as full templates (home security, subscription boxes, cosmetics). The rest are complete starters sized so you edit rather than author.</s-paragraph>
+        <s-paragraph color="subdued">Four categories ship as full templates (home security, subscription boxes, cosmetics, gift finder). The rest are complete starters sized so you edit rather than author.</s-paragraph>
       </s-section>
     </s-page>
   );

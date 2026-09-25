@@ -16,6 +16,7 @@ import { authenticate, billingEnabled, PLAN_PRICE_USD, PLAN_TRIAL_DAYS } from ".
 import { listCategories, buildCategory, readConfig, saveConfig, themeEditorUrl } from "../config.server";
 import { blockOnTheme } from "../theme.server";
 import { VERSION, SUPPORT_EMAIL } from "../components/SetupRail";
+import { hasProduct, productSlots } from "../lib/links";
 import { WidgetPreview } from "../components/WidgetPreview";
 
 export const loader = async ({ request }) => {
@@ -169,8 +170,8 @@ function Overview({ config, current, editorUrl, storeUrl, billing, block, headli
 
   const setup = config.meta?.setup || {};
   const steps = (config.steps || []).length;
-  const products = [...(config.bundles || []), ...Object.values(config.accessories || {})];
-  const linked = products.filter((p) => p.variantId).length;
+  const products = productSlots(config);
+  const linked = products.filter(hasProduct).length;
   const rules = (config.addonRules || []).length;
   const live = block ? block.installed : !!setup.live;
 

@@ -351,8 +351,10 @@
   Configurator.prototype._promoActive = function () {
     var p = this.cfg.promo;
     if (!p || !p.code || !(p.pct > 0)) return false;
+    // A date-only endsAt ('2026-11-30') runs to the end of that day.
+    var end = p.endsAt ? new Date(p.endsAt).getTime() + (/^\d{4}-\d{2}-\d{2}$/.test(p.endsAt) ? 864e5 : 0) : 0;
     if (p.startsAt && Date.now() < new Date(p.startsAt).getTime()) return false;
-    if (p.endsAt && Date.now() > new Date(p.endsAt).getTime()) return false;
+    if (end && Date.now() >= end) return false;
     return true;
   };
   Configurator.prototype._promoQuery = function () {

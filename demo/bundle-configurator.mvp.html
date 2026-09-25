@@ -1655,8 +1655,10 @@ table.spec td:first-child{white-space:nowrap;font-weight:550}
   Configurator.prototype._promoActive = function () {
     var p = this.cfg.promo;
     if (!p || !p.code || !(p.pct > 0)) return false;
+    // A date-only endsAt ('2026-11-30') runs to the end of that day.
+    var end = p.endsAt ? new Date(p.endsAt).getTime() + (/^\d{4}-\d{2}-\d{2}$/.test(p.endsAt) ? 864e5 : 0) : 0;
     if (p.startsAt && Date.now() < new Date(p.startsAt).getTime()) return false;
-    if (p.endsAt && Date.now() > new Date(p.endsAt).getTime()) return false;
+    if (end && Date.now() >= end) return false;
     return true;
   };
   Configurator.prototype._promoQuery = function () {
@@ -3782,6 +3784,8 @@ window.BCFG_CONFIG_GIFT_FINDER = {
       icon: '&#x1F381;',
       blurb: 'For any store in gifting season. Who it is for, budget and interests pick a gift set, with wrapping and extras to match.',
       scene: 'Answer summary',
+      // Listed first on the Category step between these dates (MM-DD, inclusive).
+      season: { from: '10-01', to: '12-24', label: 'Gifting season' },
       build: function () { return JSON.parse(JSON.stringify(root.BCFG_CONFIG_GIFT_FINDER)); }
     },
     {

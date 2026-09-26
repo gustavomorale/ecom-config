@@ -35,7 +35,7 @@ your products, done. Email support within two working days.
 - Shoppers' answers survive a refresh and can be shared as a link
 - Accessible: keyboard navigation, screen reader announcements, focus management
 - Glass or Base look; steps down to flat surfaces on slow devices automatically
-- Sample catalogue import for stores that want to try it before adding products
+- Uses the products you already sell; the app never adds products to your store
 - No theme edits, no code, and no customer data stored
 
 ## Wording rules

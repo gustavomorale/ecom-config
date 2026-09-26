@@ -1,7 +1,7 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Proof of resolution: CraftFrame Bundle Quiz, 4.5.3</title>
 <style>body{font-family:Inter,-apple-system,"Segoe UI",sans-serif;background:#f6f6f7;color:#1a1a1a;margin:0;padding:32px 20px 60px}main{max-width:900px;margin:0 auto}h1{font-size:24px;margin:0 0 6px}h2{font-size:18px;margin:32px 0 8px}p,li{line-height:1.55;color:#3a3a3a}section{background:#fff;border-radius:12px;padding:8px 22px 18px;margin-top:24px;box-shadow:0 1px 2px rgba(0,0,0,.06)}a{color:#3d5ee6}code{background:#ececec;padding:2px 5px;border-radius:4px}table{border-collapse:collapse;width:100%;font-size:14px}th,td{text-align:left;padding:8px 10px;border-bottom:1px solid #e3e3e3;vertical-align:top}th{color:#616161;font-weight:600}</style></head><body><main>
 <h1>Proof of resolution: requirement 4.5.3</h1>
-<p><strong>App:</strong> CraftFrame Bundle Quiz (client ID a1b72ae7…). <strong>Date:</strong> FIX_DATE.</p>
+<p><strong>App:</strong> CraftFrame Bundle Quiz (client ID a1b72ae7…). <strong>Date:</strong> 26 September 2026.</p>
 
 <section>
 <h2>1. New demo screencast</h2>
@@ -23,6 +23,6 @@
 <h2>2. Source of the products (inventory)</h2>
 <p><strong>The app does not supply, sell, source or fulfil any products and has no inventory.</strong> It recommends products that already exist in the merchant's own store. The merchant links each bundle and add-on to one of those products with Shopify's product picker. The app's only product access is <code>read_products</code>; it cannot create or edit products.</p>
 <p><strong>What you saw, and what we changed.</strong> Your store had products with vendor <code>Sample</code> (Mesh Wi-Fi, HDMI 2.1 cable, Cinema Kit and others). They came from an optional "sample catalogue" CSV that earlier builds offered: a file generated from the chosen template, which the merchant imported with Shopify's own product import so they could try the questionnaire before linking real products. The import created them as active, published products, so they appeared for sale with no stock behind them. That was our mistake.</p>
-<p><strong>Fix (deployed FIX_DATE):</strong> the sample catalogue is removed from the app: no CSV download, no import instructions, no "link samples" action. Setup step 4 now only links products the store already sells, and the listing says the app never adds products to a store. Products left over from an earlier import carry the tag <code>bundle-configurator-sample</code> and can be deleted from Products by filtering on that tag.</p>
+<p><strong>Fix (deployed 26 September 2026):</strong> the sample catalogue is removed from the app: no CSV download, no import instructions, no "link samples" action. Setup step 4 now only links products the store already sells, and the listing says the app never adds products to a store. Products left over from an earlier import carry the tag <code>bundle-configurator-sample</code> and can be deleted from Products by filtering on that tag.</p>
 </section>
 </main></body></html>

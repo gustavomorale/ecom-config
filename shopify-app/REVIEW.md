@@ -88,17 +88,11 @@ Mobile screenshot (optional, 900 x 1600): the questionnaire on a phone with the 
 Tip: use the app's Enlarge preview for clean storefront captures, and the browser's device
 toolbar at 1600 x 900 for admin pages.
 
-## 3b. Screencast (required by review; English, 2 to 4 minutes, captions are enough)
+## 3b. Screencast (required by review; English, step by step)
 
-Record on the demo store, one take per scene, in this order:
-1. Install from the link, approve the plan (test charge), land on the welcome page.
-2. The five setup steps: Category, Look with Match my store, Questions with one picture
-   card, Products with the picker, Go live.
-3. Theme editor: Add section, Apps, CraftFrame Bundle Quiz, Save.
-4. Storefront: answer the questions, reach the result, Add to cart, the cart opens filled.
-5. Back in the app: change one rule, show the change on the storefront.
-
-Upload unlisted to YouTube or Loom and paste the link in the submission form.
+The first video (2026-09-22) was judged too thin (feedback 2026-09-25, 4.5.3). The full
+scene-by-scene script with English narration, including the "source of inventory" answer
+about the sample CSV, is in `SCREENCAST.md`. Proof page: `public/proof/4-5-3/index.html`.
 
 ## 4. App icon (1200 x 1200 px, PNG or JPG, under 1 MB)
 
@@ -148,6 +142,10 @@ listing.
 - [x] Submitted 2026-09-22. First feedback 2026-09-23: 500 on install (Billing API call under
       Shopify App Pricing). Fixed 2026-09-24 in `ca990ca`; resubmitted 2026-09-24 with proof at
       https://bundle-configurator.netlify.app/proof/ (both findings marked resolved).
+- [ ] Feedback 2026-09-25, 4.5.3: screencast needs step-by-step setup, and "stock products"
+      need their source. Re-record per `SCREENCAST.md`, fill the placeholders in
+      `public/proof/4-5-3/index.html` (VIDEO_URL, VIDEO_DATE, VIDEO_LENGTH, DEMO_STORE_NOTE),
+      deploy, then mark resolved with https://bundle-configurator.netlify.app/proof/4-5-3/
 - [ ] Listing form completed 2026-09-22; all preliminary checks green except the
       two-hourly "Use theme app extensions" scan, which enables the Submit button when it
       runs. Expect 1 to 2 weeks and at least one round of feedback; answer within a day.

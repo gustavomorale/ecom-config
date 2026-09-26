@@ -2,8 +2,7 @@
    Setup step 4: Products. The only step that gates a real checkout.
    Every bundle and add-on is linked to a Shopify variant through the
    resource picker; nobody types an ID. Products with several variants get
-   a variant dropdown. A sample catalogue (CSV generated from this template)
-   covers stores that have nothing to link yet.
+   a variant dropdown. The app only reads products; it never creates them.
    ============================================================ */
 import { useEffect, useState } from "react";
 import { redirect, useFetcher, useLoaderData, useRouteError } from "react-router";
@@ -11,15 +10,15 @@ import { useAppBridge } from "@shopify/app-bridge-react";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { authenticate } from "../shopify.server";
 import { readConfig, saveConfig } from "../config.server";
-import { linkSamples, refreshLinked } from "../samples.server";
+import { refreshLinked } from "../products.server";
 import { SetupRail, doneSteps } from "../components/SetupRail";
 import { money } from "../lib/money";
 
 export const loader = async ({ request }) => {
   const { admin } = await authenticate.admin(request);
-  const { config, domain } = await readConfig(admin);
+  const { config } = await readConfig(admin);
   if (!config) return redirect("/app");
-  return { config, done: doneSteps(config), importUrl: `https://${domain}/admin/products?modal=import` };
+  return { config, done: doneSteps(config) };
 };
 
 const gidTail = (gid) => String(gid || "").split("/").pop();
@@ -31,12 +30,6 @@ export const action = async ({ request }) => {
   const { shopId, config } = await readConfig(admin);
   if (!config) return { ok: false, error: "No configuration yet" };
   try {
-    if (intent === "link-samples") {
-      const r = await linkSamples(admin, config);
-      if (!r.found) return { ok: false, intent, error: "No imported samples found yet. Import the CSV first, then try again." };
-      await saveConfig(admin, shopId, config);
-      return { ok: true, intent, linked: r.linked, found: r.found };
-    }
     if (intent === "refresh") {
       const r = await refreshLinked(admin, config);
       if (r.checked) await saveConfig(admin, shopId, config);
@@ -102,37 +95,15 @@ function ProductRow({ item, kind, link, currency, onPick, onClear, onVariant }) 
 }
 
 export default function Products() {
-  const { config, done, importUrl } = useLoaderData();
+  const { config, done } = useLoaderData();
   const fetcher = useFetcher();
   const shopify = useAppBridge();
   const [links, setLinks] = useState({ bundles: {}, accessories: {} });
-  const [downloading, setDownloading] = useState(false);
-
-  // A plain link would open outside the embedded app, without the session
-  // token, and be refused. App Bridge signs fetch(), so fetch the file here
-  // and hand it to the browser as a download.
-  const downloadCsv = async () => {
-    setDownloading(true);
-    try {
-      const res = await fetch("/app/samples.csv");
-      if (!res.ok) throw new Error(String(res.status));
-      const name = (res.headers.get("Content-Disposition") || "").match(/filename="([^"]+)"/)?.[1] || "sample-products.csv";
-      const url = URL.createObjectURL(await res.blob());
-      const a = document.createElement("a");
-      a.href = url; a.download = name;
-      document.body.appendChild(a); a.click(); a.remove();
-      setTimeout(() => URL.revokeObjectURL(url), 4000);
-      shopify.toast.show("Sample CSV downloaded");
-    } catch (e) {
-      shopify.toast.show("Could not download the CSV. Reload the page and try again.", { isError: true });
-    } finally { setDownloading(false); }
-  };
   const busy = fetcher.state !== "idle";
 
   useEffect(() => {
     if (!fetcher.data) return;
-    if (fetcher.data.ok && fetcher.data.intent === "link-samples") shopify.toast.show(`Linked ${fetcher.data.linked} sample product${fetcher.data.linked === 1 ? "" : "s"}`);
-    else if (fetcher.data.ok && fetcher.data.intent === "refresh") {
+    if (fetcher.data.ok && fetcher.data.intent === "refresh") {
       const d = fetcher.data;
       if (d.missing) shopify.toast.show(`${d.missing} linked product${d.missing === 1 ? " no longer exists" : "s no longer exist"}. Choose ${d.missing === 1 ? "it" : "them"} again.`, { isError: true });
       else shopify.toast.show(d.changed ? `Updated ${d.changed} product${d.changed === 1 ? "" : "s"} from your catalogue` : "Prices and pictures are already up to date");
@@ -195,19 +166,9 @@ export default function Products() {
 
       {linked < all.length ? (
         <s-section heading="No matching products yet?">
-          <s-paragraph>Import a sample catalogue made from this template: one product per bundle and add-on, with the prices shown here and placeholder images. Good for trying the widget before your real products are ready.</s-paragraph>
-          <s-stack direction="block" gap="small">
-            <s-ordered-list>
-              <s-list-item>Download the CSV.</s-list-item>
-              <s-list-item>In Shopify, open Products, Import, and upload it.</s-list-item>
-              <s-list-item>Come back here and press Link imported samples.</s-list-item>
-            </s-ordered-list>
-            <s-stack direction="inline" gap="base">
-              <s-button onClick={downloadCsv} variant="secondary" {...(downloading ? { loading: true } : {})}>Download sample CSV</s-button>
-              <s-button href={importUrl} target="_blank" variant="tertiary">Open Products import</s-button>
-              <s-button onClick={() => fetcher.submit({ intent: "link-samples" }, { method: "POST" })} {...(busy ? { loading: true } : {})}>Link imported samples</s-button>
-            </s-stack>
-            <s-text color="subdued">Samples are tagged bundle-configurator-sample so you can find and delete them later.</s-text>
+          <s-paragraph>The template's bundles and add-ons are placeholders. Rename them in Rules to match what you sell, then link each one here. You can also skip for now: the questionnaire already works in the preview, and Add to cart fills the cart once every item is linked.</s-paragraph>
+          <s-stack direction="inline" gap="base">
+            <s-button href="/app/rules" variant="secondary">Open Rules</s-button>
           </s-stack>
         </s-section>
       ) : null}

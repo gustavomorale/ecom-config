@@ -21,9 +21,9 @@ No account or credentials are needed beyond installing the app.
    Desktop views. **Save and continue**.
 5. **Questions**: rename a question, set one question to *Picture cards*, and for an option
    choose *Picture from my store* then **Choose a product**. **Save and continue**.
-6. **Products**: if the store has no matching products, use **Download sample CSV**, import it
-   under Products, Import, return and click **Link imported samples**. Otherwise use
-   **Choose product** on each row. **Save and continue**.
+6. **Products**: use **Choose product** on each row to link any product already in the store
+   (the app never creates products; any existing products will do for testing).
+   **Save and continue**.
 7. **Go live**: click **Open theme editor**. In any section choose Add block, Apps,
    **CraftFrame Bundle Quiz** (or Add section, Apps). Save the theme. **Finish setup**.
 
@@ -44,7 +44,7 @@ No account or credentials are needed beyond installing the app.
 **Uninstall**: removing the app deletes its session data. The block disappears from the
 storefront with the app. The app's configuration metafield remains in the store's custom data.
 
-**What the app accesses**: `read_products` (product picker, sample linking), `read_themes`
+**What the app accesses**: `read_products` (product picker, refreshing linked prices and pictures), `read_themes`
 (Match my store, block detection). It writes one shop metafield. No customer data.
 Privacy policy: https://bundle-configurator.netlify.app/privacy
 Support: contact@craftframe.agency
@@ -59,9 +59,9 @@ is what the screenshots come from.
       **Match my store** shows "Good match" in screenshots. Set a storefront password and note it.
 - [ ] Install the app via
       `https://admin.shopify.com/store/<handle>/oauth/install?client_id=a1b72ae7a95a6312f1f0587db9042df4`.
-- [ ] Run setup with *Cosmetics & skincare*. Import the sample CSV, then replace the placeholder
-      images on the 16 sample products with real product photos (any royalty-free skincare set)
-      so the picture cards and the result look real.
+- [ ] Run setup with *Cosmetics & skincare*, linking products the store already has. Since
+      2026-09-26 the app has no sample catalogue; delete any old products tagged
+      `bundle-configurator-sample` from demo stores.
 - [ ] Questions: first question as Picture cards with product photos. Headline written in a
       brand voice (not the template's).
 - [ ] Add the block to the home page in its own Apps section. Check mobile and desktop.
@@ -92,7 +92,7 @@ toolbar at 1600 x 900 for admin pages.
 
 The first video (2026-09-22) was judged too thin (feedback 2026-09-25, 4.5.3). The full
 scene-by-scene script with English narration, including the "source of inventory" answer
-about the sample CSV, is in `SCREENCAST.md`. Proof page: `public/proof/4-5-3/index.html`.
+about products, is in `SCREENCAST.md`. The sample catalogue was removed in response. Proof page: `public/proof/4-5-3/index.html`.
 
 ## 4. App icon (1200 x 1200 px, PNG or JPG, under 1 MB)
 
@@ -143,8 +143,9 @@ listing.
       Shopify App Pricing). Fixed 2026-09-24 in `ca990ca`; resubmitted 2026-09-24 with proof at
       https://bundle-configurator.netlify.app/proof/ (both findings marked resolved).
 - [ ] Feedback 2026-09-25, 4.5.3: screencast needs step-by-step setup, and "stock products"
-      need their source. Re-record per `SCREENCAST.md`, fill the placeholders in
-      `public/proof/4-5-3/index.html` (VIDEO_URL, VIDEO_DATE, VIDEO_LENGTH, DEMO_STORE_NOTE),
+      need their source. Sample catalogue removed 2026-09-26 (the reviewer's imported
+      samples were active and for sale). Re-record per `SCREENCAST.md`, fill the placeholders in
+      `public/proof/4-5-3/index.html` (VIDEO_URL, VIDEO_LENGTH, FIX_DATE),
       deploy, then mark resolved with https://bundle-configurator.netlify.app/proof/4-5-3/
 - [ ] Listing form completed 2026-09-22; all preliminary checks green except the
       two-hourly "Use theme app extensions" scan, which enables the Submit button when it

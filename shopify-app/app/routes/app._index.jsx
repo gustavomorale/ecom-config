@@ -100,7 +100,7 @@ function Welcome({ billing }) {
           <s-list-item>Category: pick what you sell and get a working questionnaire immediately.</s-list-item>
           <s-list-item>Look: match your store's colours in one click, or set your own.</s-list-item>
           <s-list-item>Questions: rename, reorder, add or remove; emoji or your own product photos.</s-list-item>
-          <s-list-item>Products: link each bundle and add-on to one of your products. None yet? Import a sample set.</s-list-item>
+          <s-list-item>Products: link each bundle and add-on to one of your products with the product picker.</s-list-item>
           <s-list-item>Go live: add the block to your theme.</s-list-item>
         </s-ordered-list>
       </s-section>
@@ -178,7 +178,7 @@ function Overview({ config, current, editorUrl, storeUrl, billing, block, headli
     { key: "category", done: true, title: "Choose what you sell", text: `You started from ${current ? current.label : "a template"}. Changing it rebuilds the questions, rules and product links.`, href: "/app/category", actionLabel: "Choose a category", editLabel: "Change category" },
     { key: "look", done: !!setup.look, title: "Match your store's look", text: "One click reads your theme's colours, type and corners. Your own choices always win over the match.", href: "/app/look", actionLabel: "Set the look", editLabel: "Edit the look" },
     { key: "questions", done: !!setup.questions, title: "Check your questions", badge: `${steps}`, text: "Rename, reorder, add or remove. Show options as emoji rows or as picture cards with your product photos.", href: "/app/questions", actionLabel: "Review questions", editLabel: "Edit questions" },
-    { key: "products", done: products.length > 0 && linked === products.length, title: "Connect your products", badge: `${linked} of ${products.length}`, badgeTone: linked === products.length ? "success" : "warning", text: "Each bundle and add-on needs the product it puts in the cart. No products yet? Import the sample catalogue from that page.", href: "/app/products", actionLabel: "Connect products", editLabel: "Edit product links" },
+    { key: "products", done: products.length > 0 && linked === products.length, title: "Connect your products", badge: `${linked} of ${products.length}`, badgeTone: linked === products.length ? "success" : "warning", text: "Each bundle and add-on needs the product it puts in the cart. Rename them in Rules to match what you sell.", href: "/app/products", actionLabel: "Connect products", editLabel: "Edit product links" },
     { key: "live", done: live, title: "Add the block to your theme", text: "In the theme editor choose a section, then Add block, Apps, CraftFrame Bundle Quiz. Or Add section, Apps, for a full-width one. Save the theme.", href: editorUrl, external: true, actionLabel: "Open theme editor", editLabel: "Open theme editor", secondary: { href: storeUrl, label: "View storefront", external: true } },
   ];
   const doneCount = tasks.filter((t) => t.done).length;

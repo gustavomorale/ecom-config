@@ -2,17 +2,20 @@
 
 Feedback of 2026-09-25: the first screencast (3 min 20 s, 2026-09-22) did not give enough
 step-by-step detail to set up and test the app, and the reviewer saw "stock products" and
-asked for the source of the app's inventory. This script answers both in one video.
+asked for the source of the app's inventory. Their reference clip showed the products from
+our old sample CSV active and for sale on their storefront. We removed the sample catalogue
+(2026-09-26): the app never adds products to a store. This video shows setup step by step
+and makes the product source explicit: the merchant's own products, linked with the picker.
 
-The video must show the version in review (tag `app-0.9.0`, what is deployed on Netlify and
-released as bundle-configurator-2). Do not record anything from the `q4-gifting` branch: no
+The video must show the version deployed on Netlify after the sample catalogue removal
+(released as bundle-configurator-2; the extension did not change). Do not record anything from the `q4-gifting` branch: no
 Gift finder, no gift sets, no Black Friday button.
 
 ## Before recording
 
-- **Store:** a fresh development store with no products, Dawn theme. A clean store shows the
-  whole setup, including where the sample products come from. Do not use product photos from
-  a stock library anywhere in the video.
+- **Store:** a fresh development store with Dawn and a handful of its own products. Create it
+  with Shopify's generated test data, or add five or six products by hand with your own
+  photos. No products tagged `bundle-configurator-sample`, and no photos from a stock library.
 - **Screen:** 1920 x 1080, browser zoom 100%, one window, bookmarks bar hidden, no other tabs,
   notifications off (macOS: Focus on). Record with QuickTime (File, New Screen Recording) or
   Cmd+Shift+5.
@@ -62,27 +65,23 @@ Click **Match my store**, show the result, toggle the preview to mobile, **Save 
 
 Rename one question, point at the icon options, **Save and continue**.
 
-### 6. Setup step 4, Products, and where the products come from (90 s)
+### 6. Setup step 4, Products: where the products come from (75 s)
 This scene answers the inventory question. Do it slowly.
-> "Step four links each bundle and add-on to a product in my store, so the cart holds real
-> products. This store is new and has no products. The app does not provide products. For
-> stores that want to try it first, it offers a sample CSV."
 
-Click **Download sample CSV**, open the file (Numbers or a text editor), and hold on it.
-> "This file is generated from the template I just picked: one row per bundle and add-on, with
-> the template's names and prices. Vendor is 'Sample', every row is tagged
-> bundle-configurator-sample, and the images are plain text placeholders. There is no supplier,
-> no stock and no fulfilment behind them; they are ordinary products the merchant creates in
-> their own store and can delete at any time."
+First show the store's own product list in Shopify (Products), for two seconds.
+> "These are the store's own products. The app does not supply, sell or create products,
+> and it has no inventory. It only reads the products that are already here."
 
-In Shopify: **Products, Import**, upload the CSV, import. Show the product list with the grey
-text-tile images and vendor "Sample".
-> "I import it with Shopify's own product import. These are now my store's products."
+Back in the app, on Products:
+> "Step four links each bundle and add-on in the questionnaire to one of those products, so
+> Add to cart puts real products in the cart. I click Choose product, and Shopify's own
+> product picker opens with this store's catalogue."
 
-Back in the app: **Link imported samples**, show every row linked. Then show **Choose product**
-on one row with the Shopify product picker.
-> "The app links the samples by their handle. With real products I'd use Choose product on each
-> row instead, which opens Shopify's product picker. Save and continue."
+Click **Choose product** on the first bundle, pick a product, show the row turn Linked. For a
+product with several variants, show the variant dropdown. Link the remaining rows quickly
+(cut the repetition if you like), then point at the badge saying all are connected.
+> "If a store doesn't have matching products yet, it can rename the placeholders in Rules or
+> skip this step; nothing is ever added to the store. Save and continue."
 
 ### 7. Setup step 5, Go live (60 s)
 > "Step five puts the questionnaire on the store. Open theme editor takes me to the theme
@@ -127,6 +126,5 @@ Change one rule, **Save rules**, reload the storefront, show the different resul
    `public/proof/4-5-3/index.html`, then deploy the proof page.
 3. In the review thread, choose Show resolved state and paste the proof page URL:
    https://bundle-configurator.netlify.app/proof/4-5-3/
-4. The reviewers' demo store (`bundle-configurator-demo`): if its sample products carry photos
-   from a stock library, either switch them back to the placeholder images or name the source
-   on the proof page. The app itself never adds those photos.
+4. On every demo or dev store we used, delete the old products tagged
+   `bundle-configurator-sample` (Products, filter by tag, select all, Delete).

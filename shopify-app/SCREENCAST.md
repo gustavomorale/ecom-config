@@ -30,15 +30,17 @@ Gift finder, no gift sets, no Black Friday button.
 ## Script
 
 ### 1. What the app does (15 s)
-Screen: the App Store listing or the app's welcome page.
+Screen: Shopify's Install app screen, which opens as soon as the install link is pasted.
+Start recording on it and say this before clicking anything.
 > "CraftFrame Bundle Quiz adds a short questionnaire to a store. Shoppers answer a few
 > questions, the merchant's rules pick a bundle and add-ons from the merchant's own products,
 > and the result opens a filled cart. The app sells no products and supplies no inventory.
 > I'll set it up from scratch on a new development store."
 
 ### 2. Install and plan (40 s)
-Screen: install link, Shopify's install screen, Shopify's plan page, approval.
-> "I install the app and approve the permissions: read products and read themes. Shopify then
+Screen: the same Install app screen (open "View store data"), then Shopify's plan page and the approval.
+> "I install the app. It asks to view store data: products, to link them, and the online store
+> theme, to match its look. It never edits products, the theme or orders. Shopify then
 > shows the app's plan page. The plan is Standard with a 14-day free trial; on a development
 > store it is free. I approve it and land on the app's welcome page."
 

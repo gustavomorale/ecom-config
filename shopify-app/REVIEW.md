@@ -147,6 +147,10 @@ listing.
       returned to the plan page). The app now redirects at most once per 15 minutes
       (`bundle_configurator.plan_prompted_at` shop metafield) and otherwise opens with a
       "Choose a plan" banner; it logs what Shopify reported (`[billing]` in Netlify logs).
+      Log on bundle-quiz-screencast after the reinstall: no active subscriptions; the only
+      one, "standard" (created at the first install, 14-day trial), is CANCELLED. Uninstall
+      cancels the subscription, but Shopify's plan page still marks that plan as Current and
+      offers nothing to approve. Shopify-side; the app now degrades to the banner.
 - [ ] Feedback 2026-09-25, 4.5.3: screencast needs step-by-step setup, and "stock products"
       need their source. Sample catalogue removed 2026-09-26 (the reviewer's imported
       samples were active and for sale). Re-record per `SCREENCAST.md`, fill the placeholders in

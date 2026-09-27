@@ -19,7 +19,11 @@ Gift finder, no gift sets, no Black Friday button.
 - **Screen:** 1920 x 1080, browser zoom 100%, one window, bookmarks bar hidden, no other tabs,
   notifications off (macOS: Focus on). Record with QuickTime (File, New Screen Recording) or
   Cmd+Shift+5.
-- **Voice:** narrate in English, reading the lines below. Upload to YouTube as Unlisted and
+- **Voice:** narrate in English, reading the lines below, or record the screen silently and
+  add an ElevenLabs voiceover afterwards: `branding/screencast/voiceover-v3-review.txt` has
+  one clip per scene. Fit the voice to the picture (pause or freeze a frame where needed),
+  not the picture to a fixed length, and leave out music and sound effects: this is an
+  instruction video for a reviewer, not an advert. Upload to YouTube as Unlisted and
   turn on English subtitles (Subtitles, English, auto-sync with the narration script pasted
   in). That covers "English or English subtitles" twice.
 - **Pace:** pause a second on every screen before clicking. Target 6 to 8 minutes. Longer and

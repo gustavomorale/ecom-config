@@ -142,6 +142,11 @@ listing.
 - [x] Submitted 2026-09-22. First feedback 2026-09-23: 500 on install (Billing API call under
       Shopify App Pricing). Fixed 2026-09-24 in `ca990ca`; resubmitted 2026-09-24 with proof at
       https://bundle-configurator.netlify.app/proof/ (both findings marked resolved).
+- [x] 2026-09-27: plan redirect loop after uninstall and reinstall (Shopify's plan page showed
+      the plan as Current, the installation reported no active subscription, the back arrow
+      returned to the plan page). The app now redirects at most once per 15 minutes
+      (`bundle_configurator.plan_prompted_at` shop metafield) and otherwise opens with a
+      "Choose a plan" banner; it logs what Shopify reported (`[billing]` in Netlify logs).
 - [ ] Feedback 2026-09-25, 4.5.3: screencast needs step-by-step setup, and "stock products"
       need their source. Sample catalogue removed 2026-09-26 (the reviewer's imported
       samples were active and for sale). Re-record per `SCREENCAST.md`, fill the placeholders in

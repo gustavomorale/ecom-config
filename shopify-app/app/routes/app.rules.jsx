@@ -1,7 +1,8 @@
 /* ============================================================
    Editor: Rules.
    Bundles: which base set a shopper gets. Order matters (first match wins,
-   the last one is the fallback), so they can be reordered.
+   the last one is the fallback), so they can be reordered. Each bundle's
+   "What's included" list is edited here too.
    Add-ons: what gets layered on top, each with a condition and a quantity
    that may be a number or an expression over the answers.
    Conditions are edited as rows; the server rebuilds and validates them
@@ -40,7 +41,7 @@ export const action = async ({ request }) => {
   const ruleCatalog = fieldCatalog(config, { forRules: true });
   const errors = [];
 
-  // ---- bundles: keep ids, links and contents; take order, copy and conditions
+  // ---- bundles: keep ids and links; take order, copy, contents and conditions
   const savedBundles = new Map((config.bundles || []).map((b) => [b.id, b]));
   const bundles = [];
   for (const inc of data.bundles || []) {
@@ -50,6 +51,11 @@ export const action = async ({ request }) => {
     b.title = clip(inc.title, 80) || base.title;
     b.subtitle = clip(inc.subtitle, 120);
     b.why = clip(inc.why, 400);
+    if (Array.isArray(inc.contents)) {
+      b.contents = inc.contents.slice(0, 12)
+        .map((c) => ({ name: clip(c.name, 80).trim(), detail: clip(c.detail, 80).trim(), qty: Math.min(99, Math.max(1, Math.floor(Number(c.qty) || 1))) }))
+        .filter((c) => c.name);
+    }
     if (!base.variantId && Number.isFinite(Number(inc.price))) b.price = Math.max(0, Number(inc.price));
     const cond = fromRows(inc.cond, catalog, base.when);
     if (cond === undefined) delete b.when; else b.when = cond;
@@ -103,7 +109,7 @@ export default function Rules() {
   const shopify = useAppBridge();
   const busy = fetcher.state !== "idle";
 
-  const [bundles, setBundles] = useState(() => (config.bundles || []).map((b) => ({ id: b.id, title: b.title || "", subtitle: b.subtitle || "", why: b.why || "", price: b.price ?? 0, linked: !!b.variantId, cond: toRows(b.when, catalog), saved: b.when })));
+  const [bundles, setBundles] = useState(() => (config.bundles || []).map((b) => ({ id: b.id, title: b.title || "", subtitle: b.subtitle || "", why: b.why || "", contents: (b.contents || []).map((c) => ({ name: c.name || "", detail: c.detail || "", qty: c.qty || 1 })), price: b.price ?? 0, linked: !!b.variantId, cond: toRows(b.when, catalog), saved: b.when })));
   const [rules, setRules] = useState(() => (config.addonRules || []).map((r) => ({ id: r.id, accessory: r.accessory, text: r.text || "", reason: r.reason || "", qty: qtyToText(r.qty), cond: toRows(r.when, ruleCatalog), saved: r.when })));
   const [newAcc, setNewAcc] = useState([]);
   const accessories = [...Object.entries(config.accessories || {}).map(([k, a]) => ({ key: k, title: a.title || k })), ...newAcc.map((a) => ({ key: a.tempKey, title: a.title || "New product" }))];
@@ -116,6 +122,9 @@ export default function Rules() {
 
   const upB = (i, patch) => setBundles((bs) => bs.map((b, j) => (j === i ? { ...b, ...patch } : b)));
   const upR = (i, patch) => setRules((rs) => rs.map((r, j) => (j === i ? { ...r, ...patch } : r)));
+  const upItem = (i, k, patch) => setBundles((bs) => bs.map((b, j) => (j === i ? { ...b, contents: b.contents.map((c, m) => (m === k ? { ...c, ...patch } : c)) } : b)));
+  const addItem = (i) => setBundles((bs) => bs.map((b, j) => (j === i ? { ...b, contents: b.contents.concat([{ name: "", detail: "", qty: 1 }]) } : b)));
+  const removeItem = (i, k) => setBundles((bs) => bs.map((b, j) => (j === i ? { ...b, contents: b.contents.filter((c, m) => m !== k) } : b)));
   const moveB = (i, d) => setBundles((bs) => { const a = bs.slice(); const t = a[i]; a[i] = a[i + d]; a[i + d] = t; return a; });
   const addRule = () => setRules((rs) => rs.concat([{ id: `new-${Date.now()}`, accessory: accessories[0]?.key || "", text: accessories[0]?.title || "", reason: "", qty: "1", cond: { mode: "always", rows: [] } }]));
   const addProduct = () => setNewAcc((a) => a.concat([{ tempKey: `tmp-${Date.now()}`, title: "", price: 0 }]));
@@ -150,6 +159,19 @@ export default function Rules() {
                     <s-text-field label="Subtitle" value={b.subtitle} onInput={(e) => upB(i, { subtitle: e.currentTarget.value })} />
                   </s-grid>
                   <s-text-area label="Why this bundle (shown on the result)" value={b.why} rows={2} onInput={(e) => upB(i, { why: e.currentTarget.value })} />
+                  <s-stack direction="block" gap="small">
+                    <s-text>What&apos;s included (listed on the result)</s-text>
+                    {b.contents.map((c, k) => (
+                      <s-grid key={k} gridTemplateColumns="2fr 2fr 80px auto" gap="small" alignItems="end">
+                        <s-text-field label="Item" labelAccessibilityVisibility={k ? "exclusive" : "visible"} value={c.name} onInput={(e) => upItem(i, k, { name: e.currentTarget.value })} />
+                        <s-text-field label="Detail (optional)" labelAccessibilityVisibility={k ? "exclusive" : "visible"} value={c.detail} onInput={(e) => upItem(i, k, { detail: e.currentTarget.value })} />
+                        <s-number-field label="Qty" labelAccessibilityVisibility={k ? "exclusive" : "visible"} value={c.qty} min="1" max="99" onInput={(e) => upItem(i, k, { qty: e.currentTarget.value })} />
+                        <s-button variant="tertiary" onClick={() => removeItem(i, k)} accessibilityLabel={`Remove ${c.name || "item"}`}>Remove</s-button>
+                      </s-grid>
+                    ))}
+                    {b.contents.length < 12 ? <s-box><s-button variant="tertiary" onClick={() => addItem(i)}>Add an item</s-button></s-box> : null}
+                    {!b.contents.length ? <s-text color="subdued">No items: the result leaves out the list.</s-text> : null}
+                  </s-stack>
                   {b.linked ? <s-text color="subdued">{`Price ${money(b.price, config.cart?.currency)} comes from the linked product.`}</s-text> : (
                     <s-number-field label="Preview price" value={b.price} min="0" step="0.01" onInput={(e) => upB(i, { price: e.currentTarget.value })} />
                   )}

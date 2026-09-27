@@ -145,7 +145,7 @@ listing.
 - [ ] Feedback 2026-09-25, 4.5.3: screencast needs step-by-step setup, and "stock products"
       need their source. Sample catalogue removed 2026-09-26 (the reviewer's imported
       samples were active and for sale). Re-record per `SCREENCAST.md`, fill the placeholders in
-      `public/proof/4-5-3/index.html` (VIDEO_URL, VIDEO_LENGTH, FIX_DATE),
+      `public/proof/4-5-3/index.html` (VIDEO_URL, VIDEO_LENGTH),
       deploy, then mark resolved with https://bundle-configurator.netlify.app/proof/4-5-3/
 - [ ] Listing form completed 2026-09-22; all preliminary checks green except the
       two-hourly "Use theme app extensions" scan, which enables the Submit button when it

@@ -43,6 +43,16 @@ Claude Code: `.claude/settings.json` pre-approves the npm scripts and read-only 
 commands: `/check`, `/build-extension`, `/sync-mvp`, `/next-blocker [n]`. Personal overrides go in
 `.claude/settings.local.json` (gitignored).
 
+## Releases and branches
+
+- **Releasing the app:** `npm run release:app -- X.Y.Z` on a clean `main` stamps the version
+  shown in the app (`VERSION` in SetupRail.jsx), this file and LISTING.md, runs the check,
+  commits and tags `app-X.Y.Z`; `git push origin main` deploys. Never push an app change
+  to `main` without a release: the in-app version must match the live one.
+- `main` is the reviewed, live app. `app-0.9.0` was the first submission; 0.9.1 to 0.9.4
+  followed on 2026-09-26/27 (sample catalogue removed, What's included in Rules, plan-page
+  loop fixes). Feature work waits on its own branch until approval.
+
 ## Decisions (do not relitigate without a reason)
 
 1. **Category first.** The admin opens on "what are you building a configurator for" and

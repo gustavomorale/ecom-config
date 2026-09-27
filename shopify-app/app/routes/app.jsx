@@ -3,6 +3,8 @@ import { boundary } from "@shopify/shopify-app-react-router/server";
 import { AppProvider } from "@shopify/shopify-app-react-router/react";
 import { authenticate, billingEnabled } from "../shopify.server";
 
+const PROMPT_MINUTES = 15;
+
 export const loader = async ({ request }) => {
   const { admin, billing, session, redirect } = await authenticate.admin(request);
 
@@ -14,7 +16,14 @@ export const loader = async ({ request }) => {
   // sends the merchant to that page. Development stores see the plans at no
   // charge. A failure in the check never blocks the UI: the merchant sees the
   // app with a notice rather than an error page.
-  let planNotice = null;
+  //
+  // Loop guard: after an uninstall and reinstall Shopify can show the plan as
+  // "Current" on its plan page while the installation reports no active
+  // subscription, so the page has nothing to approve and its back arrow returns
+  // here. The app therefore redirects at most once per PROMPT_MINUTES (the time
+  // is kept in a shop metafield) and otherwise opens with a banner and a link to
+  // the plan page. What Shopify reported is logged for diagnosis (no personal data).
+  let planNotice = null, planUrl = null;
   if (billingEnabled) {
     try {
       // Any active subscription for this app counts, test or real, whatever the
@@ -23,11 +32,27 @@ export const loader = async ({ request }) => {
       if (!hasActivePayment) {
         const store = session.shop.replace(/\.myshopify\.com$/, "");
         const res = await admin.graphql(`#graphql
-          query bcfgHandle { app { handle } }`);
+          query bcfgPlan {
+            app { handle }
+            shop { id prompted: metafield(namespace: "bundle_configurator", key: "plan_prompted_at") { value } }
+            currentAppInstallation {
+              activeSubscriptions { name status test }
+              allSubscriptions(first: 3, reverse: true) { nodes { name status test trialDays createdAt } }
+            }
+          }`);
         const { data } = await res.json();
+        console.log("[billing] no active plan", session.shop, JSON.stringify(data?.currentAppInstallation || null));
         const handle = data?.app?.handle;
-        if (handle) throw redirect(`https://admin.shopify.com/store/${store}/charges/${handle}/pricing_plans`, { target: "_top" });
-        planNotice = "Choose a plan from the App Store listing to keep using the app after the trial.";
+        if (handle) planUrl = `https://admin.shopify.com/store/${store}/charges/${handle}/pricing_plans`;
+        const last = Date.parse(data?.shop?.prompted?.value || "") || 0;
+        if (planUrl && Date.now() - last > PROMPT_MINUTES * 60 * 1000) {
+          await admin.graphql(`#graphql
+            mutation bcfgPrompted($m: [MetafieldsSetInput!]!) { metafieldsSet(metafields: $m) { userErrors { message } } }`, {
+            variables: { m: [{ ownerId: data.shop.id, namespace: "bundle_configurator", key: "plan_prompted_at", type: "single_line_text_field", value: new Date().toISOString() }] },
+          });
+          throw redirect(planUrl, { target: "_top" });
+        }
+        planNotice = "Shopify has not confirmed a plan for this store yet. Everything works; choose a plan to keep using the app after the trial.";
       }
     } catch (e) {
       if (e instanceof Response) throw e;
@@ -36,11 +61,11 @@ export const loader = async ({ request }) => {
   }
 
   // eslint-disable-next-line no-undef
-  return { apiKey: process.env.SHOPIFY_API_KEY || "", planNotice };
+  return { apiKey: process.env.SHOPIFY_API_KEY || "", planNotice, planUrl };
 };
 
 export default function App() {
-  const { apiKey, planNotice } = useLoaderData();
+  const { apiKey, planNotice, planUrl } = useLoaderData();
 
   return (
     <AppProvider embedded apiKey={apiKey}>
@@ -52,7 +77,12 @@ export default function App() {
         <s-link href="/app/look">Look</s-link>
         <s-link href="/app/copy">Copy &amp; cart</s-link>
       </s-app-nav>
-      {planNotice ? <s-banner tone="warning">{planNotice}</s-banner> : null}
+      {planNotice ? (
+        <s-banner tone="warning">
+          {planNotice}
+          {planUrl ? <s-button slot="secondary-actions" href={planUrl} target="_top">Choose a plan</s-button> : null}
+        </s-banner>
+      ) : null}
       <Outlet />
     </AppProvider>
   );

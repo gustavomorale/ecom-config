@@ -10,7 +10,7 @@ CraftFrame Bundle Quiz adds a short questionnaire to a Shopify store. <break tim
 I install the app. <break time="0.4s" /> It asks to view store data: products, so they can be linked, and the online store theme, so the questionnaire can match its look. <break time="0.4s" /> It never edits products, the theme, or orders. <break time="1.0s" /> Shopify then shows the app's plan page. <break time="0.3s" /> There's one plan, Standard, with a fourteen-day free trial. On a development store it's free. <break time="0.6s" /> I approve it, and land on the app's welcome page.
 
 ## scene-03 (Start setup, Category)
-Setup has five steps. <break time="0.4s" /> Step one: what are you selling? <break time="0.4s" /> Each category starts a complete, working questionnaire. <break time="0.4s" /> I'll choose Cosmetics and skincare.
+Setup has five steps. <break time="0.4s" /> Step one: what are you selling? <break time="0.4s" /> Each category starts a complete, working questionnaire. <break time="0.4s" /> This store sells snowboards, so I'll choose Sports and outdoors.
 
 ## scene-04 (Look, Match my store, mobile preview, Save and continue)
 Step two makes the questionnaire look like the store. <break time="0.4s" /> Match my store reads the published theme's colours, font and corners, <break time="0.3s" /> and tells me how good the match is. <break time="0.6s" /> I could pick my own brand colour instead. <break time="0.4s" /> The preview updates, on desktop and on mobile. <break time="0.5s" /> Save and continue.
@@ -22,7 +22,7 @@ Step three: the questions. <break time="0.4s" /> I can rename any question and i
 These are the store's own products. <break time="0.4s" /> The app does not supply, sell or create products, and it has no inventory. <break time="0.3s" /> It only reads the products that are already here.
 
 ## scene-06b (app Products step, Choose product, picker, rows turn Linked)
-Step four links each bundle and add-on in the questionnaire to one of those products, so Add to cart puts real products in the cart. <break time="0.5s" /> I click Choose product, <break time="0.3s" /> and Shopify's own product picker opens with this store's catalogue. <break time="1.5s" /> If a product has several variants, I choose the variant here.
+Step four links each bundle and add-on in the questionnaire to one of those products, so Add to cart puts real products in the cart. <break time="0.5s" /> I click Choose product, <break time="0.3s" /> and Shopify's own product picker opens with this store's catalogue. <break time="1.5s" /> If a product has several variants, I choose the variant here. <break time="0.5s" /> The template's names are placeholders; I can rename them in Rules to match what the store sells.
 
 ## scene-06c (all rows linked)
 If a store doesn't have matching products yet, it can rename the placeholders in Rules, or skip this step. <break time="0.4s" /> Nothing is ever added to the store. <break time="0.5s" /> Save and continue.

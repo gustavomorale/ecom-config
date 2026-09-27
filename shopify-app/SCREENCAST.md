@@ -52,7 +52,7 @@ Click **Start setup**.
 
 ### 3. Setup step 1, Category (30 s)
 > "Setup has five steps. Step one: what are you selling? Each category starts a complete,
-> working questionnaire. I'll choose Cosmetics and skincare."
+> working questionnaire. This store sells snowboards, so I'll choose Sports and outdoors."
 
 Click the category. The app moves to Look.
 
@@ -82,6 +82,13 @@ Back in the app, on Products:
 > "Step four links each bundle and add-on in the questionnaire to one of those products, so
 > Add to cart puts real products in the cart. I click Choose product, and Shopify's own
 > product picker opens with this store's catalogue."
+
+Link to products that are Active and on the Online Store (channel count 1), so Add to cart
+works. On the test-data store: Day Kit to The Multi-location Snowboard, Camp Kit to The
+Complete Snowboard (it has variants, so the variant dropdown shows), Trek Kit to The
+Collection Snowboard: Liquid; add-ons to Oxygen, Hydrogen, The 3p Fulfilled and The
+Multi-managed Snowboard. Avoid Archived, Hidden, Minimal (not on the Online Store), the
+gift card and Selling Plans Ski Wax (a subscription product).
 
 Click **Choose product** on the first bundle, pick a product, show the row turn Linked. For a
 product with several variants, show the variant dropdown. Link the remaining rows quickly

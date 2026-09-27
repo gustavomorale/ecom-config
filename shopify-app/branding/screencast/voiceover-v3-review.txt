@@ -1,40 +1,57 @@
 # Voiceover v3 for the review screencast (4.5.3), short cut, about 4 minutes.
-# ElevenLabs, one clip per shot (shot-01.mp3 ... shot-12.mp3). Place each at the time shown,
-# which matches the shot list in SCREENCAST.md. Voice: calm, neutral English, speed 0.95.
-# No music. For YouTube subtitles paste the text without the # lines and the break tags.
+#
+# ElevenLabs production settings
+#   Model:        Eleven Multilingual v2 (supports <break> tags; Eleven v3 does not, and
+#                 would read these clips without the pauses)
+#   Voice:        one calm, neutral English narrator for every clip; never switch mid-video
+#   Stability:    55%   (higher sounds flat, lower drifts between clips)
+#   Similarity:   75%
+#   Style:        0%    (style exaggeration adds latency and variation; not wanted here)
+#   Speaker boost: on
+#   Speed:        0.95  (allowed range 0.7 to 1.2)
+#   Output:       WAV 44.1 kHz if your plan offers it, otherwise MP3 44.1 kHz 192 kbps
+#
+# Rules followed in the text: at most three break tags per clip, none longer than 1.2 s
+# (the limit is 3 s; many breaks make the voice speed up or add artefacts); commas carry
+# the smaller pauses; numbers, the email address and the brand are written as spoken.
+# If "CraftFrame" comes out wrong, write it "Craft Frame" in that clip only.
+#
+# Generate one clip per block, named as the block (shot-01.wav ... shot-12.wav), and place
+# each at the time shown. Listen to each clip once; regenerate only the ones that drift.
+# For YouTube subtitles paste the text without the # lines and the break tags.
 
 ## shot-01 at 0:00 (Install app screen, View store data, Install)
-CraftFrame Bundle Quiz adds a short questionnaire to a Shopify store. <break time="0.3s" /> Shoppers answer a few questions and get a bundle of the store's own products in their cart. <break time="0.4s" /> The app sells no products and has no inventory. <break time="0.4s" /> It asks to view products and the theme, and never edits them.
+CraftFrame Bundle Quiz adds a short questionnaire to a Shopify store. Shoppers answer a few questions, and get a bundle of the store's own products in their cart. <break time="0.5s" /> The app sells no products, and has no inventory. <break time="0.4s" /> It asks to view products and the theme, and never edits them.
 
 ## shot-02 at 0:22 (plan page, Approve, welcome, Start setup)
-Shopify shows the plan page: one plan, with a fourteen-day free trial, free on development stores. <break time="0.3s" /> I approve it and start setup.
+Shopify shows the plan page: one plan, with a fourteen-day free trial, free on development stores. <break time="0.4s" /> I approve it, and start setup.
 
 ## shot-03 at 0:34 (category grid, Sports & outdoors)
-Step one: what does the store sell? <break time="0.3s" /> Each category starts a working questionnaire. <break time="0.3s" /> This store sells snowboards, so I choose Sports and outdoors.
+Step one: what does the store sell? Each category starts a working questionnaire. <break time="0.3s" /> This store sells snowboards, so I choose Sports and outdoors.
 
 ## shot-04 at 0:46 (Match my store, result, Save and continue)
-Step two: Match my store reads the theme's colours, font and corners, and shows how close the match is. <break time="0.4s" /> Save and continue.
+Step two. Match my store reads the theme's colours, font, and corners, and shows how close the match is. <break time="0.5s" /> Save and continue.
 
 ## shot-05 at 1:00 (Questions, picture cards, Save and continue)
-Step three: the questions. <break time="0.3s" /> I can reword any question and its answers, and show answers as picture cards with my own product photos. <break time="0.5s" /> I've reworded these for a snowboard shop. <break time="0.3s" /> Save and continue.
+Step three: the questions. I can reword any question and its answers, and show answers as picture cards, with my own product photos. <break time="0.6s" /> I've reworded these for a snowboard shop. <break time="0.4s" /> Save and continue.
 
 ## shot-06 at 1:25 (Shopify Products list)
-These are the store's own snowboards. <break time="0.3s" /> The app never creates or supplies products; it only reads these.
+These are the store's own snowboards. The app never creates or supplies products. It only reads these.
 
 ## shot-07 at 1:34 (Choose product, picker, variant dropdown, all connected)
-Step four links each bundle and add-on to one of them with Shopify's product picker, <break time="0.3s" /> choosing the size where there are variants. <break time="0.5s" /> Once all are linked, Add to cart fills the cart with real products. <break time="0.3s" /> Save and continue.
+Step four links each bundle and add-on to one of them, with Shopify's product picker, choosing the size where there are variants. <break time="0.6s" /> Once all are linked, Add to cart fills the cart with real products. <break time="0.4s" /> Save and continue.
 
 ## shot-08 at 2:00 (theme editor, add block, Save, Finish setup, overview)
-Step five: Open theme editor. <break time="0.4s" /> I add a section, choose Apps, and pick CraftFrame Bundle Quiz. <break time="0.6s" /> I save the theme, finish setup, <break time="0.3s" /> and the overview confirms the block is live.
+Step five: Open theme editor. <break time="0.5s" /> I add a section, choose Apps, and pick CraftFrame Bundle Quiz. <break time="0.8s" /> I save the theme, finish setup, and the overview confirms the block is live.
 
 ## shot-09 at 2:35 (Rules scroll, then Copy & cart)
-After setup, everything stays editable. <break time="0.3s" /> In Rules I choose which bundle each answer leads to, what it includes, and which add-ons follow and why. <break time="0.3s" /> I've renamed them for this shop. <break time="0.5s" /> In Copy and cart I change every word the shopper reads.
+After setup, everything stays editable. In Rules, I choose which bundle each answer leads to, what it includes, and which add-ons follow, and why. <break time="0.4s" /> I've renamed them for this shop. <break time="0.6s" /> In Copy and cart, I change every word the shopper reads.
 
 ## shot-10 at 2:57 (storefront, answers, result)
-Now, as a shopper. <break time="0.4s" /> I pick all-mountain, the trip length, and powder days and park riding. <break time="1.0s" /> The result recommends the All-Mountain Setup, <break time="0.3s" /> adds a powder board and a park board with the reason for each, <break time="0.3s" /> and shows the total.
+Now, as a shopper. <break time="0.5s" /> I pick all-mountain, the trip length, and powder days and park riding. <break time="1.2s" /> The result recommends the All-Mountain Setup, adds a powder board and a park board with the reason for each, and shows the total.
 
 ## shot-11 at 3:35 (Add to cart, cart)
-Add to cart opens the cart with exactly those snowboards.
+Add to cart opens the cart, with exactly those snowboards.
 
 ## shot-12 at 3:45 (overview)
-That's the full setup. <break time="0.3s" /> The app reads products and themes, writes one setting to the store, and stores no customer data. <break time="0.4s" /> Support: contact at craftframe dot agency.
+That's the full setup. The app reads products and themes, writes one setting to the store, and stores no customer data. <break time="0.5s" /> Support: contact at craftframe dot agency.

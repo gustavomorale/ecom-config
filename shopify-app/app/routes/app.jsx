@@ -3,7 +3,7 @@ import { boundary } from "@shopify/shopify-app-react-router/server";
 import { AppProvider } from "@shopify/shopify-app-react-router/react";
 import { authenticate, billingEnabled } from "../shopify.server";
 
-const PROMPT_MINUTES = 15;
+const PROMPT_HOURS = 24;
 
 export const loader = async ({ request }) => {
   const { admin, billing, session, redirect } = await authenticate.admin(request);
@@ -20,9 +20,11 @@ export const loader = async ({ request }) => {
   // Loop guard: after an uninstall and reinstall Shopify can show the plan as
   // "Current" on its plan page while the installation reports no active
   // subscription, so the page has nothing to approve and its back arrow returns
-  // here. The app therefore redirects at most once per PROMPT_MINUTES (the time
-  // is kept in a shop metafield) and otherwise opens with a banner and a link to
-  // the plan page. What Shopify reported is logged for diagnosis (no personal data).
+  // here. The app therefore redirects only when it is opened from the admin (a
+  // document request, never a data request made while the merchant works or
+  // saves inside the app), and at most once per PROMPT_HOURS (the time is kept in
+  // a shop metafield). Otherwise it opens with a banner and a link to the plan
+  // page. What Shopify reported is logged for diagnosis (no personal data).
   let planNotice = null, planUrl = null;
   if (billingEnabled) {
     try {
@@ -45,7 +47,8 @@ export const loader = async ({ request }) => {
         const handle = data?.app?.handle;
         if (handle) planUrl = `https://admin.shopify.com/store/${store}/charges/${handle}/pricing_plans`;
         const last = Date.parse(data?.shop?.prompted?.value || "") || 0;
-        if (planUrl && Date.now() - last > PROMPT_MINUTES * 60 * 1000) {
+        const opening = !new URL(request.url).pathname.endsWith(".data");
+        if (planUrl && opening && Date.now() - last > PROMPT_HOURS * 60 * 60 * 1000) {
           await admin.graphql(`#graphql
             mutation bcfgPrompted($m: [MetafieldsSetInput!]!) { metafieldsSet(metafields: $m) { userErrors { message } } }`, {
             variables: { m: [{ ownerId: data.shop.id, namespace: "bundle_configurator", key: "plan_prompted_at", type: "single_line_text_field", value: new Date().toISOString() }] },

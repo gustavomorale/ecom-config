@@ -4,7 +4,7 @@ White-label Shopify app: a shopper answers a short questionnaire and gets a conf
 bundle/cart. Any merchant installs it, picks a category, edits the template, and the widget
 wears their store's colours. **A store is a JSON config, not a fork.**
 
-Owner: Gustavo (CraftFrame). Current version: engine v1.2, app 0.9. Status: the Shopify
+Owner: Gustavo (CraftFrame). Current version: engine v1.2, app 0.9.4. Status: the Shopify
 app (`shopify-app/`, React Router + Polaris web components) runs on the dev store with the
 five-step setup, metafield config, theme block and compliance webhooks. The sample catalogue
 (a CSV of placeholder products) was removed on 2026-09-26: review 4.5.3 read the imported,
@@ -45,9 +45,14 @@ commands: `/check`, `/build-extension`, `/sync-mvp`, `/next-blocker [n]`. Person
 
 ## Releases and branches
 
-- `app-0.9.0` (tag on `main`): the version in App Store review. `main` stays releasable; do
-  not merge feature work into it until the app is approved.
-- `q4-gifting`: the next release (Gift finder template, gift sets from components). Ship
+- **Releasing the app:** `npm run release:app -- X.Y.Z` on a clean `main` stamps the version
+  shown in the app (`VERSION` in SetupRail.jsx), this file and LISTING.md, runs the check,
+  commits and tags `app-X.Y.Z`; `git push origin main` deploys. Never push an app change
+  to `main` without a release: the in-app version must match the live one.
+- `main` is the reviewed, live app. `app-0.9.0` was the first submission; 0.9.1 to 0.9.4
+  followed on 2026-09-26/27 (sample catalogue removed, What's included in Rules, plan-page
+  loop fixes). Feature work waits on its own branch until approval.
+- `q4-gifting`: the next release (0.10.0 when it ships) (Gift finder template, gift sets from components). Ship
   after approval, ideally live by 2026-10-31 for Black Friday. A bundle can now list
   `components: [{ variantId, qty, price, title, detail, image, handle }]` instead of one
   `variantId`: each goes in the cart, out-of-stock components (checked when `handle` is

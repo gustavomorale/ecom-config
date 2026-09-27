@@ -1,7 +1,7 @@
 # App Store listing copy
 
 Paste into the Partner Dashboard listing. Character limits are Shopify's at the time of
-writing; trim rather than rewrite if they change. The app is presented as a finished product (version 0.9).
+writing; trim rather than rewrite if they change. The app is presented as a finished product (version 0.9.4).
 
 ## App name
 

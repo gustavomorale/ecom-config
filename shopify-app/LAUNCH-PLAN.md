@@ -42,23 +42,39 @@ The problem is the shape, not the number. A single flat plan with no free tier m
 - Flat price: a store doing 50 quiz completions a month pays the same as one doing 5,000.
   We leave money on the table at the top and look expensive at the bottom.
 
-Recommendation, after approval (changing plans during review restarts it). Updated
-2026-09-28: plans limit usage, never features. Every plan has both quiz types, Product
-finder (one product per shopper) and Bundle quiz (a main product plus extras), once the
-simpler setup ships (prototype: https://claude.ai/artifact/X3kYkiwAYhG9dCshQ2z6nd).
-- **Free**: both quiz types, all features, up to 100 quiz completions a month, a small
-  "Powered by CraftFrame" line under the result. Gets installs, reviews and the badge.
-  One or two AI drafts a month once v1.4 ships.
-- **Standard, USD 25**: up to 2,000 completions, no attribution line, email support.
-  Keep the 14-day trial.
-- **Growth, USD 79**: up to 15,000 completions, priority support. Larger stores, and the
-  natural home for price sync and more AI drafts.
-Completion counting needs the analytics endpoint (v1.1), so this depends on that work.
-Until then, the honest interim is Free (attribution line) and Standard 25, both unlimited.
+Decided 2026-09-28 (Gustavo): a hybrid of trial and free plan, after approval (changing
+plans or trial length during review restarts it). Plans limit usage, never features: every
+plan has both quiz types, Product finder (one product per shopper) and Bundle quiz (a main
+product plus extras), once the simpler setup ships (prototype:
+https://claude.ai/artifact/X3kYkiwAYhG9dCshQ2z6nd).
+- **21-day free trial** of Standard for every new store: everything, no limits. 21 days
+  rather than 14 because a small store needs about three weeks of quiz traffic to see an
+  effect on sales, and merchants who are unsure uninstall and never review.
+- **After the trial, the store chooses:**
+  - **Standard, USD 25 a month**: up to 2,000 completions, no attribution line, email
+    support.
+  - **Free**: both quiz types and all features, up to **50 quiz completions a month**, a
+    small "Powered by CraftFrame" line under the result. The quiz keeps working, so the
+    store stays installed. Once v1.4 ships, one AI draft a month.
+  - **Growth, USD 79 a month**: up to 15,000 completions, priority support. Larger stores,
+    and the natural home for price sync and more AI drafts.
+- On Shopify App Pricing this is three plans in the listing: Free (USD 0), Standard with a
+  21-day trial, Growth with a 21-day trial. The listing then shows both "Free plan
+  available" and "Free trial available". The app keeps its rule: it never creates charges,
+  only checks the active plan and sends merchants to Shopify's plan page.
 
-Why a generous free plan is affordable: a free store costs almost nothing to run (section
-2b). What free stores really cost is support time, and the completion limit moves the
-busy stores, the ones that need support, onto a paid plan.
+Why it works: stores that get value reach the 50-completion limit and upgrade; stores that
+are not sure stay installed at almost no cost to us instead of uninstalling; the Free badge
+brings installs; the attribution line markets the app to every shopper on a free store; the
+tight limit keeps free-store support small.
+
+Depends on: completion counting (v1.1 analytics endpoint) for the limits and the upgrade
+prompt ("You have used 50 of 50 quiz completions this month"). Until it ships, the interim
+is the 21-day trial plus Standard at USD 25, and Free unlimited with the attribution line.
+
+Why the free plan is affordable: a free store costs almost nothing to run (section 2b).
+What free stores really cost is support time, and the 50-completion limit moves the busy
+stores, the ones that need support, onto a paid plan.
 
 Keep USD 25 as the anchor. Move it to 29 only once there are 20+ reviews at 4.8 or better;
 that is where Easy Bundles sits and the market accepts it.
@@ -149,9 +165,9 @@ All are in the Partner Dashboard. Add a UTM to every link we control
 (`?utm_source=community&utm_medium=post`), which the dashboard reports as referrer.
 
 ## 5. Decisions needed from Gustavo
-1. Adopt the three-tier pricing after approval (both quiz types on every plan, limits by
-   completions), and schedule the completion counter (analytics endpoint) as the next
-   build item.
+1. Decided 2026-09-28: hybrid pricing after approval (21-day trial; then Free at 50
+   completions with attribution, Standard USD 25, Growth USD 79; both quiz types on every
+   plan). Next build item: the completion counter (analytics endpoint).
 2. Approve the USD 600 App Store ads test.
 3. Nominate the 30 outreach stores, or approve me drafting the list from BuiltWith data.
 4. Agree the community and LinkedIn posts before they go out; they carry the agency name.

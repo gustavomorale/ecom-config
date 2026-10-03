@@ -9,10 +9,11 @@
    live preview, plan and help on the side.
    ============================================================ */
 import { useEffect, useState } from "react";
-import { useFetcher, useLoaderData, useRouteError } from "react-router";
+import { useFetcher, useLoaderData, useRouteError, useRouteLoaderData } from "react-router";
 import { useAppBridge } from "@shopify/app-bridge-react";
 import { boundary } from "@shopify/shopify-app-react-router/server";
-import { authenticate, billingEnabled, PLAN_PRICE_USD, PLAN_TRIAL_DAYS } from "../shopify.server";
+import { authenticate } from "../shopify.server";
+import { PLANS, TRIAL_DAYS, nextPlan } from "../plans";
 import { listCategories, buildCategory, readConfig, saveConfig, themeEditorUrl, toAdvanced, toSimple } from "../config.server";
 import { blockOnTheme } from "../theme.server";
 import { VERSION, SUPPORT_EMAIL } from "../components/SetupRail";
@@ -25,9 +26,8 @@ export const loader = async ({ request }) => {
   const { config, domain } = await readConfig(admin);
   const categories = listCategories();
   const current = config ? categories.find((c) => c.id === config.meta?.category) || null : null;
-  const billing = { enabled: billingEnabled, price: PLAN_PRICE_USD, trialDays: PLAN_TRIAL_DAYS };
   const block = config ? await blockOnTheme(admin) : null;
-  return { config, current, editorUrl: themeEditorUrl(domain), storeUrl: `https://${domain}/`, billing, block, headline: config ? headlineState(config) : null, season: config ? blackFridayNudge(config.promo) : null };
+  return { config, current, editorUrl: themeEditorUrl(domain), storeUrl: `https://${domain}/`, block, headline: config ? headlineState(config) : null, season: config ? blackFridayNudge(config.promo) : null };
 };
 
 /* The headline shoppers read first. "placeholder" is the pre-0.9 default that
@@ -66,7 +66,37 @@ export const action = async ({ request }) => {
   return { ok: true };
 };
 
-function Welcome({ billing }) {
+const priceLine = () => `Free for up to ${PLANS.free.limit} completed quizzes a month. Standard USD ${PLANS.standard.price} and Growth USD ${PLANS.growth.price} a month, each with a ${TRIAL_DAYS}-day free trial.`;
+
+/* Plan, this month's completions and the way to a bigger plan. */
+function PlanCard() {
+  const app = useRouteLoaderData("routes/app") || {};
+  const { plan, usage, planUrl } = app;
+  if (!plan) return <s-paragraph color="subdued">{priceLine()}</s-paragraph>;
+  const up = nextPlan(plan);
+  const trialDays = plan.trialEndsAt ? Math.max(0, Math.ceil((Date.parse(plan.trialEndsAt) - Date.now()) / 864e5)) : 0;
+  return (
+    <s-stack direction="block" gap="small">
+      <s-stack direction="inline" gap="small" alignItems="center">
+        <s-text type="strong">{plan.name}</s-text>
+        {trialDays ? <s-badge tone="info">{`Trial, ${trialDays} day${trialDays === 1 ? "" : "s"} left`}</s-badge> : null}
+        {plan.price ? <s-text color="subdued">{`USD ${plan.price} a month`}</s-text> : null}
+      </s-stack>
+      {usage ? (
+        <s-stack direction="block" gap="small-200">
+          <s-text color="subdued">{`${usage.count.toLocaleString("en-GB")} of ${usage.limit.toLocaleString("en-GB")} completed quizzes this month`}</s-text>
+          <div role="progressbar" aria-valuemin={0} aria-valuemax={usage.limit} aria-valuenow={usage.count} aria-label="Completed quizzes this month" style={{ height: 6, borderRadius: 3, background: "#e3e3e3", overflow: "hidden" }}>
+            <div style={{ width: `${usage.pct}%`, height: "100%", background: usage.over ? "#b98900" : "#1a1a1a", borderRadius: 3 }} />
+          </div>
+        </s-stack>
+      ) : null}
+      {plan.attribution ? <s-text color="subdued">Results show a small Powered by CraftFrame line. Paid plans remove it.</s-text> : null}
+      {planUrl ? <s-box><s-button variant={up && usage && (usage.near || usage.over) ? "primary" : "secondary"} href={planUrl} target="_top">{up ? `See ${up.name} and other plans` : "Manage plan"}</s-button></s-box> : null}
+    </s-stack>
+  );
+}
+
+function Welcome() {
   return (
     <s-page heading="Welcome to CraftFrame Bundle Quiz">
       <s-button slot="primary-action" href="/app/start">Start setup</s-button>
@@ -74,7 +104,7 @@ function Welcome({ billing }) {
       <s-section>
         <s-stack direction="block" gap="base">
           <s-stack direction="inline" gap="small" alignItems="center">
-            <s-text color="subdued">{billing.enabled ? `Version ${VERSION}. ${billing.trialDays} days free, then USD ${billing.price} a month.` : `Version ${VERSION}.`}</s-text>
+            <s-text color="subdued">{`Version ${VERSION}. ${priceLine()}`}</s-text>
           </s-stack>
           <s-paragraph>
             A short quiz on your storefront that turns a shopper's answers into the right product from your store, or a main product plus the extras that fit, ready in the cart. You pick the products, tick which answers point to them, and the quiz wears your store's colours.
@@ -164,10 +194,10 @@ const isSimpleConfig = (config) => !!(config && config.simple && config.meta?.mo
 
 export default function Index() {
   const data = useLoaderData();
-  return data.config ? <Overview {...data} /> : <Welcome billing={data.billing} />;
+  return data.config ? <Overview {...data} /> : <Welcome />;
 }
 
-function Overview({ config, current, editorUrl, storeUrl, billing, block, headline, season }) {
+function Overview({ config, current, editorUrl, storeUrl, block, headline, season }) {
   const fetcher = useFetcher();
   const shopify = useAppBridge();
   useEffect(() => {
@@ -338,7 +368,7 @@ function Overview({ config, current, editorUrl, storeUrl, billing, block, headli
       </s-section>
 
       <s-section slot="aside" heading="Plan">
-        <s-paragraph>{billing.enabled ? `${billing.trialDays}-day free trial, then USD ${billing.price} a month, on your Shopify bill.` : "Free for now. Later: 14 days free, then USD 25 a month, on your Shopify bill."}</s-paragraph>
+        <PlanCard />
       </s-section>
 
       <s-section slot="aside" heading="Help">

@@ -310,6 +310,8 @@
 
 .bcfg .bcfg-footer { text-align: center; margin-top: 24px; font-size: 11px; color: var(--bcfg-faint); font-weight: 600; }
 .bcfg .bcfg-footer strong { color: var(--bcfg-accent); }
+.bcfg .bcfg-powered { text-align: center; margin-top: 14px; font-size: 11px; color: var(--bcfg-faint); }
+.bcfg .bcfg-powered a { color: inherit; text-decoration: underline; }
 
 /* ── Scene animation helpers ── */
 .bcfg .scene-el { transition: all .5s cubic-bezier(.22,1,.36,1); }

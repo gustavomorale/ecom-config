@@ -10,7 +10,7 @@ export const meta = () => [
   { name: "description", content: "What CraftFrame Bundle Quiz collects, where it is kept and how to have it removed." },
 ];
 
-const UPDATED = "18 September 2026";
+const UPDATED = "3 October 2026";
 const EMAIL = "contact@craftframe.agency";
 
 const S = {
@@ -54,6 +54,7 @@ export default function Privacy() {
             <tr><td style={S.td}>Your shop's <code>myshopify.com</code> domain, the access token Shopify issues when you install, and the permissions you granted</td><td style={S.td}>To identify your store and call Shopify's API on your behalf</td><td style={S.td}>Our database (Neon, London)</td></tr>
             <tr><td style={S.td}>If Shopify includes them with your session: the name, email and locale of the staff member using the app</td><td style={S.td}>Provided by Shopify as part of signing in; we do not use them for marketing</td><td style={S.td}>Our database (Neon, London)</td></tr>
             <tr><td style={S.td}>Your configuration: questions, rules, wording, colours, and for each linked product its title, price, image link and variant ID</td><td style={S.td}>It is what the storefront block shows</td><td style={S.td}>In your own Shopify store, as a shop metafield (<code>bundle_configurator.config</code>). Not on our servers</td></tr>
+            <tr><td style={S.td}>How many quizzes shoppers finished on your store each month: a number per month, nothing else</td><td style={S.td}>Plans are sized by finished quizzes; it is what the app shows you and checks against your plan</td><td style={S.td}>Our database (Neon, London), until 48 hours after you uninstall</td></tr>
             <tr><td style={S.td}>Technical logs: shop domain, request path, time, IP address and error details</td><td style={S.td}>To keep the service running and fix faults</td><td style={S.td}>Our hosting provider's logs (Netlify), kept for a short period</td></tr>
           </tbody>
         </table>
@@ -64,14 +65,14 @@ export default function Privacy() {
         </p>
 
         <h2 style={S.h2}>Shoppers: what we collect</h2>
-        <p><strong>Nothing.</strong> The questionnaire runs in the shopper's browser on the merchant's storefront.</p>
+        <p><strong>Nothing that identifies a shopper.</strong> The questionnaire runs in the shopper's browser on the merchant's storefront.</p>
         <ul>
           <li>Answers are kept in the shopper's own browser storage so that a refresh does not lose them. They are not sent to CraftFrame or to the merchant.</li>
           <li>"Copy a link to this bundle" puts the answers into the link itself. Whoever opens that link sees the same result; nothing is stored anywhere else.</li>
-          <li>The widget sets no cookies, runs no trackers and makes no requests to our servers. Its files are served by Shopify's content network.</li>
+          <li>When a shopper reaches a result, the widget tells the app, through the store's own address, that one quiz was finished for that store. That message carries no answers, no identifier and no cookie; we add one to the store's monthly count and keep nothing else.</li>
+          <li>The widget sets no cookies and runs no trackers. Its files are served by Shopify's content network.</li>
           <li>When the shopper continues to the cart, they are on the merchant's Shopify checkout, under the merchant's own privacy policy.</li>
         </ul>
-        <p style={S.muted}>If we add optional, anonymous completion statistics for merchants in future, this policy will be updated before that ships, and it will contain no personal data.</p>
 
         <h2 style={S.h2}>Legal bases</h2>
         <p>

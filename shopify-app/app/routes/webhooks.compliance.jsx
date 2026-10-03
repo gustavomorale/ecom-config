@@ -2,19 +2,21 @@
    GDPR / privacy compliance webhooks. Mandatory for any App Store listing.
 
    What this app stores, so the answers are honest:
-   - Per shop: the OAuth session (Prisma) and one shop metafield holding the
-     merchant's configuration. No customer data, no order data.
+   - Per shop: the OAuth session (Prisma), a count of finished quizzes per
+     month (Prisma, Usage) and one shop metafield holding the merchant's
+     configuration. No customer data, no order data.
    - Shoppers' answers live only in their own browser (sessionStorage) and,
      if they choose, in a link they copy. Nothing is sent to the app.
 
    customers/data_request: we hold nothing about the customer; acknowledge.
    customers/redact:       nothing to delete; acknowledge.
-   shop/redact:            48 hours after uninstall; drop the shop's sessions.
+   shop/redact:            48 hours after uninstall; drop the shop's sessions and counts.
                            The metafield goes with the app uninstall itself.
    authenticate.webhook verifies the HMAC and rejects anything else with 401.
    ============================================================ */
 import { authenticate } from "../shopify.server";
 import db from "../db.server";
+import { deleteUsage } from "../usage.server";
 
 export const action = async ({ request }) => {
   const { shop, topic, payload } = await authenticate.webhook(request);
@@ -28,7 +30,8 @@ export const action = async ({ request }) => {
       break;
     case "SHOP_REDACT":
       await db.session.deleteMany({ where: { shop } });
-      console.log(`[compliance] shop redact for ${shop}: sessions removed`);
+      await deleteUsage(shop);
+      console.log(`[compliance] shop redact for ${shop}: sessions and completion counts removed`);
       break;
     default:
       return new Response("Unhandled topic", { status: 404 });

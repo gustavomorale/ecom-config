@@ -34,3 +34,15 @@ model Session {
   refreshToken        String?
   refreshTokenExpires DateTime?
 }
+
+// Quiz completions per shop per calendar month (UTC), counted when a shopper
+// reaches a result. A number only: no answers, no shopper data. Plan limits
+// read it. month is "YYYY-MM".
+model Usage {
+  shop        String
+  month       String
+  completions Int      @default(0)
+  updatedAt   DateTime @updatedAt
+
+  @@id([shop, month])
+}

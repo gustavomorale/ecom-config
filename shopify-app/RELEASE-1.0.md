@@ -70,8 +70,39 @@ Out of 1.0: analytics funnel UI, price sync, AI draft.
 - Overview shows a Black Friday card from 1 October until Cyber Monday when no offer covers
   it, linking to the Black Friday preset in Copy & cart.
 - Verified in a real browser: gift set, wrap add-on and BLACKFRIDAY20 in the cart link.
-- Still to do: run on the dev store (`npm run dev`), pricing and the completion counter,
-  new screencast, listing update, resubmission.
+
+**3 Oct: plans and the completion counter (item 6).**
+- `app/plans.js`: Free (50 completions, attribution line), Standard USD 25 (2,000),
+  Growth USD 79 (15,000), 21-day trial on paid plans. The active subscription is mapped by
+  name; no subscription is Free. No redirect to the plan page any more (a Free plan means
+  every store has a valid plan), which also retires the 0.9.4 redirect-loop guard.
+- Counter: the theme block posts `{type: 'complete'}` to `/apps/bundle-quiz/event` when a
+  shopper reaches a result (not in the theme editor, not for restored or shared results).
+  The app proxy forwards it signed to `routes/proxy.event.jsx`, which adds one to `Usage`
+  (shop, month). New Prisma model and migration `20261003000000_usage`.
+- Over the limit the quiz keeps working; the merchant sees a banner from 80% and the plan
+  card on the Overview (count, progress, trial days left, link to Shopify's plan page).
+  The storefront's copy of the plan (`config.plan`) is kept in step on every admin load and
+  by the `app_subscriptions/update` webhook.
+- Privacy policy and compliance webhook updated: a monthly count per store, deleted on
+  shop redact.
+- Local testing: set `BCFG_PLAN=free` (or standard, growth) to see each plan without a
+  subscription; production reads Shopify with `BCFG_BILLING=on`.
+
+## Shopify side, before resubmitting
+
+1. Partner Dashboard, the app, Pricing (App Pricing): replace the single Standard plan with
+   Free (USD 0), Standard (USD 25, 21-day trial) and Growth (USD 79, 21-day trial). Plan
+   names must contain "Free", "Standard" and "Growth" (the app maps by name). Describe each
+   by completions: 50, 2,000, 15,000 a month; Free shows a small attribution line.
+2. `npm run deploy` from `release-1.0` registers the app proxy and the new webhook
+   (config change only; no new access scopes, so merchants are not asked to re-approve).
+3. Netlify: deploy `release-1.0`; `netlify:build` runs `prisma migrate deploy`, which
+   creates the Usage table.
+4. Listing: update the pricing text, screenshots and the privacy policy link date.
+
+- Still to do: run on the dev store (`npm run dev`, after `npx prisma migrate deploy`
+  against the dev database), new screencast, listing update, resubmission.
 
 ## The open review
 

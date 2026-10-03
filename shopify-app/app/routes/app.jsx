@@ -1,79 +1,38 @@
 import { Outlet, useLoaderData, useRouteError } from "react-router";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { AppProvider } from "@shopify/shopify-app-react-router/react";
-import { authenticate, billingEnabled } from "../shopify.server";
+import { authenticate } from "../shopify.server";
 import { readConfig, isSimple } from "../config.server";
-
-const PROMPT_HOURS = 24;
+import { readPlan, syncPlan } from "../plan.server";
+import { completionsThisMonth } from "../usage.server";
+import { usageState, nextPlan } from "../plans";
 
 export const loader = async ({ request }) => {
-  const { admin, billing, session, redirect } = await authenticate.admin(request);
+  const { admin, session } = await authenticate.admin(request);
 
-  // Subscription gate. The app is on Shopify App Pricing: the plan is defined
-  // in the listing and Shopify creates the subscription when the merchant
-  // approves it on Shopify's own plan page. The app must not create charges
-  // itself (the Billing API refuses, and the reviewer's install returned 500),
-  // so this only checks for an active or trialing plan and, when there is none,
-  // sends the merchant to that page. Development stores see the plans at no
-  // charge. A failure in the check never blocks the UI: the merchant sees the
-  // app with a notice rather than an error page.
-  //
-  // Loop guard: after an uninstall and reinstall Shopify can show the plan as
-  // "Current" on its plan page while the installation reports no active
-  // subscription, so the page has nothing to approve and its back arrow returns
-  // here. The app therefore redirects only when it is opened from the admin (a
-  // document request, never a data request made while the merchant works or
-  // saves inside the app), and at most once per PROMPT_HOURS (the time is kept in
-  // a shop metafield). Otherwise it opens with a banner and a link to the plan
-  // page. What Shopify reported is logged for diagnosis (no personal data).
-  let planNotice = null, planUrl = null;
-  if (billingEnabled) {
-    try {
-      // Any active subscription for this app counts, test or real, whatever the
-      // listing calls the plan.
-      const { hasActivePayment } = await billing.check({ isTest: true });
-      if (!hasActivePayment) {
-        const store = session.shop.replace(/\.myshopify\.com$/, "");
-        const res = await admin.graphql(`#graphql
-          query bcfgPlan {
-            app { handle }
-            shop { id prompted: metafield(namespace: "bundle_configurator", key: "plan_prompted_at") { value } }
-            currentAppInstallation {
-              activeSubscriptions { name status test }
-              allSubscriptions(first: 3, reverse: true) { nodes { name status test trialDays createdAt } }
-            }
-          }`);
-        const { data } = await res.json();
-        console.log("[billing] no active plan", session.shop, JSON.stringify(data?.currentAppInstallation || null));
-        const handle = data?.app?.handle;
-        if (handle) planUrl = `https://admin.shopify.com/store/${store}/charges/${handle}/pricing_plans`;
-        const last = Date.parse(data?.shop?.prompted?.value || "") || 0;
-        const opening = !new URL(request.url).pathname.endsWith(".data");
-        if (planUrl && opening && Date.now() - last > PROMPT_HOURS * 60 * 60 * 1000) {
-          await admin.graphql(`#graphql
-            mutation bcfgPrompted($m: [MetafieldsSetInput!]!) { metafieldsSet(metafields: $m) { userErrors { message } } }`, {
-            variables: { m: [{ ownerId: data.shop.id, namespace: "bundle_configurator", key: "plan_prompted_at", type: "single_line_text_field", value: new Date().toISOString() }] },
-          });
-          throw redirect(planUrl, { target: "_top" });
-        }
-        planNotice = "Shopify has not confirmed a plan for this store yet. Everything works; choose a plan to keep using the app after the trial.";
-      }
-    } catch (e) {
-      if (e instanceof Response) throw e;
-      planNotice = "We could not confirm your plan just now. Everything still works; try again later from the Plan card.";
-    }
+  // Plan and usage. The plans live in the listing (Shopify App Pricing): the
+  // merchant picks Free, Standard or Growth on Shopify's own page at install,
+  // and no subscription means Free. So there is nothing to force here and no
+  // redirect: the app reads the plan, keeps the storefront's copy in step (the
+  // Free plan's attribution line) and shows how much of the month's
+  // completions are used. A failure never blocks the UI.
+  let plan = null, planUrl = null, usage = null, simpleNav = true;
+  try {
+    const known = await readConfig(admin);
+    simpleNav = !known.config || isSimple(known.config);
+    ({ plan, planUrl } = await readPlan(admin, session.shop));
+    await syncPlan(admin, plan, known);
+    usage = usageState(await completionsThisMonth(session.shop), plan);
+  } catch (e) {
+    console.log("[billing] plan check failed", session.shop, e.message);
   }
 
-  // The menu follows the setup: products and ticks, or the full rules editor.
-  let simpleNav = true;
-  try { const { config } = await readConfig(admin); simpleNav = !config || isSimple(config); } catch (e) { /* default menu */ }
-
   // eslint-disable-next-line no-undef
-  return { apiKey: process.env.SHOPIFY_API_KEY || "", planNotice, planUrl, simpleNav };
+  return { apiKey: process.env.SHOPIFY_API_KEY || "", plan, planUrl, usage, simpleNav };
 };
 
 export default function App() {
-  const { apiKey, planNotice, planUrl, simpleNav } = useLoaderData();
+  const { apiKey, plan, planUrl, usage, simpleNav } = useLoaderData();
 
   return (
     <AppProvider embedded apiKey={apiKey}>
@@ -95,10 +54,11 @@ export default function App() {
           <s-link href="/app/copy">Copy &amp; cart</s-link>
         </s-app-nav>
       )}
-      {planNotice ? (
-        <s-banner tone="warning">
-          {planNotice}
-          {planUrl ? <s-button slot="secondary-actions" href={planUrl} target="_top">Choose a plan</s-button> : null}
+      {usage && plan && (usage.over || usage.near) ? (
+        <s-banner tone={usage.over ? "warning" : "info"}>
+          {`You have used ${usage.count.toLocaleString("en-GB")} of ${usage.limit.toLocaleString("en-GB")} quiz completions this month on the ${plan.name} plan.`}
+          {usage.over ? " Your quiz keeps working; choose a bigger plan to stay within your limit." : " The count starts again on the 1st."}
+          {planUrl && nextPlan(plan) ? <s-button slot="secondary-actions" href={planUrl} target="_top">{`See ${nextPlan(plan).name}`}</s-button> : null}
         </s-banner>
       ) : null}
       <Outlet />

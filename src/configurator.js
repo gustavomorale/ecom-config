@@ -804,12 +804,15 @@
      set the element is not rendered at all. */
   Configurator.prototype._renderFooter = function () {
     var b = this.cfg.brand || {}, copy = this.cfg.copy || {};
-    if (!b.footerText && !b.name) return '';
+    // Free plan: one small line under the result. Paid plans never show it.
+    var powered = (this.cfg.plan && this.cfg.plan.attribution && this._isDone())
+      ? '<div class="bcfg-powered">Powered by <a href="https://craftframe.agency/?utm_source=bundle-quiz&amp;utm_medium=attribution" target="_blank" rel="noopener">CraftFrame</a></div>' : '';
+    if (!b.footerText && !b.name) return powered;
     var prefix = copy.footerPrefix ? esc(copy.footerPrefix) + ' ' : '';
     var txt = b.footerText || '';
     return '<div class="bcfg-footer">' +
       (b.name ? prefix + '<strong>' + esc(b.name) + '</strong>' + (txt ? ' &#x2014; ' : '') : '') +
-      esc(txt) + '</div>';
+      esc(txt) + '</div>' + powered;
   };
 
   Configurator.prototype._removedNote = function () {
@@ -962,7 +965,10 @@
         if (!this._canAdvance()) return;
         this.state.step++;
         this._emit('step', this.state.step);
-        this._goToStep(); break;
+        this._goToStep();
+        // A shopper reached a result. Restored or shared results do not count.
+        if (this._isDone()) this._emit('complete', { bundleId: this.recommend().bundle.id });
+        break;
       case 'back':
         this.state.step = Math.max(0, this.state.step - 1);
         this._emit('step', this.state.step);

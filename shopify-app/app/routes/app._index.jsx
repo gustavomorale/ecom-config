@@ -18,6 +18,7 @@ import { blockOnTheme } from "../theme.server";
 import { VERSION, SUPPORT_EMAIL } from "../components/SetupRail";
 import { hasProduct, productSlots } from "../lib/links";
 import { WidgetPreview } from "../components/WidgetPreview";
+import { blackFridayNudge } from "../lib/season";
 
 export const loader = async ({ request }) => {
   const { admin } = await authenticate.admin(request);
@@ -26,7 +27,7 @@ export const loader = async ({ request }) => {
   const current = config ? categories.find((c) => c.id === config.meta?.category) || null : null;
   const billing = { enabled: billingEnabled, price: PLAN_PRICE_USD, trialDays: PLAN_TRIAL_DAYS };
   const block = config ? await blockOnTheme(admin) : null;
-  return { config, current, editorUrl: themeEditorUrl(domain), storeUrl: `https://${domain}/`, billing, block, headline: config ? headlineState(config) : null };
+  return { config, current, editorUrl: themeEditorUrl(domain), storeUrl: `https://${domain}/`, billing, block, headline: config ? headlineState(config) : null, season: config ? blackFridayNudge(config.promo) : null };
 };
 
 /* The headline shoppers read first. "placeholder" is the pre-0.9 default that
@@ -166,7 +167,7 @@ export default function Index() {
   return data.config ? <Overview {...data} /> : <Welcome billing={data.billing} />;
 }
 
-function Overview({ config, current, editorUrl, storeUrl, billing, block, headline }) {
+function Overview({ config, current, editorUrl, storeUrl, billing, block, headline, season }) {
   const fetcher = useFetcher();
   const shopify = useAppBridge();
   useEffect(() => {
@@ -265,6 +266,19 @@ function Overview({ config, current, editorUrl, storeUrl, billing, block, headli
           </s-stack>
         </s-section>
       )}
+
+      {season ? (
+        <s-section>
+          <s-stack direction="block" gap="small">
+            <s-stack direction="inline" gap="small" alignItems="center">
+              <s-badge tone="info">Black Friday</s-badge>
+              <s-text type="strong">{season.label}</s-text>
+            </s-stack>
+            <s-paragraph color="subdued">Add an offer and every result shows the saving, with the code applied at checkout. Create the same code in Shopify, Discounts, first.</s-paragraph>
+            <s-box><s-button variant="secondary" href="/app/copy">Set up a Black Friday offer</s-button></s-box>
+          </s-stack>
+        </s-section>
+      ) : null}
 
       {headline && headline.state !== "custom" ? (
         <s-section>

@@ -11,6 +11,7 @@ import { boundary } from "@shopify/shopify-app-react-router/server";
 import { authenticate } from "../shopify.server";
 import { readConfig, saveConfig } from "../config.server";
 import { WidgetPreview } from "../components/WidgetPreview";
+import { blackFriday } from "../lib/season";
 
 const GROUPS = [
   { heading: "Opening", fields: [
@@ -99,23 +100,6 @@ export const action = async ({ request }) => {
   try { await saveConfig(admin, shopId, config); } catch (e) { return { ok: false, error: e.message }; }
   return { ok: true };
 };
-
-/* Black Friday to Cyber Monday: the Friday after the fourth Thursday of
-   November, this year or next if it has passed. */
-function blackFriday(now = new Date()) {
-  const iso = (d) => d.toISOString().slice(0, 10);
-  for (const y of [now.getFullYear(), now.getFullYear() + 1]) {
-    const nov1 = new Date(Date.UTC(y, 10, 1));
-    const firstThu = 1 + ((4 - nov1.getUTCDay() + 7) % 7);
-    const fri = new Date(Date.UTC(y, 10, firstThu + 21 + 1));
-    const mon = new Date(Date.UTC(y, 10, firstThu + 21 + 4));
-    if (mon.getTime() + 864e5 > now.getTime()) {
-      const fmt = (d) => d.toLocaleDateString("en-GB", { day: "numeric", month: "long", timeZone: "UTC" });
-      return { start: iso(fri), end: iso(mon), label: `${fmt(fri)} to ${fmt(mon)} ${y}` };
-    }
-  }
-  return { start: "", end: "", label: "" };
-}
 
 export default function Copy() {
   const { config } = useLoaderData();

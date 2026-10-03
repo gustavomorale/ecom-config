@@ -10,7 +10,7 @@ import { variantHolders } from "./lib/links";
    changed and how many links point at a variant that no longer exists. */
 export async function refreshLinked(admin, config) {
   const targets = variantHolders(config);
-  const components = new Set((config.bundles || []).flatMap((b) => b.components || []));
+  const components = new Set([...(config.bundles || []), ...(config.simple?.products || [])].flatMap((b) => b.components || []));
   if (!targets.length) return { checked: 0, changed: 0, missing: 0 };
   const ids = [...new Set(targets.map((t) => `gid://shopify/ProductVariant/${t.variantId}`))];
   const found = new Map();

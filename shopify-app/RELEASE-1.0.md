@@ -59,8 +59,19 @@ Out of 1.0: analytics funnel UI, price sync, AI draft.
   on the Overview turns ticks into rules (`meta.mode: 'advanced'`) and back.
 - Verified: code check, production build, all 17 categories in both modes, storefront
   result in a real browser (mobile and desktop).
-- Still to do: run on the dev store (`npm run dev`), gifting on the new setup (gift sets as
-  products), Refresh prices on Your products, pricing and the completion counter.
+
+**3 Oct: gifting and Black Friday on the simple setup (item 5).**
+- Your products: "Add a gift set" builds a main product from several store products under
+  a name the merchant gives it; all of them go in the cart, the price is their sum, and
+  "What's in the gift" lists them. "Refresh from my catalogue" re-reads prices and pictures.
+- Suggested ticks read price bands ("Under £25", "£25 to £50", "Over £100") and tick by
+  price; yes/no extras from the template ("Gift wrap it", "Add a card") become an extras
+  question in a Bundle quiz. Gift finder is listed first in gifting season.
+- Overview shows a Black Friday card from 1 October until Cyber Monday when no offer covers
+  it, linking to the Black Friday preset in Copy & cart.
+- Verified in a real browser: gift set, wrap add-on and BLACKFRIDAY20 in the cart link.
+- Still to do: run on the dev store (`npm run dev`), pricing and the completion counter,
+  new screencast, listing update, resubmission.
 
 ## The open review
 

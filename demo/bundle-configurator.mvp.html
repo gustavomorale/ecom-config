@@ -2428,7 +2428,11 @@ table.spec td:first-child{white-space:nowrap;font-weight:550}
 
   API.registerScene('summary', function (state, opts, cfg, scope) {
     var accent = (opts.accent) || ((cfg.brand && cfg.brand.theme && cfg.brand.theme.accent) || '#3d5ee6');
-    var rows = (opts.rows || []).filter(function (r) { return API.test(r.when, scope); });
+    var fill = function (r) {
+      return String(r.label || '').replace(/\{(\w+)\}/g, function (m, k) { return scope[k + '_label'] ? scope[k + '_label'] : (k in scope ? scope[k] : m); });
+    };
+    // A row with nothing to say (an optional question left empty) is not drawn.
+    var rows = (opts.rows || []).filter(function (r) { return API.test(r.when, scope) && fill(r).replace(/[\s:,]+/g, '') !== ''; });
     if (!rows.length) {
       return '<svg viewBox="0 0 360 260" xmlns="http://www.w3.org/2000/svg">' +
         '<rect x="60" y="60" width="240" height="140" rx="14" fill="none" stroke="#e2ded8" stroke-width="2" stroke-dasharray="8,6"/>' +
@@ -2440,7 +2444,7 @@ table.spec td:first-child{white-space:nowrap;font-weight:550}
     var h = 46, pad = 18, W = 360, H = pad * 2 + rows.length * h;
     var body = rows.map(function (r, i) {
       var y = pad + i * h;
-      var label = String(r.label || '').replace(/\{(\w+)\}/g, function (m, k) { return scope[k + '_label'] ? scope[k + '_label'] : (k in scope ? scope[k] : m); });
+      var label = fill(r);
       label = fit(label, opts.maxChars || 44, opts.moreLabel || '+{n} more');
       return '<g class="scene-pop">' +
         '<rect x="16" y="' + y + '" width="' + (W - 32) + '" height="' + (h - 8) + '" rx="10" fill="#fff" stroke="#efece8"/>' +

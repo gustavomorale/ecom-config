@@ -55,6 +55,17 @@
       q.title = q.title || 'Anything to go with it?';
       questions.push(q);
     }
+    // Yes/no extras ("Gift wrap it", "Add a card") become one more extras question.
+    if (mode === 'bundle') {
+      (tpl.steps || []).filter(function (s) { return s.type === 'toggles' && (s.toggles || []).length; }).forEach(function (s) {
+        if (questions.length >= MAX_QUESTIONS) return;
+        questions.push({
+          id: s.id || 'extras', field: s.id || 'extras', title: s.question || 'Anything else?', sub: s.sub || '',
+          multi: true, target: 'extra',
+          answers: s.toggles.slice(0, MAX_ANSWERS).map(function (t) { return { value: t.field, label: t.label, icon: t.icon || '', desc: '' }; })
+        });
+      });
+    }
     if (!questions.length) {
       questions.push({ id: 'need', field: 'need', title: 'What are you looking for?', sub: '', multi: false, target: 'main',
         answers: [{ value: 'a', label: 'Option A', icon: '', desc: '' }, { value: 'b', label: 'Option B', icon: '', desc: '' }] });
@@ -75,6 +86,18 @@
   function overlap(a, b) { for (var i = 0; i < a.length; i++) if (b.indexOf(a[i]) > -1) return true; return false; }
 
   function key(q, a) { return q.field + ':' + a.value; }
+
+  /* "Under £25", "£25 to £50", "£50-£100", "Over £100", "£100+": the price band
+     an answer names, or null. */
+  function priceBand(label) {
+    var t = String(label || '').toLowerCase().replace(/,/g, '');
+    var n = (t.match(/\d+(\.\d+)?/g) || []).map(Number);
+    if (!n.length) return null;
+    if (/under|below|less than|up to/.test(t)) return { lo: 0, hi: n[0] };
+    if (/over|above|more than|\+/.test(t)) return { lo: n[0], hi: Infinity };
+    if (n.length >= 2 && /to|-|\u2013/.test(t)) return { lo: n[0], hi: n[1] };
+    return null;
+  }
   function productsFor(simple, q) {
     var role = simple.mode === 'finder' ? null : q.target;
     return (simple.products || []).filter(function (p) {
@@ -92,10 +115,22 @@
     (simple.questions || []).forEach(function (q) {
       var ps = productsFor(simple, q);
       if (!ps.length) return;
-      var pw = ps.map(function (p) { return words([p.productTitle, p.productType, (p.tags || []).join(' ')].join(' ')); });
+      var pw = ps.map(function (p) {
+        var parts = (p.components || []).map(function (c) { return c.productTitle || c.title || ''; });
+        return words([p.productTitle, p.productType, (p.tags || []).join(' ')].concat(parts).join(' '));
+      });
       var any = q.answers.some(function (a) { return (grid[key(q, a)] || []).length; });
       if (any) return;                                   // the merchant already decided this question
       var matchedSomething = false;
+      // A budget question: tick by price, the most reliable signal there is.
+      var bands = q.answers.map(function (a) { return priceBand(a.label); });
+      if (bands.every(Boolean) && ps.some(function (p) { return Number(p.price) > 0; })) {
+        q.answers.forEach(function (a, i) {
+          var hits = ps.filter(function (p) { var pr = Number(p.price) || 0; return pr > 0 && pr >= bands[i].lo && pr <= bands[i].hi; }).map(function (p) { return p.key; });
+          if (hits.length) grid[key(q, a)] = hits;
+        });
+        return;
+      }
       q.answers.forEach(function (a) {
         var aw = words(a.label + ' ' + (a.desc || ''));
         var hits = ps.filter(function (p, i) { return overlap(aw, pw[i]); }).map(function (p) { return p.key; });
@@ -103,9 +138,8 @@
       });
       if (!matchedSomething && (q.target === 'main' || simple.mode === 'finder')) {
         q.answers.forEach(function (a, i) { grid[key(q, a)] = [ps[i % ps.length].key]; });
-      } else if (!matchedSomething && q.target === 'extra') {
-        q.answers.forEach(function (a, i) { if (i < ps.length) grid[key(q, a)] = [ps[i].key]; });
       }
+      // Extras are optional: with no word in common, leave them for the merchant to tick.
     });
     simple.grid = grid;
     return simple;

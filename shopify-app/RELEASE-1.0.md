@@ -104,6 +104,19 @@ Out of 1.0: analytics funnel UI, price sync, AI draft.
 - Still to do: run on the dev store (`npm run dev`, after `npx prisma migrate deploy`
   against the dev database), new screencast, listing update, resubmission.
 
+**3 Oct: local test setup (dev store).**
+- Neon branch `dev` (from `production`) is the development database; its connection string
+  is in `shopify-app/.env` (gitignored). The Usage migration is applied there. Production
+  is untouched.
+- Run `BCFG_PLAN=free npm run dev` in `shopify-app`. The first "Configuring host theme"
+  step can take five to seven minutes.
+- If the app opens example.com, the dev preview was lost (usually after uninstalling the
+  dev app): restart `npm run dev`. If a page shows "TypeError: Failed to fetch", the
+  Cloudflare quick tunnel has dropped (its hostname no longer resolves): restart `npm run
+  dev` for a new one. Neither is an app bug.
+- A store with a saved 0.9.4 setup opens the old Overview; "Start a simple setup" in the
+  Simple setup section starts 1.0's three steps.
+
 ## The open review
 
 The current submission is still open with item 4.5.3. Reply in the review thread that a

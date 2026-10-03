@@ -42,10 +42,14 @@ function cleanQuestions(raw, mode) {
       if (!a || !safeId(a.value) || values.has(a.value)) return null;
       values.add(a.value);
       const out = { value: String(a.value), label: text(a.label, 80) || "Answer", icon: typeof a.icon === "string" ? a.icon.slice(0, 40) : "", desc: text(a.desc, 120) };
+      if (/^https:\/\/[^\s"'<>]{1,1000}$/.test(String(a.image || ""))) {
+        out.image = String(a.image);
+        if (["product", "collection"].includes(a.imageSource)) out.imageSource = a.imageSource;
+      }
       return out;
     }).filter(Boolean);
     if (answers.length < MIN_ANSWERS) return null;
-    return { id: q.field, field: q.field, title: text(q.title, 160) || "Question", sub: text(q.sub, 200), multi: !!q.multi, target: mode === "bundle" && q.target === "extra" ? "extra" : "main", answers };
+    return { id: q.field, field: q.field, title: text(q.title, 160) || "Question", sub: text(q.sub, 200), multi: !!q.multi, target: mode === "bundle" && q.target === "extra" ? "extra" : "main", display: q.display === "cards" ? "cards" : "rows", answers };
   }).filter(Boolean);
   return qs.length ? qs : null;
 }
@@ -73,13 +77,50 @@ export const action = async ({ request }) => {
 const th = { padding: "8px 6px", fontWeight: 500, fontSize: 12, textAlign: "center", borderBottom: "1px solid #e3e3e3", verticalAlign: "bottom", minWidth: 84 };
 const td = { padding: "6px", textAlign: "center", borderBottom: "1px solid #ebebeb", verticalAlign: "middle" };
 
-function Grid({ q, products, grid, onTick, onLabel, onRemoveAnswer }) {
+/* An answer's picture: an emoji, the photo of one of this quiz's products, or
+   any product's or collection's photo through Shopify's picker. */
+function AnswerVisual({ a, quizProducts, onChange }) {
+  const shopify = useAppBridge();
+  const withPhoto = quizProducts.filter((p) => p.image);
+  const current = a.image ? (withPhoto.find((p) => p.image === a.image) ? `p:${withPhoto.find((p) => p.image === a.image).key}` : "custom") : "";
+  const pick = async (type) => {
+    let picked = null;
+    try { picked = await shopify.resourcePicker({ type, multiple: false }); } catch (e) { return; }
+    const item = picked && picked[0];
+    const url = item && ((item.images && item.images[0] && item.images[0].originalSrc) || (item.image && item.image.originalSrc) || "");
+    if (!url) { shopify.toast.show(`That ${type} has no photo`, { isError: true }); return; }
+    onChange({ image: url, imageSource: type });
+  };
+  const choose = (v) => {
+    if (v === "") onChange({ image: "", imageSource: "" });
+    else if (v === "pick-product") pick("product");
+    else if (v === "pick-collection") pick("collection");
+    else if (v.startsWith("p:")) { const p = withPhoto.find((x) => `p:${x.key}` === v); if (p) onChange({ image: p.image, imageSource: "product" }); }
+  };
+  return (
+    <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 6 }}>
+      <div style={{ width: 40, height: 40, flex: "0 0 40px", borderRadius: 8, border: "1px solid #e3e3e3", background: "#f6f6f7", display: "grid", placeItems: "center", overflow: "hidden", fontSize: 20 }} aria-hidden="true">
+        {a.image ? <img src={a.image} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : (a.icon || "").replace(/&#x([0-9a-f]+);/gi, (m, h) => String.fromCodePoint(parseInt(h, 16)))}
+      </div>
+      <s-select label={`Picture for ${a.label}`} labelAccessibilityVisibility="exclusive" value={current} onChange={(e) => choose(e.currentTarget.value)}>
+        <s-option value="">Emoji</s-option>
+        {withPhoto.map((p) => <s-option key={p.key} value={`p:${p.key}`}>{`Photo: ${p.productTitle}`}</s-option>)}
+        {current === "custom" ? <s-option value="custom">Photo chosen from your store</s-option> : null}
+        <s-option value="pick-product">Another product's photo...</s-option>
+        <s-option value="pick-collection">A collection's photo...</s-option>
+      </s-select>
+      {!a.image ? <div style={{ width: 70 }}><s-text-field label={`Emoji for ${a.label}`} labelAccessibilityVisibility="exclusive" value={(a.icon || "").replace(/&#x([0-9a-f]+);/gi, (m, h) => String.fromCodePoint(parseInt(h, 16)))} maxLength={8} onInput={(e) => onChange({ icon: e.currentTarget.value })} /></div> : null}
+    </div>
+  );
+}
+
+function Grid({ q, products, quizProducts, grid, onTick, onLabel, onVisual, onRemoveAnswer }) {
   return (
     <div style={{ overflowX: "auto", border: "1px solid #e3e3e3", borderRadius: 8 }}>
       <table style={{ borderCollapse: "collapse", width: "100%" }}>
         <thead>
           <tr>
-            <th style={{ ...th, textAlign: "left", minWidth: 200 }}>Answer</th>
+            <th style={{ ...th, textAlign: "left", minWidth: 260 }}>Answer and picture</th>
             {products.map((p) => <th key={p.key} style={th} scope="col">{p.productTitle}</th>)}
             <th style={{ ...th, minWidth: 40 }}><span style={{ position: "absolute", left: -9999 }}>Remove</span></th>
           </tr>
@@ -91,6 +132,7 @@ function Grid({ q, products, grid, onTick, onLabel, onRemoveAnswer }) {
               <tr key={a.value}>
                 <td style={{ ...td, textAlign: "left" }}>
                   <s-text-field label="Answer" labelAccessibilityVisibility="exclusive" value={a.label} onInput={(e) => onLabel(a.value, e.currentTarget.value)} />
+                  <AnswerVisual a={a} quizProducts={quizProducts} onChange={(patch) => onVisual(a.value, patch)} />
                 </td>
                 {products.map((p) => (
                   <td key={p.key} style={td}>
@@ -174,6 +216,10 @@ export default function Questions() {
               <s-text-field label="Helper text" value={q.sub || ""} onInput={(e) => updateQ(i, { sub: e.currentTarget.value })} />
               <s-stack direction="inline" gap="base" alignItems="center">
                 <s-checkbox label="Shoppers can pick several answers" checked={!!q.multi} onChange={(e) => updateQ(i, { multi: e.currentTarget.checked })} />
+                <s-select label="Show answers as" value={q.display === "cards" ? "cards" : "rows"} onChange={(e) => updateQ(i, { display: e.currentTarget.value })} details="Picture cards suit product photos; rows suit emoji.">
+                  <s-option value="rows">Rows with an emoji or picture</s-option>
+                  <s-option value="cards">Picture cards</s-option>
+                </s-select>
                 {bundle ? (
                   <s-select label="Answers point to" value={q.target} onChange={(e) => updateQ(i, { target: e.currentTarget.value })}>
                     <s-option value="main">Main products</s-option>
@@ -182,8 +228,8 @@ export default function Questions() {
                 ) : null}
               </s-stack>
               {cols.length ? (
-                <Grid q={q} products={cols} grid={grid}
-                  onTick={tick} onLabel={(value, label) => updateA(i, value, { label })} onRemoveAnswer={(value) => removeA(i, value)} />
+                <Grid q={q} products={cols} quizProducts={simple.products} grid={grid}
+                  onTick={tick} onLabel={(value, label) => updateA(i, value, { label })} onVisual={(value, patch) => updateA(i, value, patch)} onRemoveAnswer={(value) => removeA(i, value)} />
               ) : <s-banner tone="info">No extras yet. Add them in step 1, or point this question at the main products.</s-banner>}
               <s-stack direction="inline" gap="small">
                 <s-button variant="secondary" onClick={() => addA(i)} {...(q.answers.length >= MAX_ANSWERS ? { disabled: true } : {})}>Add an answer</s-button>

@@ -225,7 +225,7 @@ function Kpi({ tint, label, value, sub, meter, children }) {
   return (
     <div style={{ background: t.bg, color: t.ink, borderRadius: 12, padding: "16px 18px", display: "flex", flexDirection: "column", gap: 6, minHeight: 128 }}>
       <span style={{ fontSize: 13, fontWeight: 600, letterSpacing: ".01em" }}>{label}</span>
-      <span style={{ fontSize: 34, lineHeight: 1.05, fontWeight: 700, fontVariantNumeric: "tabular-nums" }}>{value}</span>
+      <span style={{ fontSize: 30, lineHeight: 1.05, fontWeight: 700, fontVariantNumeric: "tabular-nums" }}>{value}</span>
       {sub ? <span style={{ fontSize: 13, opacity: 0.85 }}>{sub}</span> : null}
       {meter ? (
         <div role="progressbar" aria-label={label} aria-valuemin={0} aria-valuemax={meter.max} aria-valuenow={meter.value} style={{ height: 6, borderRadius: 3, background: "rgba(0,0,0,.08)", overflow: "hidden", marginTop: "auto" }}>
@@ -237,7 +237,7 @@ function Kpi({ tint, label, value, sub, meter, children }) {
   );
 }
 
-function KpiRow({ quizCount, block }) {
+function KpiRow({ quizCount, block, plansOpen, onPlans }) {
   const app = useRouteLoaderData("routes/app") || {};
   const plan = app.plan || PLANS.free;
   const usage = app.usage;
@@ -245,7 +245,7 @@ function KpiRow({ quizCount, block }) {
   const trialDays = plan.trialEndsAt ? Math.max(0, Math.ceil((Date.parse(plan.trialEndsAt) - Date.now()) / 864e5)) : 0;
   const live = block ? block.installed : null;
   return (
-    <s-grid gridTemplateColumns="repeat(auto-fit, minmax(190px, 1fr))" gap="base">
+    <s-grid gridTemplateColumns="repeat(auto-fit, minmax(140px, 1fr))" gap="base">
       <Kpi tint={usage && (usage.near || usage.over) ? "amber" : "blue"} label="Completed this month"
         value={usage ? usage.count.toLocaleString("en-GB") : "0"}
         sub={usage ? `of ${usage.limit.toLocaleString("en-GB")} on ${plan.name}` : `on ${plan.name}`}
@@ -255,7 +255,8 @@ function KpiRow({ quizCount, block }) {
         meter={{ value: quizCount, max: cap, warn: quizCount >= cap }} />
       <Kpi tint="violet" label="Plan" value={plan.name}
         sub={trialDays ? `Trial, ${trialDays} day${trialDays === 1 ? "" : "s"} left` : plan.price ? `USD ${plan.price} a month` : "Free, with a Powered by line"}>
-        <a href="#plans" style={{ color: "inherit", fontSize: 13, fontWeight: 600, marginTop: "auto" }}>Compare and change plan</a>
+        <button type="button" onClick={onPlans} aria-expanded={plansOpen} aria-controls="plans"
+          style={{ all: "unset", cursor: "pointer", color: "inherit", fontSize: 13, fontWeight: 600, textDecoration: "underline", marginTop: "auto" }}>{plansOpen ? "Hide plans" : "Compare and change plan"}</button>
       </Kpi>
       <Kpi tint={live === false ? "amber" : live ? "green" : "grey"} label="On your store"
         value={live === null ? "Unknown" : live ? "Live" : "Not yet"}
@@ -408,6 +409,7 @@ function Home({ quizzes, editing, block, editorUrl, storeUrl, season }) {
   }, [fetcher.data, shopify]);
   const submit = (data) => fetcher.submit(data, { method: "POST" });
   const go = (id, to) => submit({ intent: "go", id, to });
+  const [plansOpen, setPlansOpen] = useState(false);
 
   return (
     <s-page heading="CraftFrame Bundle Quiz">
@@ -416,8 +418,10 @@ function Home({ quizzes, editing, block, editorUrl, storeUrl, season }) {
       <s-button slot="secondary-actions" href={editorUrl} target="_blank">Theme editor</s-button>
 
       <s-section>
-        <KpiRow quizCount={quizzes.length} block={block} />
+        <KpiRow quizCount={quizzes.length} block={block} plansOpen={plansOpen} onPlans={() => setPlansOpen((v) => !v)} />
       </s-section>
+
+      {plansOpen ? <PlansSection /> : null}
 
       {block ? (
         block.installed ? null : (
@@ -445,7 +449,7 @@ function Home({ quizzes, editing, block, editorUrl, storeUrl, season }) {
             </s-clickable>
           ) : (
             <s-box padding="base" borderWidth="base" borderRadius="base" background="subdued">
-              <s-text color="subdued">{up ? `${plan.name} includes ${cap} quiz${cap === 1 ? "" : "zes"}. ${up.name} includes ${up.quizzes}. Compare plans under Your plan below.` : `Growth includes ${cap} quizzes. Ask for a Custom plan at ${CUSTOM_PLAN_EMAIL} for more.`}</s-text>
+              <s-text color="subdued">{up ? `${plan.name} includes ${cap} quiz${cap === 1 ? "" : "zes"}. ${up.name} includes ${up.quizzes}. Use Compare and change plan at the top.` : `Growth includes ${cap} quizzes. Ask for a Custom plan at ${CUSTOM_PLAN_EMAIL} for more.`}</s-text>
             </s-box>
           )}
         </s-stack>
@@ -459,8 +463,6 @@ function Home({ quizzes, editing, block, editorUrl, storeUrl, season }) {
           </s-stack>
         </s-section>
       ) : null}
-
-      <PlansSection />
 
       <s-section slot="aside" heading="Showing a quiz">
         <s-stack direction="block" gap="small-200">

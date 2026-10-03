@@ -200,6 +200,7 @@
         })
       };
       if (q.multi) { st.columns = 2; st.required = q.target !== 'extra'; }
+      if (q.display === 'cards') st.display = 'cards';
       return st;
     });
 

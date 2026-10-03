@@ -149,6 +149,16 @@ Out of 1.0: analytics funnel UI, price sync, AI draft.
   with "Email us". In development the Choose buttons are disabled with a note.
   Replaces the Plan card in the side column.
 
+**3 Oct: pictures on answers in the simple setup; plan button fix.**
+- Questions (`app.grid.jsx`): per question "Show answers as" (rows, or picture cards); per
+  answer a Picture choice: emoji (editable), the photo of one of this quiz's products in
+  one click, or any product's or collection's photo through Shopify's picker. The save step
+  keeps `image` (https only), `imageSource` and `display`; `configs/simple.js` compiles
+  `display: 'cards'` onto the step. Before this, the simple setup dropped pictures.
+- Home: "Compare and change plan" did nothing (a page anchor does not scroll inside the
+  embedded admin). It now opens the plan comparison right under the figure tiles, and
+  closes it again. The four tiles fit on one row.
+
 ## Shopify side, before resubmitting
 
 1. Done 3 Oct: App Pricing has Free (USD 0), Starter (USD 9), Standard (USD 25) and Growth

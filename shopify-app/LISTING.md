@@ -1,7 +1,7 @@
 # App Store listing copy
 
 Paste into the Partner Dashboard listing. Character limits are Shopify's at the time of
-writing; trim rather than rewrite if they change. The app is presented as a finished product (version 0.9.4).
+writing; trim rather than rewrite if they change. The app is presented as a finished product (version 1.0, copy updated 3 Oct 2026).
 
 ## App name
 
@@ -9,34 +9,36 @@ CraftFrame Bundle Quiz
 
 ## Tagline (max 62 characters)
 
-Guided questionnaire that builds the right bundle and cart
+Product finder and bundle quiz that fills the cart
 
 ## App introduction (max 100 characters)
 
-Ask shoppers a few questions, recommend the right bundle, open checkout pre-filled.
+Ask shoppers a few questions, recommend the right product or bundle, and fill the cart in one click.
 
 ## App details (max 500 characters)
 
-Turn "which one should I buy?" into a five-minute setup and a one-click cart. Shoppers
-answer four to six questions in a block on any page; your rules pick the base bundle and
-the add-ons that fit; the result shows what is in the set and why, then opens checkout
-with everything loaded. Pick a category to start from a working template (skincare, home
-security, subscription boxes and more), match your store's colours in one click, link
-your products, done. Email support within two working days.
+Turn "which one should I buy?" into a cart. Pick a Product finder or a Bundle quiz, choose products you already sell, then tick which answers point to which product. Questions are suggested for what you sell and the quiz matches your theme automatically. Shoppers answer a few questions in a block on any page, see their pick and why, and add it to the cart in one click. Gift sets and a Black Friday offer are built in. Email support within two working days.
 
 ## Feature list (each max 80 characters)
 
-- Category templates: a working questionnaire the moment you pick what you sell
-- Match my store: reads your theme's colours, type and corners, with a confidence check
-- Every product linked from your catalogue with the product picker, no IDs to type
-- Options as emoji rows or picture cards, using your product and collection photos
-- Rules editor in plain rows: no code, no JSON, quantities can be calculated from answers
-- Result screen with reasons, price preview and a pre-filled checkout link
-- Shoppers' answers survive a refresh and can be shared as a link
+- Product finder or Bundle quiz, set up in three steps in about five minutes
+- Recommends only products you already sell, picked from your catalogue
+- Tick which answers point to which product: no rules or code to write
+- Questions suggested for what you sell, with every word editable
+- Matches your theme's colours, type and corners automatically
+- Gift sets built from your own products, no bundle product needed
+- Black Friday offer in one click, shown on every result and applied at checkout
+- Result shows the pick, why it fits, and adds everything to the cart
+- Answers survive a refresh and the result can be shared as a link
 - Accessible: keyboard navigation, screen reader announcements, focus management
-- Glass or Base look; steps down to flat surfaces on slow devices automatically
-- Uses the products you already sell; the app never adds products to your store
 - No theme edits, no code, and no customer data stored
+
+## Plans (Pricing details: display name max 18, each feature max 40)
+
+- Free: 50 completed quizzes a month / Both quiz types and all features / Small Powered by CraftFrame line
+- Starter: 300 completed quizzes a month / No attribution line / Email support within two working days
+- Standard: 2,000 completed quizzes a month / No attribution line / Email support within two working days
+- Growth: 15,000 completed quizzes a month / No attribution line / Priority support
 
 ## Wording rules
 

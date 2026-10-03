@@ -2,6 +2,7 @@ import { Outlet, useLoaderData, useRouteError } from "react-router";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { AppProvider } from "@shopify/shopify-app-react-router/react";
 import { authenticate, billingEnabled } from "../shopify.server";
+import { readConfig, isSimple } from "../config.server";
 
 const PROMPT_HOURS = 24;
 
@@ -63,23 +64,37 @@ export const loader = async ({ request }) => {
     }
   }
 
+  // The menu follows the setup: products and ticks, or the full rules editor.
+  let simpleNav = true;
+  try { const { config } = await readConfig(admin); simpleNav = !config || isSimple(config); } catch (e) { /* default menu */ }
+
   // eslint-disable-next-line no-undef
-  return { apiKey: process.env.SHOPIFY_API_KEY || "", planNotice, planUrl };
+  return { apiKey: process.env.SHOPIFY_API_KEY || "", planNotice, planUrl, simpleNav };
 };
 
 export default function App() {
-  const { apiKey, planNotice, planUrl } = useLoaderData();
+  const { apiKey, planNotice, planUrl, simpleNav } = useLoaderData();
 
   return (
     <AppProvider embedded apiKey={apiKey}>
-      <s-app-nav>
-        <s-link href="/app">Overview</s-link>
-        <s-link href="/app/questions">Questions</s-link>
-        <s-link href="/app/rules">Rules</s-link>
-        <s-link href="/app/products">Products</s-link>
-        <s-link href="/app/look">Look</s-link>
-        <s-link href="/app/copy">Copy &amp; cart</s-link>
-      </s-app-nav>
+      {simpleNav ? (
+        <s-app-nav>
+          <s-link href="/app">Overview</s-link>
+          <s-link href="/app/start">Products</s-link>
+          <s-link href="/app/grid">Questions</s-link>
+          <s-link href="/app/look">Look</s-link>
+          <s-link href="/app/copy">Copy &amp; cart</s-link>
+        </s-app-nav>
+      ) : (
+        <s-app-nav>
+          <s-link href="/app">Overview</s-link>
+          <s-link href="/app/questions">Questions</s-link>
+          <s-link href="/app/rules">Rules</s-link>
+          <s-link href="/app/products">Products</s-link>
+          <s-link href="/app/look">Look</s-link>
+          <s-link href="/app/copy">Copy &amp; cart</s-link>
+        </s-app-nav>
+      )}
       {planNotice ? (
         <s-banner tone="warning">
           {planNotice}

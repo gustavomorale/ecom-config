@@ -13,7 +13,7 @@ import { useFetcher, useLoaderData, useRouteError } from "react-router";
 import { useAppBridge } from "@shopify/app-bridge-react";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { authenticate, billingEnabled, PLAN_PRICE_USD, PLAN_TRIAL_DAYS } from "../shopify.server";
-import { listCategories, buildCategory, readConfig, saveConfig, themeEditorUrl } from "../config.server";
+import { listCategories, buildCategory, readConfig, saveConfig, themeEditorUrl, toAdvanced, toSimple } from "../config.server";
 import { blockOnTheme } from "../theme.server";
 import { VERSION, SUPPORT_EMAIL } from "../components/SetupRail";
 import { hasProduct, productSlots } from "../lib/links";
@@ -46,9 +46,16 @@ function headlineState(config) {
 export const action = async ({ request }) => {
   const { admin } = await authenticate.admin(request);
   const form = await request.formData();
-  if (form.get("intent") !== "adopt-headline") return { ok: false, error: "Unknown action" };
+  const intent = form.get("intent");
   const { shopId, config } = await readConfig(admin);
   if (!config) return { ok: false, error: "No configuration yet" };
+  if (intent === "advanced" || intent === "simple") {
+    try {
+      await saveConfig(admin, shopId, intent === "advanced" ? toAdvanced(config) : toSimple(config));
+    } catch (e) { return { ok: false, error: e.message }; }
+    return { ok: true, intent };
+  }
+  if (intent !== "adopt-headline") return { ok: false, error: "Unknown action" };
   const tpl = templateCopy(config);
   if (!tpl.title) return { ok: false, error: "This template has no suggested headline" };
   try {
@@ -61,7 +68,7 @@ export const action = async ({ request }) => {
 function Welcome({ billing }) {
   return (
     <s-page heading="Welcome to CraftFrame Bundle Quiz">
-      <s-button slot="primary-action" href="/app/category">Start setup</s-button>
+      <s-button slot="primary-action" href="/app/start">Start setup</s-button>
 
       <s-section>
         <s-stack direction="block" gap="base">
@@ -69,10 +76,10 @@ function Welcome({ billing }) {
             <s-text color="subdued">{billing.enabled ? `Version ${VERSION}. ${billing.trialDays} days free, then USD ${billing.price} a month.` : `Version ${VERSION}.`}</s-text>
           </s-stack>
           <s-paragraph>
-            A short questionnaire on your storefront that turns a shopper's answers into a ready-made cart: the right bundle, the right add-ons, one click to checkout. You choose what to ask, the rules decide what goes in the basket, and the widget wears your store's colours.
+            A short quiz on your storefront that turns a shopper's answers into the right product from your store, or a main product plus the extras that fit, ready in the cart. You pick the products, tick which answers point to them, and the quiz wears your store's colours.
           </s-paragraph>
           <s-stack direction="inline" gap="base">
-            <s-button variant="primary" href="/app/category">Start setup</s-button>
+            <s-button variant="primary" href="/app/start">Start setup</s-button>
             <s-text color="subdued">About five minutes. Nothing shows on your store until you add the block.</s-text>
           </s-stack>
         </s-stack>
@@ -82,8 +89,8 @@ function Welcome({ billing }) {
         <s-grid gridTemplateColumns="repeat(auto-fit, minmax(220px, 1fr))" gap="base">
           {[
             ["1", "Shoppers answer", "Four to six quick questions in a block you place on any page. Answers survive a refresh and can be shared as a link."],
-            ["2", "Rules build the bundle", "Each answer picks a base set and adds the products that fit. Every product is one of yours, linked in setup."],
-            ["3", "Cart is ready", "The result shows what is in the set and why, then opens checkout with everything pre-loaded."],
+            ["2", "Answers pick the product", "Each answer points to products you chose. The best fit wins, and the extras that fit come with it."],
+            ["3", "Cart is ready", "The result shows the pick and why, then opens the cart with everything in it."],
           ].map(([n, h, p]) => (
             <s-box key={n} padding="base" borderWidth="base" borderRadius="base">
               <s-stack direction="block" gap="small-200">
@@ -98,10 +105,8 @@ function Welcome({ billing }) {
 
       <s-section heading="What setup covers">
         <s-ordered-list>
-          <s-list-item>Category: pick what you sell and get a working questionnaire immediately.</s-list-item>
-          <s-list-item>Look: match your store's colours in one click, or set your own.</s-list-item>
-          <s-list-item>Questions: rename, reorder, add or remove; emoji or your own product photos.</s-list-item>
-          <s-list-item>Products: link each bundle and add-on to one of your products with the product picker.</s-list-item>
+          <s-list-item>Your products: choose a Product finder or a Bundle quiz and pick the products to recommend. Your theme's look is matched on the way.</s-list-item>
+          <s-list-item>Questions: suggested for what you sell. Rename anything and tick which products each answer points to.</s-list-item>
           <s-list-item>Go live: add the block to your theme.</s-list-item>
         </s-ordered-list>
       </s-section>
@@ -154,6 +159,8 @@ function Task({ task, open, onToggle }) {
   );
 }
 
+const isSimpleConfig = (config) => !!(config && config.simple && config.meta?.mode !== "advanced");
+
 export default function Index() {
   const data = useLoaderData();
   return data.config ? <Overview {...data} /> : <Welcome billing={data.billing} />;
@@ -164,7 +171,7 @@ function Overview({ config, current, editorUrl, storeUrl, billing, block, headli
   const shopify = useAppBridge();
   useEffect(() => {
     if (!fetcher.data) return;
-    if (fetcher.data.ok) shopify.toast.show("Headline updated");
+    if (fetcher.data.ok) shopify.toast.show(fetcher.data.intent === "advanced" ? "Rules editor on" : fetcher.data.intent === "simple" ? "Back to the simple setup" : "Headline updated");
     else shopify.toast.show(fetcher.data.error || "Something went wrong", { isError: true });
   }, [fetcher.data, shopify]);
 
@@ -174,13 +181,20 @@ function Overview({ config, current, editorUrl, storeUrl, billing, block, headli
   const linked = products.filter(hasProduct).length;
   const rules = (config.addonRules || []).length;
   const live = block ? block.installed : !!setup.live;
+  const liveTask = { key: "live", done: live, title: "Add the block to your theme", text: "In the theme editor choose a section, then Add block, Apps, CraftFrame Bundle Quiz. Or Add section, Apps, for a full-width one. Save the theme.", href: editorUrl, external: true, actionLabel: "Open theme editor", editLabel: "Open theme editor", secondary: { href: storeUrl, label: "View storefront", external: true } };
 
-  const tasks = [
+  const simple = isSimpleConfig(config);
+  const sp = simple ? config.simple.products || [] : [];
+  const simpleTasks = simple ? [
+    { key: "products", done: sp.length > 0, title: "Pick your products", badge: `${sp.length}`, text: `${config.simple.mode === "bundle" ? "A Bundle quiz" : "A Product finder"} recommending products from your store. Change the type, the products or what you sell.`, href: "/app/start", actionLabel: "Pick products", editLabel: "Edit products" },
+    { key: "questions", done: !!setup.questions, title: "Check your questions", badge: `${steps}`, text: "Rename anything and tick which products each answer points to.", href: "/app/grid", actionLabel: "Review questions", editLabel: "Edit questions" },
+  ] : null;
+  const tasks = simpleTasks ? [...simpleTasks, liveTask] : [
     { key: "category", done: true, title: "Choose what you sell", text: `You started from ${current ? current.label : "a template"}. Changing it rebuilds the questions, rules and product links.`, href: "/app/category", actionLabel: "Choose a category", editLabel: "Change category" },
     { key: "look", done: !!setup.look, title: "Match your store's look", text: "One click reads your theme's colours, type and corners. Your own choices always win over the match.", href: "/app/look", actionLabel: "Set the look", editLabel: "Edit the look" },
     { key: "questions", done: !!setup.questions, title: "Check your questions", badge: `${steps}`, text: "Rename, reorder, add or remove. Show options as emoji rows or as picture cards with your product photos.", href: "/app/questions", actionLabel: "Review questions", editLabel: "Edit questions" },
     { key: "products", done: products.length > 0 && linked === products.length, title: "Connect your products", badge: `${linked} of ${products.length}`, badgeTone: linked === products.length ? "success" : "warning", text: "Each bundle and add-on needs the product it puts in the cart. Rename them in Rules to match what you sell.", href: "/app/products", actionLabel: "Connect products", editLabel: "Edit product links" },
-    { key: "live", done: live, title: "Add the block to your theme", text: "In the theme editor choose a section, then Add block, Apps, CraftFrame Bundle Quiz. Or Add section, Apps, for a full-width one. Save the theme.", href: editorUrl, external: true, actionLabel: "Open theme editor", editLabel: "Open theme editor", secondary: { href: storeUrl, label: "View storefront", external: true } },
+    liveTask,
   ];
   const doneCount = tasks.filter((t) => t.done).length;
   const firstOpen = tasks.find((t) => !t.done);
@@ -188,7 +202,12 @@ function Overview({ config, current, editorUrl, storeUrl, billing, block, headli
   const [guideHidden, setGuideHidden] = useState(doneCount === tasks.length);
   const pct = Math.round((doneCount / tasks.length) * 100);
 
-  const actions = [
+  const actions = simple ? [
+    ["/app/start", "Products", `${sp.length} product${sp.length === 1 ? "" : "s"} from your store. ${config.simple.mode === "bundle" ? "Bundle quiz" : "Product finder"}.`],
+    ["/app/grid", "Questions", `${steps} question${steps === 1 ? "" : "s"}. Wording and which products each answer points to.`],
+    ["/app/look", "Look", `${config.brand?.preset === "base" ? "Base" : "Glass"}${config.brand?.matched ? ", matched to your theme" : ""}. Colours, corners, type.`],
+    ["/app/copy", "Copy & cart", "Every word shoppers read, promo code, how the cart opens."],
+  ] : [
     ["/app/questions", "Questions", `${steps} question${steps === 1 ? "" : "s"}. Wording, order, icons and photos.`],
     ["/app/rules", "Rules", `${(config.bundles || []).length} bundles, ${rules} add-on rule${rules === 1 ? "" : "s"}. What goes in the cart, and when.`],
     ["/app/products", "Products", `${linked} of ${products.length} linked to your catalogue.`],
@@ -240,7 +259,7 @@ function Overview({ config, current, editorUrl, storeUrl, billing, block, headli
         <s-section>
           <s-stack direction="inline" gap="small" alignItems="center">
             <s-badge tone="success">Setup complete</s-badge>
-            <s-text color="subdued">All five tasks done.</s-text>
+            <s-text color="subdued">{`All ${tasks.length} tasks done.`}</s-text>
             <span style={{ marginLeft: "auto" }} />
             <s-button variant="tertiary" onClick={() => setGuideHidden(false)}>Show setup guide</s-button>
           </s-stack>
@@ -281,6 +300,23 @@ function Overview({ config, current, editorUrl, storeUrl, billing, block, headli
             </s-clickable>
           ))}
         </s-grid>
+      </s-section>
+
+      <s-section heading={simple ? "Advanced setup" : "Simple setup"}>
+        <s-stack direction="block" gap="small">
+          <s-paragraph color="subdued">
+            {simple
+              ? "Need quantities from answers, such as one per person, or conditions the grid cannot express? Switch to the rules editor. Your ticks become rules you can edit."
+              : config.simple
+                ? "Go back to products and ticks. Changes made in the rules editor since you switched are dropped."
+                : "Start a simple setup: pick products from your store and tick which answers point to them."}
+          </s-paragraph>
+          <s-box>
+            {simple || config.simple
+              ? <s-button variant="secondary" onClick={() => fetcher.submit({ intent: simple ? "advanced" : "simple" }, { method: "POST" })} {...(fetcher.state !== "idle" ? { loading: true } : {})}>{simple ? "Switch to the rules editor" : "Back to the simple setup"}</s-button>
+              : <s-button variant="secondary" href="/app/start">Start a simple setup</s-button>}
+          </s-box>
+        </s-stack>
       </s-section>
 
       <s-section slot="aside" heading="Preview">

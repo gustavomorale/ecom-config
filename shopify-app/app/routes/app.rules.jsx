@@ -14,7 +14,7 @@ import { redirect, useFetcher, useLoaderData, useRouteError } from "react-router
 import { useAppBridge } from "@shopify/app-bridge-react";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { authenticate } from "../shopify.server";
-import { readConfig, saveConfig } from "../config.server";
+import { readConfig, saveConfig, isSimple } from "../config.server";
 import { fieldCatalog, toRows, fromRows, describe, validateQty, qtyToText } from "../lib/conditions";
 import { money } from "../lib/money";
 import { ConditionBuilder } from "../components/ConditionBuilder";
@@ -26,6 +26,7 @@ const slug = (s) => String(s || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").re
 export const loader = async ({ request }) => {
   const { admin } = await authenticate.admin(request);
   const { config } = await readConfig(admin);
+  if (isSimple(config)) return redirect("/app");   // the simple setup has its own pages
   if (!config) return redirect("/app");
   return { config, catalog: fieldCatalog(config), ruleCatalog: fieldCatalog(config, { forRules: true }) };
 };

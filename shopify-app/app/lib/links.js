@@ -12,6 +12,7 @@ export const productSlots = (config) => [...(config?.bundles || []), ...Object.v
 /* Every object that holds a variant copy (price, picture, title): bundles,
    their components and add-ons. Used to refresh those copies. */
 export const variantHolders = (config) => [
+  ...(config?.simple?.products || []),
   ...(config?.bundles || []),
   ...(config?.bundles || []).flatMap((b) => b.components || []),
   ...Object.values(config?.accessories || {}),

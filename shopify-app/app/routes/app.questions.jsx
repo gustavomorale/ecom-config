@@ -11,7 +11,7 @@ import { redirect, useFetcher, useLoaderData, useRouteError } from "react-router
 import { useAppBridge } from "@shopify/app-bridge-react";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { authenticate } from "../shopify.server";
-import { readConfig, saveConfig } from "../config.server";
+import { readConfig, saveConfig, isSimple } from "../config.server";
 import { SetupRail, doneSteps } from "../components/SetupRail";
 import { WidgetPreview } from "../components/WidgetPreview";
 
@@ -34,6 +34,7 @@ const NEW_STEPS = [
 export const loader = async ({ request }) => {
   const { admin } = await authenticate.admin(request);
   const { config } = await readConfig(admin);
+  if (isSimple(config)) return redirect("/app/grid");   // the simple setup has its own pages
   if (!config) return redirect("/app");
   return { config, done: doneSteps(config) };
 };

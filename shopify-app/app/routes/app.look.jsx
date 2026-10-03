@@ -87,7 +87,7 @@ export const action = async ({ request }) => {
       config.meta.setup.look = true;
       await saveConfig(admin, shopId, config);
       const next = form.get("continue") === "1";
-      if (next) return redirect("/app/questions");
+      if (next) return redirect(config.simple && config.meta?.mode !== "advanced" ? "/app" : "/app/questions");
       return { ok: true, intent };
     }
   } catch (e) {
@@ -167,7 +167,7 @@ export default function Look() {
       <s-button slot="secondary-actions" href="/app/questions" variant="tertiary">Skip for now</s-button>
 
       <s-section>
-        <SetupRail current="look" done={done} />
+        {config.simple && config.meta?.mode !== "advanced" ? null : <SetupRail current="look" done={done} />}
         <s-paragraph>One colour does most of the work. Match your store in a click, or pick your brand colour. Everything can be changed later.</s-paragraph>
       </s-section>
 

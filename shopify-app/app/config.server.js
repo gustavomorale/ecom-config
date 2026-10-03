@@ -48,13 +48,41 @@ function loadRegistry() {
   const files = [
     ...fs.readdirSync(path.join(configsDir, "templates")).filter((f) => f.endsWith(".js")).map((f) => path.join("templates", f)),
     "categories.js",
+    "simple.js",
   ];
   for (const rel of files) {
     const src = fs.readFileSync(path.join(configsDir, rel), "utf8");
     vm.runInContext(src, context, { filename: rel });
   }
   registry = sandbox.window.BCFG_CATEGORIES || [];
+  simpleApi = sandbox.window.BCFG_SIMPLE;
   return registry;
+}
+let simpleApi = null;
+
+/* ---------- simple setup (1.0) ---------- */
+export function simple() { loadRegistry(); return simpleApi; }
+export const isSimple = (config) => !!(config && config.simple && config.meta?.mode !== "advanced");
+
+/* A new simple setup: the category supplies questions, wording and copy;
+   the products are the merchant's own. */
+export function buildSimple(categoryId, mode, products) {
+  const S = simple();
+  const tpl = buildCategory(categoryId);
+  const draft = S.fromTemplate(tpl, mode);
+  draft.products = JSON.parse(JSON.stringify(products || []));
+  S.suggestGrid(draft);
+  tpl.copy = S.starterCopy(tpl.copy || {}, draft.mode);
+  return S.compile(draft, tpl);
+}
+
+/* Recompile after the merchant edits the simple setup, keeping everything
+   else on the config (look, copy edits, cart, promo, setup progress). */
+export function recompile(config, nextSimple) {
+  const S = simple();
+  const base = { ...config };
+  delete base.simple;
+  return S.compile(nextSimple, base);
 }
 
 /* Emoji in the registry are HTML entities (the demo renders innerHTML). */
@@ -88,6 +116,33 @@ export function buildCategory(id) {
   const cfg = cat.build();
   cfg.meta = { category: cat.id, createdAt: new Date().toISOString(), engine: "1.2" };
   return cfg;
+}
+
+/* Advanced: the full rules editor. Ticks become rules (first match wins, the
+   last product is the fallback) and names are written out so Rules can edit
+   them. The simple setup is kept on the config, so switching back rebuilds
+   from it (rule edits made in between are dropped). */
+export function toAdvanced(config) {
+  const next = JSON.parse(JSON.stringify(config));
+  const steps = next.steps || [];
+  const multi = (field) => steps.some((st) => st.field === field && st.type === "multi");
+  const bundles = [...(next.bundles || [])].sort((a, b) => (b.points || []).length - (a.points || []).length);
+  next.bundles = bundles.map((b, i) => {
+    const out = { ...b, title: b.title || b.productTitle || "" };
+    delete out.points;
+    if (i < bundles.length - 1 && (b.points || []).length) out.when = { any: b.points.map((pt) => ({ field: pt.field, op: multi(pt.field) ? "includes" : "eq", value: pt.value })) };
+    return out;
+  });
+  (next.addonRules || []).forEach((r) => { const acc = (next.accessories || {})[r.accessory]; if (!r.text && acc) r.text = acc.productTitle || ""; });
+  delete next.match;
+  next.meta = { ...(next.meta || {}), mode: "advanced" };
+  return next;
+}
+export function toSimple(config) {
+  const next = recompile(config, config.simple);
+  next.meta = { ...(next.meta || {}) };
+  delete next.meta.mode;
+  return next;
 }
 
 /* ---------- metafield I/O ---------- */

@@ -8,12 +8,13 @@ import { redirect, useFetcher, useLoaderData, useRouteError } from "react-router
 import { useAppBridge } from "@shopify/app-bridge-react";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { authenticate } from "../shopify.server";
-import { listCategories, buildCategory, readConfig, saveConfig, deleteConfig } from "../config.server";
+import { listCategories, buildCategory, readConfig, saveConfig, deleteConfig, isSimple } from "../config.server";
 import { SetupRail, doneSteps } from "../components/SetupRail";
 
 export const loader = async ({ request }) => {
   const { admin } = await authenticate.admin(request);
   const { config } = await readConfig(admin);
+  if (isSimple(config)) return redirect("/app/start");   // the simple setup has its own pages
   return { categories: listCategories(), config, done: doneSteps(config) };
 };
 

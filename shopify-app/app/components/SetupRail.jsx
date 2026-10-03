@@ -3,7 +3,7 @@
 import { hasProduct, productSlots } from "../lib/links";
 
 /* Version label shown in the app, and where merchants reach us. */
-export const VERSION = "0.9.4";
+export const VERSION = "1.0.0";
 export const SUPPORT_EMAIL = "contact@craftframe.agency";
 
 export const STEPS = [
@@ -14,10 +14,17 @@ export const STEPS = [
   { n: 5, key: "live", label: "Go live", href: "/app/live" },
 ];
 
-export function SetupRail({ current, done = [] }) {
+/* The 1.0 simple setup: three steps, the look is matched on the way. */
+export const SIMPLE_STEPS = [
+  { n: 1, key: "products", label: "Your products", href: "/app/start" },
+  { n: 2, key: "questions", label: "Questions", href: "/app/grid" },
+  { n: 3, key: "live", label: "Go live", href: "/app/live" },
+];
+
+export function SetupRail({ current, done = [], simple = false }) {
   return (
     <s-stack direction="inline" gap="small" alignItems="center">
-      {STEPS.map((s) => {
+      {(simple ? SIMPLE_STEPS : STEPS).map((s) => {
         const state = s.key === current ? "current" : done.includes(s.key) ? "done" : "todo";
         const tone = state === "current" ? "info" : state === "done" ? "success" : "neutral";
         return (
@@ -36,6 +43,14 @@ export function SetupRail({ current, done = [] }) {
    the rail is always truthful. */
 export function doneSteps(config) {
   if (!config) return [];
+  if (config.simple && config.meta?.mode !== "advanced") {
+    const setup = config.meta?.setup || {};
+    const out = [];
+    if ((config.simple.products || []).length) out.push("products");
+    if (setup.questions) out.push("questions");
+    if (setup.live) out.push("live");
+    return out;
+  }
   const done = ["category"];
   const setup = config.meta?.setup || {};
   if (setup.look) done.push("look");

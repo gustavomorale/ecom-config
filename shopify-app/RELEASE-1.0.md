@@ -43,6 +43,25 @@ Out of 1.0: analytics funnel UI, price sync, AI draft.
 | by 26 Oct | New screencast (three steps, short), listing and pricing updated, resubmitted |
 | Nov | Review feedback answered within a day; approval in time for merchants to set up before Black Friday |
 
+## Progress
+
+**3 Oct: simple setup built (items 1 to 4).**
+- `configs/simple.js`: the simple setup (`config.simple`: mode, products, questions, grid),
+  suggested ticks from product names, types and tags, and `compile()` to the engine config
+  (`match: 'score'`, `meta.schema: 3`). Questions and wording come from the category.
+- Engine 1.3 (`src/configurator.js`): score matching (most ticks wins, ties to the first
+  product), "Because you chose" reasons, "Also a good fit" in Product finder, product
+  names as fallbacks, unlinked products never shown (schema 2+), "Almost ready" when
+  nothing is linked. Schema 1 configs behave as before.
+- Admin: `/app/start` (Your products: type, what you sell, products), `/app/grid`
+  (Questions: wording and ticks, live preview), Go live and Overview with three tasks,
+  look matched on the first save, menu follows the setup. "Switch to the rules editor"
+  on the Overview turns ticks into rules (`meta.mode: 'advanced'`) and back.
+- Verified: code check, production build, all 17 categories in both modes, storefront
+  result in a real browser (mobile and desktop).
+- Still to do: run on the dev store (`npm run dev`), gifting on the new setup (gift sets as
+  products), Refresh prices on Your products, pricing and the completion counter.
+
 ## The open review
 
 The current submission is still open with item 4.5.3. Reply in the review thread that a

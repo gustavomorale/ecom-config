@@ -364,17 +364,60 @@
     return this._promoActive() ? p * (1 - this.cfg.promo.pct / 100) : p;
   };
 
+  /* A product slot reaches the cart when it has a variant, or (gift set) components. */
+  function isLinked(b) {
+    return !!(b && (b.variantId || (b.components || []).some(function (c) { return c && c.variantId; })));
+  }
+  function pointHit(pt, scope) {
+    var v = scope[pt.field];
+    return Array.isArray(v) ? v.indexOf(pt.value) > -1 : v === pt.value;
+  }
+  /* Simple setups and schema 2 templates never show an unlinked product to
+     shoppers. The admin preview (cfg.preview) shows everything. */
+  Configurator.prototype._hidesUnlinked = function () {
+    if (this.cfg.preview) return false;
+    return this.cfg.match === 'score' || ((this.cfg.meta || {}).schema || 1) >= 2;
+  };
+  Configurator.prototype._optionLabel = function (field, value) {
+    var out = String(value);
+    (this.cfg.steps || []).forEach(function (st) {
+      [st, st.followUp].forEach(function (x) {
+        if (x && x.field === field) (x.options || []).forEach(function (o) { if (o.value === value) out = o.label; });
+      });
+    });
+    return out;
+  };
+
   /* ============================================================
      Recommendation engine
      ============================================================ */
   Configurator.prototype.recommend = function () {
     var scope = this._scope(), self = this;
     var bundles = this.cfg.bundles || [];
-    var chosen = null;
-    for (var i = 0; i < bundles.length; i++) {
-      if (!('when' in bundles[i]) || test(bundles[i].when, scope)) { chosen = bundles[i]; break; }
+    var chosen = null, matched = [], alsoGood = null;
+    var hideUnlinked = this._hidesUnlinked();
+    if (this.cfg.match === 'score') {
+      /* Simple setup: each answer the merchant ticked for a product is a point.
+         Most points wins; a tie goes to the product listed first. Only products
+         that can reach the cart compete on the storefront. */
+      var ranked = bundles.filter(function (b) { return !hideUnlinked || isLinked(b); })
+        .map(function (b, idx) {
+          var hits = (b.points || []).filter(function (pt) { return pointHit(pt, scope); });
+          return { b: b, n: hits.length, hits: hits, idx: idx };
+        })
+        .sort(function (a, b) { return b.n - a.n || a.idx - b.idx; });
+      if (ranked.length) {
+        chosen = ranked[0].b; matched = ranked[0].hits;
+        if (ranked[1] && ranked[1].n > 0) alsoGood = ranked[1].b;
+      }
+    } else {
+      for (var i = 0; i < bundles.length; i++) {
+        if (hideUnlinked && !isLinked(bundles[i])) continue;
+        if (!('when' in bundles[i]) || test(bundles[i].when, scope)) { chosen = bundles[i]; break; }
+      }
+      if (!chosen && !hideUnlinked) chosen = bundles[bundles.length - 1];
     }
-    if (!chosen) chosen = bundles[bundles.length - 1] || { id: 'none', title: '', price: 0, contents: [] };
+    if (!chosen) chosen = { id: 'none', title: '', price: 0, contents: [], unset: true };
 
     var catalog = this.cfg.accessories || {};
     var addons = [];
@@ -390,10 +433,11 @@
       var acc = catalog[rule.accessory] || {};
       var tokens = { qty: qty, s: qty === 1 ? '' : 's', included: included };
       for (var f in ruleScope) if (typeof ruleScope[f] !== 'object') tokens[f] = ruleScope[f];
+      if (hideUnlinked && !rule.advisory && !acc.variantId) return;   // never name a product the store has not linked
       addons.push({
         key: rule.id || ('rule' + idx),
         image: rule.image || acc.image || '',
-        text: interpolate(rule.text, tokens),
+        text: interpolate(rule.text || acc.productTitle || acc.title, tokens),
         reason: interpolate(rule.reason, tokens),
         variantId: rule.advisory ? null : (acc.variantId || null),
         price: acc.price || 0,
@@ -440,8 +484,18 @@
       return sum + ((acc && acc.price) || 0) * l.qty;
     }, 0);
 
+    var why = interpolate(chosen.why, this._scope());
+    if (!why && this.cfg.match === 'score' && !chosen.unset) {
+      var copy = this.cfg.copy || {};
+      why = matched.length
+        ? esc(copy.becauseLabel || 'Because you chose') + ': ' + esc(matched.map(function (pt) { return self._optionLabel(pt.field, pt.value); }).join(', '))
+        : esc(copy.closestLabel || 'The closest match to your answers');
+    }
+    var shown = {}; for (var sk in chosen) shown[sk] = chosen[sk];
+    shown.title = chosen.title || chosen.productTitle || (this.cfg.preview ? (chosen.role || 'Link a product') : '');
     return {
-      bundle: chosen,
+      alsoGood: alsoGood ? { title: alsoGood.title || alsoGood.productTitle || '', price: Number(alsoGood.price) || 0, image: alsoGood.image || '' } : null,
+      bundle: shown,
       bundleLines: bundleLines,
       contents: contents,
       addons: addons,
@@ -451,7 +505,7 @@
       addonsTotal: addonsTotal,
       orderTotal: bundlePrice + addonsTotal,
       cartUrl: this.buildCartUrl(bundleLines, cartLines),
-      why: interpolate(chosen.why, this._scope())
+      why: why
     };
   };
 
@@ -775,6 +829,15 @@
   /* ---------- result ---------- */
   Configurator.prototype._renderResult = function () {
     var rec = this.recommend(), copy = this.cfg.copy || {}, self = this;
+    if (rec.bundle.unset) {
+      return '<div class="result-card"><div class="result-header">' +
+        '<h2 tabindex="-1">' + esc(copy.notReadyTitle || 'Almost ready') + '</h2>' +
+        '<div class="bundle-sub">' + esc(copy.notReadyText || 'This quiz is still being set up. Please check back soon.') + '</div></div>' +
+        '<div class="result-body"><div class="cta-row"><button type="button" class="btn-restart" data-action="restart"><span aria-hidden="true">&#x21BB;</span> ' +
+        esc(copy.restartLabel || 'Start over') + '</button></div></div></div>' + this._renderFooter();
+    }
+    var alsoGood = rec.alsoGood ? '<div class="also-good"><span class="also-good-label">' + esc(copy.alsoGoodLabel || 'Also a good fit') + ':</span> ' +
+      esc(rec.alsoGood.title) + (rec.alsoGood.price ? ' (' + esc(this.money(rec.alsoGood.price)) + ')' : '') + '</div>' : '';
     var m = this.money, promo = this._promoActive() ? this.cfg.promo : null;
 
     var priceBlock = promo
@@ -835,7 +898,7 @@
               (i.detail ? '<div class="line-item-detail">' + esc(i.detail) + '</div>' : '') + '</div>' +
               '<div class="line-item-qty">&#xD7;' + (i.qty || 1) + '</div></div>';
           }).join('') + '</div>' : '') +
-        addonsHtml + callouts +
+        alsoGood + addonsHtml + callouts +
         (profile ? '<div class="section-title">' + esc(copy.profileTitle || 'Your answers') + '</div><div class="profile-grid">' + profile + '</div>' : '') +
         (copy.includesNote ? '<div class="note-box">' + copy.includesNote + '</div>' : '') +
         '<div class="cart-panel">' +
@@ -1010,7 +1073,7 @@
   }
 
   var API = {
-    version: '1.2.0',
+    version: '1.3.0',
     isLowEndDevice: isLowEndDevice,
     mount: function (el, cfg) {
       var node = typeof el === 'string' ? document.querySelector(el) : el;

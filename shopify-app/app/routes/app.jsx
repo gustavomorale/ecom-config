@@ -16,10 +16,12 @@ export const loader = async ({ request }) => {
   // redirect: the app reads the plan, keeps the storefront's copy in step (the
   // Free plan's attribution line) and shows how much of the month's
   // completions are used. A failure never blocks the UI.
-  let plan = null, planUrl = null, usage = null, simpleNav = true;
+  let plan = null, planUrl = null, usage = null, simpleNav = true, quiz = null;
   try {
     const known = await readConfig(admin);
     simpleNav = !known.config || isSimple(known.config);
+    const entry = known.index.list.find((q) => q.id === known.quiz);
+    quiz = { id: known.quiz, name: entry?.name || `Quiz ${known.quiz}`, count: known.index.list.length };
     ({ plan, planUrl } = await readPlan(admin, session.shop));
     await syncPlan(admin, plan, known);
     usage = usageState(await completionsThisMonth(session.shop), plan);
@@ -28,7 +30,7 @@ export const loader = async ({ request }) => {
   }
 
   // eslint-disable-next-line no-undef
-  return { apiKey: process.env.SHOPIFY_API_KEY || "", plan, planUrl, usage, simpleNav };
+  return { apiKey: process.env.SHOPIFY_API_KEY || "", plan, planUrl, usage, simpleNav, quiz };
 };
 
 export default function App() {
@@ -39,6 +41,7 @@ export default function App() {
       {simpleNav ? (
         <s-app-nav>
           <s-link href="/app">Overview</s-link>
+          <s-link href="/app/quizzes">Quizzes</s-link>
           <s-link href="/app/start">Products</s-link>
           <s-link href="/app/grid">Questions</s-link>
           <s-link href="/app/look">Look</s-link>
@@ -47,6 +50,7 @@ export default function App() {
       ) : (
         <s-app-nav>
           <s-link href="/app">Overview</s-link>
+          <s-link href="/app/quizzes">Quizzes</s-link>
           <s-link href="/app/questions">Questions</s-link>
           <s-link href="/app/rules">Rules</s-link>
           <s-link href="/app/products">Products</s-link>
@@ -54,10 +58,17 @@ export default function App() {
           <s-link href="/app/copy">Copy &amp; cart</s-link>
         </s-app-nav>
       )}
+      {usage && plan && plan.attribution && usage.half ? (
+        <s-banner tone="info">
+          {`You have used ${usage.count} of the ${usage.limit} free quiz completions this month, half your allowance.`}
+          {nextPlan(plan) ? ` ${nextPlan(plan).name} includes ${nextPlan(plan).limit.toLocaleString("en-GB")} a month and removes the Powered by CraftFrame line.` : ""}
+          {planUrl && nextPlan(plan) ? <s-button slot="secondary-actions" href={planUrl} target="_top">{`See ${nextPlan(plan).name}`}</s-button> : null}
+        </s-banner>
+      ) : null}
       {usage && plan && (usage.over || usage.near) ? (
         <s-banner tone={usage.over ? "warning" : "info"}>
           {`You have used ${usage.count.toLocaleString("en-GB")} of ${usage.limit.toLocaleString("en-GB")} quiz completions this month on the ${plan.name} plan.`}
-          {usage.over ? " Your quiz keeps working; choose a bigger plan to stay within your limit." : " The count starts again on the 1st."}
+          {usage.over ? (plan.attribution ? " Your quizzes keep working, but completions are no longer counted until the 1st. Choose a bigger plan to keep counting." : " Your quizzes keep working; choose a bigger plan to stay within your limit.") : " The count starts again on the 1st."}
           {planUrl && nextPlan(plan) ? <s-button slot="secondary-actions" href={planUrl} target="_top">{`See ${nextPlan(plan).name}`}</s-button> : null}
         </s-banner>
       ) : null}

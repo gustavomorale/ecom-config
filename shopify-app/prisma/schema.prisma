@@ -46,3 +46,16 @@ model Usage {
 
   @@id([shop, month])
 }
+
+// Completions per quiz (1.0, multiple quizzes). Usage keeps the store's total,
+// which is what plan limits read; this is only for the Quizzes page. quiz is
+// the quiz number as a string ("1" to "25").
+model QuizUsage {
+  shop        String
+  month       String
+  quiz        String
+  completions Int      @default(0)
+  updatedAt   DateTime @updatedAt
+
+  @@id([shop, month, quiz])
+}

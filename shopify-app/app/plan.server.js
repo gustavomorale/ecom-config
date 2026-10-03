@@ -6,7 +6,7 @@
    plan's behaviour can be tried without a real subscription.
    ============================================================ */
 import { PLANS, planFromSubscriptions, storefrontPlan } from "./plans";
-import { readConfig, saveConfig } from "./config.server";
+import { readConfig, saveStatus } from "./config.server";
 
 // eslint-disable-next-line no-undef
 const env = process.env;
@@ -32,15 +32,16 @@ export async function readPlan(admin, shop) {
   return { plan, planUrl };
 }
 
-/* Keep the storefront's copy of the plan (attribution line) in step. Writes
-   only when it changed. */
+/* Keep the storefront's copy of the plan in step: the status metafield read
+   by every quiz block (attribution line, how many quizzes the plan includes).
+   Writes only when something changed, and keeps the counting stop. */
 export async function syncPlan(admin, plan, known) {
-  const { shopId, config } = known || (await readConfig(admin));
-  if (!config) return false;
+  const { shopId, status } = known || (await readConfig(admin));
   const want = storefrontPlan(plan);
-  const have = config.plan || {};
-  if (have.key === want.key && have.attribution === want.attribution) return false;
-  config.plan = want;
-  await saveConfig(admin, shopId, config);
+  const have = status || {};
+  if (have.plan === want.plan && have.attribution === want.attribution && have.quizzes === want.quizzes) return false;
+  // A store that leaves Free stops being capped: drop the counting stop.
+  const patch = want.attribution ? want : { ...want, stopMonth: null };
+  await saveStatus(admin, shopId, have, patch);
   return true;
 }

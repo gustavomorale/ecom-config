@@ -35,10 +35,14 @@ Turn "which one should I buy?" into a cart. Pick a Product finder or a Bundle qu
 
 ## Plans (Pricing details: display name max 18, each feature max 40)
 
-- Free: 50 completed quizzes a month / Both quiz types and all features / Small Powered by CraftFrame line
-- Starter: 300 completed quizzes a month / No attribution line / Email support within two working days
-- Standard: 2,000 completed quizzes a month / No attribution line / Email support within two working days
-- Growth: 15,000 completed quizzes a month / No attribution line / Priority support
+- Free: 1 quiz / 50 completed quizzes a month / Both quiz types, all features / Small Powered by CraftFrame line
+- Starter: 3 quizzes / 300 completed quizzes a month / No attribution line
+- Standard: 10 quizzes / 2,000 completed quizzes a month / No attribution line
+- Growth: 25 quizzes / 15,000 completed quizzes a month / Priority support
+
+Custom (above Growth) is not a listed plan: Shopify App Pricing allows four public plans.
+Merchants ask by email (contact@craftframe.agency) and get a private plan made for their
+store in the Partner Dashboard.
 
 ## Wording rules
 

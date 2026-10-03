@@ -145,7 +145,24 @@ export function toSimple(config) {
   return next;
 }
 
-/* ---------- metafield I/O ---------- */
+/* ---------- metafield I/O ----------
+   Multiple quizzes (1.0). Each quiz is one JSON shop metafield in the
+   bundle_configurator namespace: Quiz 1 keeps the original key "config" (so
+   stores from 0.9 and blocks placed before 1.0 carry on), quizzes 2 to 25 use
+   "quiz_2" ... "quiz_25". The theme block's Quiz setting picks the number.
+   Two more metafields:
+     quizzes  admin only: { editing: "1", list: [{ id, name, createdAt }] }
+     status   read by the storefront: the plan facts every quiz shares,
+              { plan, attribution, quizzes, stopMonth }
+   Every editor page reads and saves the quiz being edited (index.editing);
+   readConfig stamps its key on config.meta.slot and saveConfig writes back
+   there, so pages need no quiz parameter. */
+export const INDEX_KEY = "quizzes";
+export const STATUS_KEY = "status";
+export const slotKey = (n) => (String(n) === "1" ? KEY : `quiz_${n}`);
+export const slotOf = (key) => (key === KEY ? "1" : String(key || "").replace(/^quiz_/, ""));
+const parse = (v) => { try { return v ? JSON.parse(v) : null; } catch (e) { return null; } };
+
 const SHOP_QUERY = `#graphql
   query bcfgShop {
     shop {
@@ -153,24 +170,44 @@ const SHOP_QUERY = `#graphql
       myshopifyDomain
       currencyCode
       metafield(namespace: "${NAMESPACE}", key: "${KEY}") { id value }
+      idx: metafield(namespace: "${NAMESPACE}", key: "${INDEX_KEY}") { value }
+      st: metafield(namespace: "${NAMESPACE}", key: "${STATUS_KEY}") { value }
     }
   }`;
 
-export async function readConfig(admin) {
+function normaliseIndex(raw, hasMain) {
+  const index = raw && Array.isArray(raw.list) ? { editing: String(raw.editing || "1"), list: raw.list.filter((q) => q && q.id) } : { editing: "1", list: [] };
+  if (hasMain && !index.list.some((q) => q.id === "1")) index.list.unshift({ id: "1", name: "Quiz 1", createdAt: null });
+  index.list.sort((a, b) => Number(a.id) - Number(b.id));
+  if (index.editing !== "1" && !index.list.some((q) => q.id === index.editing)) index.editing = index.list[0]?.id || "1";
+  return index;
+}
+
+/* The quiz being edited (or `quiz` when given), plus the index and status. */
+export async function readConfig(admin, { quiz } = {}) {
   const res = await admin.graphql(SHOP_QUERY);
   const { data } = await res.json();
   const shop = data.shop;
-  let config = null;
-  if (shop.metafield && shop.metafield.value) {
-    try { config = JSON.parse(shop.metafield.value); } catch (e) { config = null; }
-    // Prices are the store's, so the currency is too (templates default to GBP).
-    if (config && shop.currencyCode) config.cart = { ...(config.cart || {}), currency: shop.currencyCode, useIntl: true };
+  const index = normaliseIndex(parse(shop.idx?.value), !!shop.metafield?.value);
+  const status = parse(shop.st?.value) || null;
+  const editing = String(quiz || index.editing || "1");
+  let mf = shop.metafield;
+  if (editing !== "1") {
+    const r2 = await admin.graphql(`#graphql
+      query bcfgQuiz($key: String!) { shop { metafield(namespace: "${NAMESPACE}", key: $key) { id value } } }`, { variables: { key: slotKey(editing) } });
+    mf = (await r2.json()).data?.shop?.metafield || null;
   }
-  return { shopId: shop.id, domain: shop.myshopifyDomain, config, metafieldId: shop.metafield ? shop.metafield.id : null };
+  let config = parse(mf?.value);
+  if (config) {
+    // Prices are the store's, so the currency is too (templates default to GBP).
+    if (shop.currencyCode) config.cart = { ...(config.cart || {}), currency: shop.currencyCode, useIntl: true };
+    config.meta = { ...(config.meta || {}), slot: slotKey(editing) };
+  }
+  return { shopId: shop.id, domain: shop.myshopifyDomain, config, metafieldId: mf ? mf.id : null, quiz: editing, index, status };
 }
 
-/* Create the definition once so Liquid can read the value. "Taken" is fine. */
-async function ensureDefinition(admin) {
+/* Create a definition once per key so Liquid can read the value. "Taken" is fine. */
+async function ensureDefinition(admin, key, name, storefront = true) {
   const res = await admin.graphql(`#graphql
     mutation bcfgDefine($definition: MetafieldDefinitionInput!) {
       metafieldDefinitionCreate(definition: $definition) {
@@ -180,12 +217,8 @@ async function ensureDefinition(admin) {
     }`, {
     variables: {
       definition: {
-        name: "Bundle Configurator config",
-        namespace: NAMESPACE,
-        key: KEY,
-        type: "json",
-        ownerType: "SHOP",
-        access: { storefront: "PUBLIC_READ" },
+        name, namespace: NAMESPACE, key, type: "json", ownerType: "SHOP",
+        ...(storefront ? { access: { storefront: "PUBLIC_READ" } } : {}),
       },
     },
   });
@@ -194,8 +227,7 @@ async function ensureDefinition(admin) {
   if (errors.length) throw new Error("Metafield definition: " + errors.map((e) => e.message).join("; "));
 }
 
-export async function saveConfig(admin, shopId, config) {
-  await ensureDefinition(admin);
+async function setJson(admin, shopId, key, value) {
   const res = await admin.graphql(`#graphql
     mutation bcfgSave($metafields: [MetafieldsSetInput!]!) {
       metafieldsSet(metafields: $metafields) {
@@ -203,9 +235,7 @@ export async function saveConfig(admin, shopId, config) {
         userErrors { field message }
       }
     }`, {
-    variables: {
-      metafields: [{ ownerId: shopId, namespace: NAMESPACE, key: KEY, type: "json", value: JSON.stringify(config) }],
-    },
+    variables: { metafields: [{ ownerId: shopId, namespace: NAMESPACE, key, type: "json", value: JSON.stringify(value) }] },
   });
   const { data } = await res.json();
   const errors = data?.metafieldsSet?.userErrors || [];
@@ -213,17 +243,69 @@ export async function saveConfig(admin, shopId, config) {
   return data.metafieldsSet.metafields[0];
 }
 
-export async function deleteConfig(admin, shopId) {
+async function editingSlot(admin) {
+  const res = await admin.graphql(`#graphql
+    query bcfgEditing { shop { metafield(namespace: "${NAMESPACE}", key: "${INDEX_KEY}") { value } } }`);
+  const raw = parse((await res.json()).data?.shop?.metafield?.value);
+  return String(raw?.editing || "1");
+}
+
+/* Saves to the quiz the config was read from (config.meta.slot), or, for a
+   config built fresh on this request, to the quiz being edited. */
+export async function saveConfig(admin, shopId, config) {
+  const key = config.meta?.slot || slotKey(await editingSlot(admin));
+  config.meta = { ...(config.meta || {}), slot: key };
+  await ensureDefinition(admin, key, key === KEY ? "Bundle Configurator config" : `Bundle Quiz ${slotOf(key)}`);
+  return setJson(admin, shopId, key, config);
+}
+
+/* Deletes the quiz being edited (or the given key). */
+export async function deleteConfig(admin, shopId, key) {
+  const k = key || slotKey(await editingSlot(admin));
   const res = await admin.graphql(`#graphql
     mutation bcfgDelete($metafields: [MetafieldIdentifierInput!]!) {
       metafieldsDelete(metafields: $metafields) {
         deletedMetafields { key }
         userErrors { field message }
       }
-    }`, { variables: { metafields: [{ ownerId: shopId, namespace: NAMESPACE, key: KEY }] } });
+    }`, { variables: { metafields: [{ ownerId: shopId, namespace: NAMESPACE, key: k }] } });
   const { data } = await res.json();
   const errors = data?.metafieldsDelete?.userErrors || [];
   if (errors.length) throw new Error("Reset failed: " + errors.map((e) => e.message).join("; "));
+}
+
+export async function saveIndex(admin, shopId, index) {
+  await ensureDefinition(admin, INDEX_KEY, "Bundle Quiz list", false);
+  return setJson(admin, shopId, INDEX_KEY, { editing: String(index.editing || "1"), list: index.list });
+}
+
+/* Just the status metafield and the shop id (cheap; used by the app proxy). */
+export async function readStatus(admin) {
+  const res = await admin.graphql(`#graphql
+    query bcfgStatus { shop { id metafield(namespace: "${NAMESPACE}", key: "${STATUS_KEY}") { value } } }`);
+  const shop = (await res.json()).data?.shop;
+  return { shopId: shop?.id, status: parse(shop?.metafield?.value) };
+}
+
+/* Merges into the status metafield (plan facts and the counting stop). */
+export async function saveStatus(admin, shopId, current, patch) {
+  const next = { ...(current || {}), ...patch };
+  await ensureDefinition(admin, STATUS_KEY, "Bundle Quiz status");
+  await setJson(admin, shopId, STATUS_KEY, next);
+  return next;
+}
+
+/* Every quiz's config, for the Quizzes page (type, name, setup state). */
+export async function readAllQuizzes(admin) {
+  const res = await admin.graphql(`#graphql
+    query bcfgAll { shop { metafields(namespace: "${NAMESPACE}", first: 40) { nodes { key value } } } }`);
+  const nodes = (await res.json()).data?.shop?.metafields?.nodes || [];
+  const out = {};
+  for (const n of nodes) {
+    if (n.key !== KEY && !/^quiz_\d+$/.test(n.key)) continue;
+    out[slotOf(n.key)] = parse(n.value);
+  }
+  return out;
 }
 
 /* Theme editor links. The deep link opens the editor on the home page with our

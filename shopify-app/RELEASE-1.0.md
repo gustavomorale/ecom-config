@@ -89,6 +89,37 @@ Out of 1.0: analytics funnel UI, price sync, AI draft.
 - Local testing: set `BCFG_PLAN=free` (or standard, growth) to see each plan without a
   subscription; production reads Shopify with `BCFG_BILLING=on`.
 
+**3 Oct: multiple quizzes, combined limits, counting stop (decided by Gustavo the same day).**
+- Plans combine two limits (`app/plans.js`): Free 1 quiz and 50 completions a month,
+  Starter 3 and 300, Standard 10 and 2,000, Growth 25 and 15,000. Above Growth, a Custom
+  plan by email (contact@craftframe.agency), created per store as a private plan in the
+  Partner Dashboard (App Pricing allows four public plans). Shown on the Plan card, the
+  Quizzes page and the welcome page.
+- Multiple quizzes: Quiz 1 keeps the `config` metafield (0.9 stores and existing blocks
+  carry on), quizzes 2 to 25 use `quiz_2` ... `quiz_25`. `quizzes` (admin only) holds the
+  list and which quiz is being edited; every editor page works on that one
+  (`readConfig` stamps `config.meta.slot`, `saveConfig` writes back there).
+  New page `/app/quizzes` (menu: Quizzes): create, edit, rename, duplicate, delete, capped
+  by plan; quizzes above the plan's number are kept but paused. The Overview shows
+  "Editing Quiz N" with a switch link.
+- Theme block: new **Quiz** setting (Quiz 1 to 25, default 1). A paused or empty quiz
+  renders nothing on the storefront and a note in the theme editor.
+- Plan facts moved from each quiz to one `status` metafield (`plan`, `attribution`,
+  `quizzes`, `stopMonth`), written by `syncPlan`; older configs' `config.plan` is still
+  read when status is missing.
+- Counting stop: when a Free store's monthly total reaches 50, `proxy.event.jsx` sets
+  `status.stopMonth` and the block stops sending until the 1st, so a busy free store costs
+  nothing past its limit. Upgrading clears it. Completions are also counted per quiz
+  (Prisma `QuizUsage`, migration `20261004000000_quiz_usage`) for the Quizzes page.
+- Notices: on Free, an info banner at 50% ("25 of 50 used, half your allowance", with the
+  next plan); the existing 80% and 100% banners stay. Notification by email is not built:
+  it needs a sending service and a privacy policy change, so it is in-app only for 1.0.
+- Privacy policy updated (per-quiz count, the Free counting stop).
+- Verified: code check, build, lint (no new findings), plan thresholds and per-quiz
+  counting against the dev database. Not yet clicked through on the dev store.
+- Needs `npm run deploy` for production (the block changed) and `prisma migrate deploy`
+  (Netlify build does it).
+
 ## Shopify side, before resubmitting
 
 1. Done 3 Oct: App Pricing has Free (USD 0), Starter (USD 9), Standard (USD 25) and Growth

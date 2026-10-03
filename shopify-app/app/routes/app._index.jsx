@@ -13,7 +13,7 @@ import { useFetcher, useLoaderData, useRouteError, useRouteLoaderData } from "re
 import { useAppBridge } from "@shopify/app-bridge-react";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { authenticate } from "../shopify.server";
-import { PLANS, TRIAL_DAYS, nextPlan } from "../plans";
+import { PLANS, TRIAL_DAYS, nextPlan, CUSTOM_PLAN_EMAIL } from "../plans";
 import { listCategories, buildCategory, readConfig, saveConfig, themeEditorUrl, toAdvanced, toSimple } from "../config.server";
 import { blockOnTheme } from "../theme.server";
 import { VERSION, SUPPORT_EMAIL } from "../components/SetupRail";
@@ -66,7 +66,7 @@ export const action = async ({ request }) => {
   return { ok: true };
 };
 
-const priceLine = () => `Free for up to ${PLANS.free.limit} completed quizzes a month. Starter USD ${PLANS.starter.price}, Standard USD ${PLANS.standard.price} and Growth USD ${PLANS.growth.price} a month, each with a ${TRIAL_DAYS}-day free trial.`;
+const priceLine = () => `Free for one quiz and up to ${PLANS.free.limit} completed quizzes a month. Starter USD ${PLANS.starter.price} (${PLANS.starter.quizzes} quizzes), Standard USD ${PLANS.standard.price} (${PLANS.standard.quizzes}) and Growth USD ${PLANS.growth.price} a month (${PLANS.growth.quizzes}), each with a ${TRIAL_DAYS}-day free trial. Custom plans on request.`;
 
 /* Plan, this month's completions and the way to a bigger plan. */
 function PlanCard() {
@@ -90,7 +90,9 @@ function PlanCard() {
           </div>
         </s-stack>
       ) : null}
+      {app.quiz ? <s-text color="subdued">{`${app.quiz.count} of ${plan.quizzes || 1} quiz${(plan.quizzes || 1) === 1 ? "" : "zes"} used`}</s-text> : null}
       {plan.attribution ? <s-text color="subdued">Results show a small Powered by CraftFrame line. Paid plans remove it.</s-text> : null}
+      {!up ? <s-text color="subdued">{`Need more than Growth? Ask for a Custom plan at ${CUSTOM_PLAN_EMAIL}.`}</s-text> : null}
       {planUrl ? <s-box><s-button variant={up && usage && (usage.near || usage.over) ? "primary" : "secondary"} href={planUrl} target="_top">{up ? `See ${up.name} and other plans` : "Manage plan"}</s-button></s-box> : null}
     </s-stack>
   );
@@ -198,6 +200,8 @@ export default function Index() {
 }
 
 function Overview({ config, current, editorUrl, storeUrl, block, headline, season }) {
+  const appData = useRouteLoaderData("routes/app") || {};
+  const quiz = appData.quiz;
   const fetcher = useFetcher();
   const shopify = useAppBridge();
   useEffect(() => {
@@ -251,6 +255,16 @@ function Overview({ config, current, editorUrl, storeUrl, block, headline, seaso
     <s-page heading="CraftFrame Bundle Quiz">
       <s-button slot="primary-action" href={editorUrl} target="_blank">Customize in theme editor</s-button>
       <s-button slot="secondary-actions" href={storeUrl} target="_blank">View storefront</s-button>
+
+      {quiz ? (
+        <s-section>
+          <s-stack direction="inline" gap="small" alignItems="center">
+            <s-text type="strong">{`Editing Quiz ${quiz.id}: ${quiz.name}`}</s-text>
+            <s-text color="subdued">{`${quiz.count} quiz${quiz.count === 1 ? "" : "zes"} in this store. In the theme editor, the block's Quiz setting picks which one a page shows.`}</s-text>
+            <s-button variant="tertiary" href="/app/quizzes">{quiz.count > 1 ? "Switch quiz" : "Add a quiz"}</s-button>
+          </s-stack>
+        </s-section>
+      ) : null}
 
       {block ? (
         block.installed ? (

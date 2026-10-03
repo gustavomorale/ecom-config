@@ -29,7 +29,7 @@ the app or the listing: Shopify reviews it as a finished product.
 | `src/theme-inherit.js` | Reads the host storefront's computed styles and derives the token set. Never imports merchant CSS. |
 | `src/scenes/summary.js`, `src/scenes/house.js` | Scenes: neutral answer-stack preview, and the property illustration. De-branded; colours come from `--bcfg-scene-*`. |
 | `configs/categories.js` | Category registry. The merchant's first decision. Adding a category = adding one object to the array. |
-| `configs/templates/*.js` | Full templates (house accessories, subscription boxes, cosmetics). The UK niche categories are expanded by `starter()`. |
+| `configs/templates/*.js` | Full templates (house accessories, subscription boxes, cosmetics, gift finder). The UK niche categories are expanded by `starter()`. |
 | `demo/index.html` + `harness.*` | The MVP harness: Storefront, Merchant admin (mock), Theme sync, Analytics (mock), MVP model tabs. `demo/bundle-configurator.mvp.html` is the single-file build of the same thing. |
 | `shopify-app/` | The Shopify app: embedded admin (React Router + Polaris, Shopify's current app template) and `shopify.app.toml` (name "CraftFrame Bundle Quiz", the App Store name since 2026-09-21; the repo and engine keep the working name Bundle Configurator, handle `bundle-configurator`, dev store `funrackets.myshopify.com`). `client_id` is filled in by the first `shopify app dev`. |
 | `shopify-app/extensions/bundle-configurator/` | Theme app extension: app block + assets. Assets are copied from `src/` by `npm run build:extension` and are gitignored. |
@@ -52,6 +52,19 @@ commands: `/check`, `/build-extension`, `/sync-mvp`, `/next-blocker [n]`. Person
 - `main` is the reviewed, live app. `app-0.9.0` was the first submission; 0.9.1 to 0.9.4
   followed on 2026-09-26/27 (sample catalogue removed, What's included in Rules, plan-page
   loop fixes). Feature work waits on its own branch until approval.
+- `q4-gifting`: the next release (0.10.0 when it ships) (Gift finder template, gift sets from components). Ship
+  after approval, ideally live by 2026-10-31 for Black Friday. A bundle can now list
+  `components: [{ variantId, qty, price, title, detail, image, handle }]` instead of one
+  `variantId`: each goes in the cart, out-of-stock components (checked when `handle` is
+  set) are marked and left out, and when every component has a price the set price is
+  their sum. Done in the admin: Products builds a gift set with the resource picker
+  (quantities, variants, up to 12 products; `app/lib/links.js` decides what counts as
+  linked); a category's `season` (MM-DD range) lists it first with a badge, so Gift finder
+  leads from 1 Oct to 24 Dec; Copy & cart has a start date and "Use a Black Friday offer"
+  (Black Friday to Cyber Monday). A date-only `promo.endsAt` now runs to the end of that
+  day. Still to do: test on the dev app (`shopify.app.dev.toml`), listing screenshots and
+  copy after approval. Automatic bundle discounts need `write_discounts` and a new
+  review: January.
 
 ## Decisions (do not relitigate without a reason)
 

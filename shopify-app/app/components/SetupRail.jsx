@@ -1,5 +1,7 @@
 /* The five-step rail. One line per step, the current one highlighted, done
    ones marked. Mirrors the mock in demo/harness.js. */
+import { hasProduct, productSlots } from "../lib/links";
+
 /* Version label shown in the app, and where merchants reach us. */
 export const VERSION = "0.9.4";
 export const SUPPORT_EMAIL = "contact@craftframe.agency";
@@ -38,8 +40,8 @@ export function doneSteps(config) {
   const setup = config.meta?.setup || {};
   if (setup.look) done.push("look");
   if (setup.questions) done.push("questions");
-  const products = [...(config.bundles || []), ...Object.values(config.accessories || {})];
-  if (products.length && products.every((p) => p.variantId)) done.push("products");
+  const products = productSlots(config);
+  if (products.length && products.every(hasProduct)) done.push("products");
   if (setup.live) done.push("live");
   return done;
 }

@@ -2,13 +2,15 @@
    Server helpers for the products a merchant has linked in setup.
    The app only reads products (read_products); it never creates or edits them.
    ============================================================ */
+import { variantHolders } from "./lib/links";
 
 /* The config keeps a copy of each linked product's price, picture and title so
    the storefront needs no API call. Copies go stale when a merchant edits a
    product; this re-reads them for every linked variant. Returns how many
    changed and how many links point at a variant that no longer exists. */
 export async function refreshLinked(admin, config) {
-  const targets = [...(config.bundles || []), ...Object.values(config.accessories || {})].filter((t) => /^\d+$/.test(String(t.variantId || "")));
+  const targets = variantHolders(config);
+  const components = new Set((config.bundles || []).flatMap((b) => b.components || []));
   if (!targets.length) return { checked: 0, changed: 0, missing: 0 };
   const ids = [...new Set(targets.map((t) => `gid://shopify/ProductVariant/${t.variantId}`))];
   const found = new Map();
@@ -16,7 +18,7 @@ export async function refreshLinked(admin, config) {
     const res = await admin.graphql(`#graphql
       query bcfgRefresh($ids: [ID!]!) {
         nodes(ids: $ids) {
-          ... on ProductVariant { id title price image { url } product { title featuredImage { url } } }
+          ... on ProductVariant { id title price image { url } product { title handle featuredImage { url } } }
         }
       }`, { variables: { ids: ids.slice(i, i + 100) } });
     const { data } = await res.json();
@@ -31,6 +33,8 @@ export async function refreshLinked(admin, config) {
     const price = Number(v.price);
     if (t.image !== image || t.productTitle !== title || Number(t.price) !== price) changed++;
     t.image = image; t.productTitle = title; if (Number.isFinite(price)) t.price = price;
+    // Gift set components show the product's name and need its handle for the stock check.
+    if (components.has(t)) { t.title = title; t.handle = v.product.handle; }
   });
   return { checked: targets.length, changed, missing };
 }

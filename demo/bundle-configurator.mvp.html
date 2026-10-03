@@ -1611,14 +1611,26 @@ table.spec td:first-child{white-space:nowrap;font-weight:550}
   };
 
   /* ---------- stock ---------- */
+  /* Variants to check: cfg.stockWatch (variantId -> product handle) plus every
+     bundle component that names its product handle. */
+  Configurator.prototype._watch = function () {
+    var watch = {}, w = this.cfg.stockWatch || {};
+    for (var k in w) watch[k] = w[k];
+    (this.cfg.bundles || []).forEach(function (b) {
+      (b.components || []).forEach(function (c) {
+        if (c.variantId && c.handle && !(c.variantId in watch)) watch[c.variantId] = c.handle;
+      });
+    });
+    return watch;
+  };
   Configurator.prototype._isOOS = function (variantId) {
-    var watch = this.cfg.stockWatch || {};
+    var watch = this._watch();
     if (!(variantId in watch)) return false;          // unwatched = assume sellable
     if (variantId in this.stock) return !this.stock[variantId];
     return true;                                       // watched, unconfirmed = fail safe
   };
   Configurator.prototype._checkStock = function () {
-    var watch = this.cfg.stockWatch || {}, self = this;
+    var watch = this._watch(), self = this;
     var base = (this.cfg.cart && this.cfg.cart.storeUrl) || '';
     if (typeof fetch !== 'function') return;
     Object.keys(watch).forEach(function (vid) {
@@ -1643,8 +1655,10 @@ table.spec td:first-child{white-space:nowrap;font-weight:550}
   Configurator.prototype._promoActive = function () {
     var p = this.cfg.promo;
     if (!p || !p.code || !(p.pct > 0)) return false;
+    // A date-only endsAt ('2026-11-30') runs to the end of that day.
+    var end = p.endsAt ? new Date(p.endsAt).getTime() + (/^\d{4}-\d{2}-\d{2}$/.test(p.endsAt) ? 864e5 : 0) : 0;
     if (p.startsAt && Date.now() < new Date(p.startsAt).getTime()) return false;
-    if (p.endsAt && Date.now() > new Date(p.endsAt).getTime()) return false;
+    if (end && Date.now() >= end) return false;
     return true;
   };
   Configurator.prototype._promoQuery = function () {
@@ -1702,7 +1716,28 @@ table.spec td:first-child{white-space:nowrap;font-weight:550}
     });
     var cartLines = order.map(function (v) { return { variantId: v, qty: lines[v] }; });
 
+    /* The bundle goes into the cart either as one bundle product (variantId) or,
+       for a gift set with no bundle product, as its components. Components
+       also drive "What's included" and, when every one has a price, the set
+       price. An out-of-stock component stays listed, marked, and out of the cart. */
+    var comps = (chosen.components || []).filter(function (c) { return c && c.variantId; })
+      .map(function (c) { var o = {}; for (var k in c) o[k] = c[k]; return o; });
+    var bundleLines = [], contents = chosen.contents || [];
     var bundlePrice = Number(chosen.price) || 0;
+    if (chosen.variantId) {
+      bundleLines.push({ variantId: chosen.variantId, qty: chosen.qty || 1 });
+    } else if (comps.length) {
+      comps.forEach(function (c) { c.oos = self._isOOS(String(c.variantId)); });
+      bundleLines = comps.filter(function (c) { return !c.oos; })
+        .map(function (c) { return { variantId: c.variantId, qty: c.qty || 1 }; });
+      contents = comps.map(function (c) {
+        return { name: c.title || c.name || '', detail: c.detail || '', qty: c.qty || 1, image: c.image || '', oos: c.oos };
+      });
+      if (comps.every(function (c) { return Number(c.price) > 0; })) {
+        bundlePrice = comps.reduce(function (sum, c) { return c.oos ? sum : sum + Number(c.price) * (c.qty || 1); }, 0);
+      }
+    }
+
     var addonsTotal = cartLines.reduce(function (sum, l) {
       var acc = null;
       for (var k in catalog) if (String(catalog[k].variantId) === String(l.variantId)) { acc = catalog[k]; break; }
@@ -1711,14 +1746,15 @@ table.spec td:first-child{white-space:nowrap;font-weight:550}
 
     return {
       bundle: chosen,
-      contents: chosen.contents || [],
+      bundleLines: bundleLines,
+      contents: contents,
       addons: addons,
       cartLines: cartLines,
       addonCount: cartLines.length,
       bundlePrice: bundlePrice,
       addonsTotal: addonsTotal,
       orderTotal: bundlePrice + addonsTotal,
-      cartUrl: this.buildCartUrl(chosen, cartLines),
+      cartUrl: this.buildCartUrl(bundleLines, cartLines),
       why: interpolate(chosen.why, this._scope())
     };
   };
@@ -1731,12 +1767,16 @@ table.spec td:first-child{white-space:nowrap;font-weight:550}
     });
   }
 
-  Configurator.prototype.buildCartUrl = function (bundle, lines) {
+  /* bundleLines: [{ variantId, qty }] for the bundle product or its components.
+     A bundle object is still accepted, as before components existed. */
+  Configurator.prototype.buildCartUrl = function (bundleLines, lines) {
     var c = this.cfg.cart || {};
     var base = (c.storeUrl || '').replace(/\/$/, '');
     var items = [];
-    if (bundle && bundle.variantId) items.push(bundle.variantId + ':' + (bundle.qty || 1));
-    lines.forEach(function (l) { items.push(l.variantId + ':' + l.qty); });
+    if (bundleLines && !Array.isArray(bundleLines)) {
+      bundleLines = bundleLines.variantId ? [{ variantId: bundleLines.variantId, qty: bundleLines.qty || 1 }] : [];
+    }
+    (bundleLines || []).concat(lines || []).forEach(function (l) { items.push(l.variantId + ':' + l.qty); });
     if (!items.length) return base + '/cart';
     return base + '/cart/' + items.join(',') + this._promoQuery();
   };
@@ -2094,7 +2134,8 @@ table.spec td:first-child{white-space:nowrap;font-weight:550}
         (rec.contents.length ? '<div class="section-title">' + esc(copy.contentsTitle || "What's included") + '</div><div class="line-items">' +
           rec.contents.map(function (i) {
             return '<div class="line-item"><div class="line-item-img">' + (i.image ? '<img src="' + esc(i.image) + '" alt="">' : '') + '</div>' +
-              '<div class="line-item-text"><div class="line-item-name">' + esc(i.name) + '</div>' +
+              '<div class="line-item-text"><div class="line-item-name">' + esc(i.name) +
+                (i.oos ? ' <span class="addon-oos-badge">' + esc(copy.oosBadge || 'Out of stock') + '</span>' : '') + '</div>' +
               (i.detail ? '<div class="line-item-detail">' + esc(i.detail) + '</div>' : '') + '</div>' +
               '<div class="line-item-qty">&#xD7;' + (i.qty || 1) + '</div></div>';
           }).join('') + '</div>' : '') +
@@ -2248,8 +2289,7 @@ table.spec td:first-child{white-space:nowrap;font-weight:550}
     if (c.mode !== 'ajax') return;                       // let the href navigate
     e.preventDefault();
     var items = [];
-    if (rec.bundle.variantId) items.push({ id: Number(rec.bundle.variantId), quantity: rec.bundle.qty || 1 });
-    rec.cartLines.forEach(function (l) { items.push({ id: Number(l.variantId), quantity: l.qty }); });
+    rec.bundleLines.concat(rec.cartLines).forEach(function (l) { items.push({ id: Number(l.variantId), quantity: l.qty }); });
     if (!items.length) return;
     link.classList.add('is-busy');
     fetch((c.storeUrl || '').replace(/\/$/, '') + '/cart/add.js', {
@@ -3478,6 +3518,158 @@ window.BCFG_CONFIG_COSMETICS = {
   stockWatch: {}
 };
 
+/* === configs/templates/gift-finder.js === */
+/* ============================================================
+   Category template — Gift finder.
+   Full template (not a starter), for any store in the gifting season:
+   who it is for, budget, what they are into, and finishing touches. The
+   budget picks the gift set; interests and toggles add the extras.
+   Sets can be one bundle product (variantId) or several products listed
+   as `components`, which all go in the cart. Every name and price here is
+   placeholder copy for the merchant to replace.
+   ============================================================ */
+window.BCFG_CONFIG_GIFT_FINDER = {
+  brand: { id: '', name: '', footerText: '', theme: {} },
+  copy: {
+    title: 'Find the perfect gift',
+    titleHighlight: 'perfect gift',
+    subtitle: 'Four quick questions and we will put a gift together, ready to give.',
+    resultSubtitle: 'Here is what we would give them.',
+    stepLabel: 'Step {current} of {total}',
+    nextLabel: 'Continue', finishLabel: 'See my gift', backLabel: 'Back',
+    recommendationBadge: 'Our pick',
+    whyTitle: 'Why this gift?', contentsTitle: "What's in the gift",
+    addonsTitle: 'Nice to add', profileTitle: 'Your answers',
+    priceSuffix: 'gift set', orderTotalLabel: 'Order total',
+    cartPanelLabel: 'Your cart will contain',
+    cartHint: 'Opens checkout with the gift and extras pre-loaded.',
+    ctaLabel: 'Add gift to cart', restartLabel: 'Start over',
+    promoPill: 'Save {pct}% with code {code}',
+    promoNote: 'Code {code} ({pct}% off) applied automatically at checkout',
+    oosBadge: 'Out of stock', oosReason: 'Add it once back in stock',
+    requiredHint: 'Choose an option to continue'
+  },
+  scene: {
+    type: 'summary', title: 'Your gift so far',
+    options: {
+      emptyTitle: 'Who is it for?', emptySub: 'to start choosing',
+      rows: [
+        { icon: '&#x1F381;', label: 'For: {recipient_label}', when: { field: 'recipient', op: 'truthy' } },
+        { icon: '&#x1F4B7;', label: 'Budget: {budget_label}', when: { field: 'budget', op: 'truthy' } },
+        { icon: '&#x2B50;', label: 'Into: {interests_label}', when: { field: 'step', op: 'gt', value: 2 } }
+      ]
+    }
+  },
+  steps: [
+    { id: 'recipient', type: 'choice', field: 'recipient', required: true,
+      question: 'Who is the gift for?', sub: 'It shapes the tone of the set.',
+      options: [
+        { value: 'partner',   icon: '&#x2764;',  label: 'Partner',          desc: 'Something personal' },
+        { value: 'parent',    icon: '&#x1F3E1;', label: 'Parent',           desc: 'A proper treat' },
+        { value: 'friend',    icon: '&#x1F91D;', label: 'Friend',           desc: 'Fun and thoughtful' },
+        { value: 'child',     icon: '&#x1F388;', label: 'Child or teen',    desc: 'Something to open and use' },
+        { value: 'colleague', icon: '&#x1F4BC;', label: 'Colleague or Secret Santa', desc: 'Safe to give anyone' }
+      ] },
+    { id: 'budget', type: 'choice', field: 'budget', required: true,
+      question: 'What would you like to spend?', sub: 'We keep the whole gift inside it.',
+      options: [
+        { value: 'under25', icon: '&#x1F4B7;', label: 'Under £25' },
+        { value: 'to50',    icon: '&#x1F4B7;', label: '£25 to £50' },
+        { value: 'to100',   icon: '&#x1F4B7;', label: '£50 to £100' },
+        { value: 'over100', icon: '&#x1F4B7;', label: 'Over £100' }
+      ] },
+    { id: 'interests', type: 'multi', field: 'interests', columns: 2,
+      question: 'What are they into?', sub: 'Pick any that apply. We add a little something to match.',
+      options: [
+        { value: 'home',    icon: '&#x1F56F;', label: 'Cosy nights in' },
+        { value: 'food',    icon: '&#x1F36B;', label: 'Food and drink' },
+        { value: 'pamper',  icon: '&#x1F6C1;', label: 'Pampering' },
+        { value: 'outdoor', icon: '&#x1F332;', label: 'The outdoors' },
+        { value: 'tech',    icon: '&#x1F50C;', label: 'Gadgets' },
+        { value: 'style',   icon: '&#x1F45C;', label: 'Style' }
+      ] },
+    { id: 'finish', type: 'toggles', question: 'Any finishing touches?', sub: 'Optional, added to the same order.',
+      toggles: [
+        { field: 'wrap', icon: '&#x1F380;', label: 'Gift wrap it' },
+        { field: 'card', icon: '&#x1F48C;', label: 'Add a card' }
+      ] }
+  ],
+  // First match wins. Budget decides the set; the last one is the fallback.
+  bundles: [
+    { id: 'showstopper', title: 'The Showstopper', subtitle: 'Our best, presented in a keepsake box', price: 145, variantId: '',
+      why: 'For a budget like this, one standout piece and a proper presentation box beat a pile of smaller things.',
+      contents: [
+        { name: 'Signature piece', detail: 'Our best-selling premium item', qty: 1 },
+        { name: 'Matching accessory', detail: 'Chosen to go with it', qty: 1 },
+        { name: 'Keepsake box', detail: 'Ready to give', qty: 1 }
+      ],
+      when: { field: 'budget', op: 'eq', value: 'over100' } },
+    { id: 'treat', title: 'The Treat Set', subtitle: 'Three favourites in a gift box', price: 79, variantId: '',
+      why: 'Three things they will actually use, boxed together so it feels like one gift.',
+      contents: [
+        { name: 'Hero product', detail: 'Full size', qty: 1 },
+        { name: 'Companion product', detail: 'Full size', qty: 1 },
+        { name: 'Small indulgence', detail: 'A little extra', qty: 1 },
+        { name: 'Gift box', detail: 'With tissue', qty: 1 }
+      ],
+      when: { field: 'budget', op: 'eq', value: 'to100' } },
+    { id: 'thoughtful', title: 'The Thoughtful Pair', subtitle: 'Two pieces that go together', price: 42, variantId: '',
+      why: 'Two pieces that belong together look considered, not last-minute.',
+      contents: [
+        { name: 'Main gift', detail: 'Full size', qty: 1 },
+        { name: 'Something to go with it', detail: 'Chosen to match', qty: 1 }
+      ],
+      when: { field: 'budget', op: 'eq', value: 'to50' } },
+    { id: 'filler', title: 'The Little Something', subtitle: 'A small gift that does not look small', price: 19, variantId: '',
+      why: 'Under £25 is about one well-chosen thing, nicely presented.',
+      contents: [
+        { name: 'Mini favourite', detail: 'Travel or mini size', qty: 1 },
+        { name: 'Gift pouch', detail: 'Ready to give', qty: 1 }
+      ] }
+  ],
+  accessories: {
+    wrap:    { variantId: '', price: 4,  title: 'Gift wrapping', image: '' },
+    card:    { variantId: '', price: 3,  title: 'Greetings card', image: '' },
+    candle:  { variantId: '', price: 12, title: 'Scented candle', image: '' },
+    treats:  { variantId: '', price: 9,  title: 'Chocolate truffles', image: '' },
+    bath:    { variantId: '', price: 10, title: 'Bath soak', image: '' },
+    bottle:  { variantId: '', price: 15, title: 'Insulated bottle', image: '' },
+    charger: { variantId: '', price: 18, title: 'Pocket power bank', image: '' },
+    socks:   { variantId: '', price: 8,  title: 'Cosy socks', image: '' }
+  },
+  addonRules: [
+    { id: 'wrap', accessory: 'wrap', when: { field: 'wrap', op: 'truthy' },
+      text: 'Gift wrapping', reason: 'You asked for it wrapped' },
+    { id: 'card', accessory: 'card', when: { field: 'card', op: 'truthy' },
+      text: 'Greetings card', reason: 'For your own message' },
+    { id: 'candle', accessory: 'candle', when: { field: 'interests', op: 'includes', value: 'home' },
+      text: 'Scented candle', reason: 'For cosy nights in' },
+    { id: 'treats', accessory: 'treats', when: { field: 'interests', op: 'includes', value: 'food' },
+      text: 'Chocolate truffles', reason: 'They like food and drink' },
+    { id: 'bath', accessory: 'bath', when: { field: 'interests', op: 'includes', value: 'pamper' },
+      text: 'Bath soak', reason: 'A little pampering' },
+    { id: 'bottle', accessory: 'bottle', when: { field: 'interests', op: 'includes', value: 'outdoor' },
+      text: 'Insulated bottle', reason: 'For days outdoors' },
+    { id: 'charger', accessory: 'charger', when: { field: 'interests', op: 'includes', value: 'tech' },
+      text: 'Pocket power bank', reason: 'They like gadgets' },
+    { id: 'socks', accessory: 'socks', when: { all: [
+        { field: 'recipient', op: 'eq', value: 'colleague' },
+        { field: 'budget', op: 'eq', value: 'under25' } ] },
+      text: 'Cosy socks', reason: 'A safe extra for anyone' }
+  ],
+  chips: [
+    { field: 'recipient' },
+    { field: 'budget', when: { field: 'budget', op: 'truthy' } }
+  ],
+  profileChips: [
+    { field: 'recipient', icon: '&#x1F381;' },
+    { field: 'budget', icon: '&#x1F4B7;' }
+  ],
+  cart: { mode: 'permalink', storeUrl: '', displayDomain: '', currencySymbol: '£', currency: 'GBP', redirectTo: '/cart' },
+  promo: { code: '', pct: 0, endsAt: '' },
+  stockWatch: {}
+};
+
 /* === configs/categories.js === */
 /* ============================================================
    Category registry — "what am I building a configurator for?"
@@ -3585,6 +3777,16 @@ window.BCFG_CONFIG_COSMETICS = {
       blurb: 'Recurring consumables — coffee, tea, pet food, refills. Sizes the box from consumption rate and household size.',
       scene: 'Answer summary',
       build: function () { return JSON.parse(JSON.stringify(root.BCFG_CONFIG_COFFEE)); }
+    },
+    {
+      id: 'gift-finder',
+      label: 'Gift finder',
+      icon: '&#x1F381;',
+      blurb: 'For any store in gifting season. Who it is for, budget and interests pick a gift set, with wrapping and extras to match.',
+      scene: 'Answer summary',
+      // Listed first on the Category step between these dates (MM-DD, inclusive).
+      season: { from: '10-01', to: '12-24', label: 'Gifting season' },
+      build: function () { return JSON.parse(JSON.stringify(root.BCFG_CONFIG_GIFT_FINDER)); }
     },
     {
       id: 'bike-build',

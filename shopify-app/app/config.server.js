@@ -62,14 +62,24 @@ export function decodeEntities(s) {
   return String(s || "").replace(/&#x([0-9a-f]+);/gi, (m, h) => String.fromCodePoint(parseInt(h, 16)));
 }
 
-export function listCategories() {
-  return loadRegistry().map((c) => ({
+/* A category with a season (MM-DD range, may wrap the new year) is listed
+   first while it is in season. */
+export function inSeason(season, now = new Date()) {
+  if (!season || !season.from || !season.to) return false;
+  const md = String(now.getMonth() + 1).padStart(2, "0") + "-" + String(now.getDate()).padStart(2, "0");
+  return season.from <= season.to ? md >= season.from && md <= season.to : md >= season.from || md <= season.to;
+}
+
+export function listCategories(now = new Date()) {
+  const list = loadRegistry().map((c) => ({
     id: c.id,
     label: c.label,
     icon: decodeEntities(c.icon),
     blurb: c.blurb,
     scene: c.scene,
+    seasonLabel: inSeason(c.season, now) ? c.season.label || "In season" : "",
   }));
+  return [...list.filter((c) => c.seasonLabel), ...list.filter((c) => !c.seasonLabel)];
 }
 
 export function buildCategory(id) {

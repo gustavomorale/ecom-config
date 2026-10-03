@@ -72,7 +72,7 @@ Out of 1.0: analytics funnel UI, price sync, AI draft.
 - Verified in a real browser: gift set, wrap add-on and BLACKFRIDAY20 in the cart link.
 
 **3 Oct: plans and the completion counter (item 6).**
-- `app/plans.js`: Free (50 completions, attribution line), Standard USD 25 (2,000),
+- `app/plans.js`: Free (50 completions, attribution line), Starter USD 9 (300, added 3 Oct), Standard USD 25 (2,000),
   Growth USD 79 (15,000), 21-day trial on paid plans. The active subscription is mapped by
   name; no subscription is Free. No redirect to the plan page any more (a Free plan means
   every store has a valid plan), which also retires the 0.9.4 redirect-loop guard.
@@ -91,10 +91,10 @@ Out of 1.0: analytics funnel UI, price sync, AI draft.
 
 ## Shopify side, before resubmitting
 
-1. Partner Dashboard, the app, Pricing (App Pricing): replace the single Standard plan with
-   Free (USD 0), Standard (USD 25, 21-day trial) and Growth (USD 79, 21-day trial). Plan
-   names must contain "Free", "Standard" and "Growth" (the app maps by name). Describe each
-   by completions: 50, 2,000, 15,000 a month; Free shows a small attribution line.
+1. Done 3 Oct: App Pricing has Free (USD 0), Starter (USD 9), Standard (USD 25) and Growth
+   (USD 79), paid plans with a 21-day trial. Plan names must contain "Free", "Starter",
+   "Standard" and "Growth" (the app maps by name). Listing features describe each by
+   completions: 50, 300, 2,000, 15,000 a month; Free shows a small attribution line.
 2. `npm run deploy` from `release-1.0` registers the app proxy and the new webhook
    (config change only; no new access scopes, so merchants are not asked to re-approve).
 3. Netlify: deploy `release-1.0`; `netlify:build` runs `prisma migrate deploy`, which

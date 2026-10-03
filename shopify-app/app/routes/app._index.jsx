@@ -66,7 +66,7 @@ export const action = async ({ request }) => {
   return { ok: true };
 };
 
-const priceLine = () => `Free for up to ${PLANS.free.limit} completed quizzes a month. Standard USD ${PLANS.standard.price} and Growth USD ${PLANS.growth.price} a month, each with a ${TRIAL_DAYS}-day free trial.`;
+const priceLine = () => `Free for up to ${PLANS.free.limit} completed quizzes a month. Starter USD ${PLANS.starter.price}, Standard USD ${PLANS.standard.price} and Growth USD ${PLANS.growth.price} a month, each with a ${TRIAL_DAYS}-day free trial.`;
 
 /* Plan, this month's completions and the way to a bigger plan. */
 function PlanCard() {

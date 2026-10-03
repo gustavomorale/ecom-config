@@ -10,6 +10,7 @@ import { boundary } from "@shopify/shopify-app-react-router/server";
 import { authenticate } from "../shopify.server";
 import { listCategories, buildCategory, readConfig, saveConfig, deleteConfig, isSimple } from "../config.server";
 import { SetupRail, doneSteps } from "../components/SetupRail";
+import { QuizBar } from "../components/QuizBar";
 
 export const loader = async ({ request }) => {
   const { admin } = await authenticate.admin(request);
@@ -51,6 +52,7 @@ export default function Category() {
 
   return (
     <s-page heading="What are you selling?">
+      <QuizBar />
       {config ? <s-button slot="secondary-actions" href="/app" variant="tertiary">Keep current setup</s-button> : null}
       <s-section>
         <SetupRail current="category" done={done} />

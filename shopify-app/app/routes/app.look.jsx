@@ -13,6 +13,7 @@ import { readConfig, saveConfig } from "../config.server";
 import { readThemeLook, deriveAccentTokens, contrastOf } from "../theme.server";
 import { SetupRail, doneSteps } from "../components/SetupRail";
 import { WidgetPreview } from "../components/WidgetPreview";
+import { QuizBar } from "../components/QuizBar";
 
 const FONTS = {
   "Store default": "",
@@ -165,6 +166,7 @@ export default function Look() {
     <s-page heading="Make it look like your store.">
       <s-button slot="primary-action" onClick={() => submit(true)} {...(busy ? { loading: true } : {})}>Save and continue</s-button>
       <s-button slot="secondary-actions" href="/app/questions" variant="tertiary">Skip for now</s-button>
+      <QuizBar />
 
       <s-section>
         {config.simple && config.meta?.mode !== "advanced" ? null : <SetupRail current="look" done={done} />}

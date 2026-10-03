@@ -12,6 +12,7 @@ import { authenticate } from "../shopify.server";
 import { readConfig, saveConfig } from "../config.server";
 import { WidgetPreview } from "../components/WidgetPreview";
 import { blackFriday } from "../lib/season";
+import { QuizBar } from "../components/QuizBar";
 
 const GROUPS = [
   { heading: "Opening", fields: [
@@ -133,6 +134,7 @@ export default function Copy() {
     <s-page heading="Copy & cart">
       <s-button slot="primary-action" onClick={save} {...(busy ? { loading: true } : {})}>Save</s-button>
       <s-button slot="secondary-actions" href="/app" variant="tertiary">Back to overview</s-button>
+      <QuizBar />
 
       <s-section>
         <s-paragraph>Every word your shoppers read. Leave a field empty to use the default shown in grey.</s-paragraph>

@@ -28,7 +28,9 @@ export async function readPlan(admin, shop) {
     plan = null;
   }
   if (!plan) plan = { ...(PLANS[env.BCFG_PLAN] || PLANS.standard), trialEndsAt: null };
-  const planUrl = handle && store ? `https://admin.shopify.com/store/${store}/charges/${handle}/pricing_plans` : null;
+  // Only the App Store app has plans on Shopify App Pricing; the dev app does
+  // not, so its plan page is a 404. No link unless plans are really read.
+  const planUrl = billingEnabled && handle && store ? `https://admin.shopify.com/store/${store}/charges/${handle}/pricing_plans` : null;
   return { plan, planUrl };
 }
 

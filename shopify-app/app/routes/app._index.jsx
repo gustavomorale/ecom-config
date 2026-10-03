@@ -1,33 +1,64 @@
 /* ============================================================
-   Home.
-   No configuration yet: the welcome. What the app does, how the five-step
-   setup goes and what it can access. One button.
-   Configuration saved: the overview, laid out the way Shopify's own apps do
-   it. A status banner that says whether the block is really on the theme
-   (read from the theme, not assumed), a setup guide with progress and one
-   expanded task at a time, quick actions into every editor page, and the
-   live preview, plan and help on the side.
+   Home: the app's central place (1.0).
+   No quiz yet: the welcome. What the app does and one button.
+   Otherwise: every quiz as a card, with its own setup progress, what it
+   needs next and buttons straight into its Products, Questions, Look and
+   Copy & cart. Choosing any of them makes that quiz the one the editor pages
+   work on (the quizzes metafield's "editing"), so the home page is the router
+   and the editor pages never need a quiz picker. Store-wide things sit
+   around the cards: whether the block is on the theme, Black Friday, the plan
+   and usage, help.
    ============================================================ */
 import { useEffect, useState } from "react";
-import { useFetcher, useLoaderData, useRouteError, useRouteLoaderData } from "react-router";
+import { redirect, useFetcher, useLoaderData, useRouteError, useRouteLoaderData } from "react-router";
 import { useAppBridge } from "@shopify/app-bridge-react";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { authenticate } from "../shopify.server";
-import { PLANS, TRIAL_DAYS, nextPlan, CUSTOM_PLAN_EMAIL } from "../plans";
-import { listCategories, buildCategory, readConfig, saveConfig, themeEditorUrl, toAdvanced, toSimple } from "../config.server";
+import { PLANS, TRIAL_DAYS, MAX_QUIZZES, nextPlan, CUSTOM_PLAN_EMAIL } from "../plans";
+import { listCategories, buildCategory, readConfig, readAllQuizzes, saveConfig, saveIndex, deleteConfig, slotKey, themeEditorUrl, toAdvanced, toSimple } from "../config.server";
+import { readPlan } from "../plan.server";
+import { completionsByQuiz } from "../usage.server";
 import { blockOnTheme } from "../theme.server";
 import { VERSION, SUPPORT_EMAIL } from "../components/SetupRail";
 import { hasProduct, productSlots } from "../lib/links";
-import { WidgetPreview } from "../components/WidgetPreview";
 import { blackFridayNudge } from "../lib/season";
 
+const isSimpleConfig = (config) => !!(config && config.simple && config.meta?.mode !== "advanced");
+
+/* What a quiz card shows: type, progress and the one next step. */
+function summarise(id, entry, cfg, cats, completions) {
+  const base = { id, name: entry?.name || `Quiz ${id}`, completions: completions || 0 };
+  if (!cfg) return { ...base, ready: false, type: null, steps: [{ label: "Pick products", done: false, href: "/app/start" }], next: "/app/start" };
+  const simple = isSimpleConfig(cfg);
+  const setup = cfg.meta?.setup || {};
+  const products = simple ? (cfg.simple.products || []).length : productSlots(cfg).length;
+  const linked = simple ? products : productSlots(cfg).filter(hasProduct).length;
+  const steps = simple
+    ? [{ label: "Pick products", done: products > 0, href: "/app/start" }, { label: "Check questions", done: !!setup.questions, href: "/app/grid" }]
+    : [{ label: "Check questions", done: !!setup.questions, href: "/app/questions" }, { label: "Link products", done: products > 0 && linked === products, href: "/app/products" }];
+  const open = steps.find((st) => !st.done);
+  const head = headlineState(cfg);
+  return {
+    ...base, ready: true, simple, canSimple: !!cfg.simple,
+    type: simple ? (cfg.simple.mode === "bundle" ? "Bundle quiz" : "Product finder") : "Rules editor",
+    category: cats[cfg.meta?.category] || "",
+    products, questions: (cfg.steps || []).length, steps, next: open ? open.href : null,
+    headline: head.state === "custom" ? null : head,
+  };
+}
+
 export const loader = async ({ request }) => {
-  const { admin } = await authenticate.admin(request);
-  const { config, domain } = await readConfig(admin);
-  const categories = listCategories();
-  const current = config ? categories.find((c) => c.id === config.meta?.category) || null : null;
-  const block = config ? await blockOnTheme(admin) : null;
-  return { config, current, editorUrl: themeEditorUrl(domain), storeUrl: `https://${domain}/`, block, headline: config ? headlineState(config) : null, season: config ? blackFridayNudge(config.promo) : null };
+  const { admin, session } = await authenticate.admin(request);
+  const { config, domain, index } = await readConfig(admin);
+  if (!config && !index.list.length) return { welcome: true };
+  const [all, counts, block] = await Promise.all([readAllQuizzes(admin), completionsByQuiz(session.shop).catch(() => ({})), blockOnTheme(admin)]);
+  const cats = Object.fromEntries(listCategories().map((c) => [c.id, `${c.icon} ${c.label}`]));
+  const quizzes = index.list.map((q) => summarise(q.id, q, all[q.id], cats, counts[q.id]));
+  return {
+    welcome: false, quizzes, editing: index.editing, block,
+    editorUrl: themeEditorUrl(domain), storeUrl: `https://${domain}/`,
+    season: blackFridayNudge(config?.promo),
+  };
 };
 
 /* The headline shoppers read first. "placeholder" is the pre-0.9 default that
@@ -44,39 +75,96 @@ function headlineState(config) {
   return { title, state, suggestion: tpl.title || "" };
 }
 
+const TARGETS = ["/app", "/app/start", "/app/grid", "/app/look", "/app/copy", "/app/questions", "/app/rules", "/app/products", "/app/category"];
+const nextFreeId = (list) => { for (let n = 1; n <= MAX_QUIZZES; n++) if (!list.some((q) => q.id === String(n))) return String(n); return null; };
+const cleanName = (v, fallback) => String(v || "").replace(/[<>]/g, "").trim().slice(0, 60) || fallback;
+
 export const action = async ({ request }) => {
-  const { admin } = await authenticate.admin(request);
+  const { admin, session } = await authenticate.admin(request);
   const form = await request.formData();
-  const intent = form.get("intent");
-  const { shopId, config } = await readConfig(admin);
-  if (!config) return { ok: false, error: "No configuration yet" };
-  if (intent === "advanced" || intent === "simple") {
-    try {
-      await saveConfig(admin, shopId, intent === "advanced" ? toAdvanced(config) : toSimple(config));
-    } catch (e) { return { ok: false, error: e.message }; }
-    return { ok: true, intent };
-  }
-  if (intent !== "adopt-headline") return { ok: false, error: "Unknown action" };
-  const tpl = templateCopy(config);
-  if (!tpl.title) return { ok: false, error: "This template has no suggested headline" };
+  const intent = String(form.get("intent") || "");
+  const id = String(form.get("id") || "");
+  const { shopId, index } = await readConfig(admin);
+  const list = [...index.list];
+  const at = list.findIndex((q) => q.id === id);
+  const needQuiz = () => { if (at < 0) throw new Error("That quiz no longer exists. Reload the page."); };
   try {
-    config.copy = { ...(config.copy || {}), title: tpl.title, titleHighlight: tpl.titleHighlight || "" };
-    await saveConfig(admin, shopId, config);
-  } catch (e) { return { ok: false, error: e.message }; }
-  return { ok: true };
+    if (intent === "go") {
+      needQuiz();
+      const to = TARGETS.includes(String(form.get("to"))) ? String(form.get("to")) : "/app";
+      if (index.editing !== id) await saveIndex(admin, shopId, { ...index, editing: id });
+      return redirect(to);
+    }
+    if (intent === "rename") {
+      needQuiz();
+      list[at] = { ...list[at], name: cleanName(form.get("name"), `Quiz ${id}`) };
+      await saveIndex(admin, shopId, { ...index, list });
+      return { ok: true, intent };
+    }
+    if (intent === "delete") {
+      needQuiz();
+      await deleteConfig(admin, shopId, slotKey(id));
+      list.splice(at, 1);
+      await saveIndex(admin, shopId, { list, editing: index.editing === id ? list[0]?.id || "1" : index.editing });
+      return { ok: true, intent };
+    }
+    if (intent === "new" || intent === "duplicate") {
+      const { plan } = await readPlan(admin, session.shop);
+      const cap = plan.quizzes || 1;
+      if (list.length >= cap) return { ok: false, error: `Your ${plan.name} plan includes ${cap} quiz${cap === 1 ? "" : "zes"}. Choose a bigger plan to add more.` };
+      const nid = nextFreeId(list);
+      if (!nid) return { ok: false, error: `A store can have up to ${MAX_QUIZZES} quizzes. Ask about a Custom plan for more.` };
+      let name = cleanName(form.get("name"), `Quiz ${nid}`);
+      if (intent === "duplicate") {
+        needQuiz();
+        const { config } = await readConfig(admin, { quiz: id });
+        if (!config) return { ok: false, error: "That quiz is not set up yet, so there is nothing to copy" };
+        const copy = JSON.parse(JSON.stringify(config));
+        copy.meta = { ...(copy.meta || {}), slot: slotKey(nid), createdAt: new Date().toISOString() };
+        await saveConfig(admin, shopId, copy);
+        name = cleanName(`Copy of ${list[at].name || `Quiz ${id}`}`, `Quiz ${nid}`);
+      }
+      list.push({ id: nid, name, createdAt: new Date().toISOString() });
+      await saveIndex(admin, shopId, { list, editing: nid });
+      return intent === "new" ? redirect("/app/start") : { ok: true, intent };
+    }
+    if (intent === "advanced" || intent === "simple" || intent === "adopt-headline") {
+      needQuiz();
+      const { config } = await readConfig(admin, { quiz: id });
+      if (!config) return { ok: false, error: "That quiz is not set up yet" };
+      if (intent === "adopt-headline") {
+        const tpl = templateCopy(config);
+        if (!tpl.title) return { ok: false, error: "This template has no suggested headline" };
+        config.copy = { ...(config.copy || {}), title: tpl.title, titleHighlight: tpl.titleHighlight || "" };
+        await saveConfig(admin, shopId, config);
+      } else {
+        await saveConfig(admin, shopId, intent === "advanced" ? toAdvanced(config) : toSimple(config));
+      }
+      return { ok: true, intent };
+    }
+  } catch (e) { return { ok: false, intent, error: e.message }; }
+  return { ok: false, error: "Unknown action" };
 };
 
 const priceLine = () => `Free for one quiz and up to ${PLANS.free.limit} completed quizzes a month. Starter USD ${PLANS.starter.price} (${PLANS.starter.quizzes} quizzes), Standard USD ${PLANS.standard.price} (${PLANS.standard.quizzes}) and Growth USD ${PLANS.growth.price} a month (${PLANS.growth.quizzes}), each with a ${TRIAL_DAYS}-day free trial. Custom plans on request.`;
 
-/* Plan, this month's completions and the way to a bigger plan. */
-function PlanCard() {
+/* Plan, this month's completions, quizzes used and the way to a bigger plan.
+   planUrl is null when the app is not reading plans from Shopify (local
+   development with BCFG_PLAN): there is no plan page to link to then. */
+function PlanCard({ quizCount }) {
   const app = useRouteLoaderData("routes/app") || {};
   const { plan, usage, planUrl } = app;
   if (!plan) return <s-paragraph color="subdued">{priceLine()}</s-paragraph>;
   const up = nextPlan(plan);
   const trialDays = plan.trialEndsAt ? Math.max(0, Math.ceil((Date.parse(plan.trialEndsAt) - Date.now()) / 864e5)) : 0;
+  const cap = plan.quizzes || 1;
+  const meter = (value, max, label, warn) => (
+    <div role="progressbar" aria-valuemin={0} aria-valuemax={max} aria-valuenow={value} aria-label={label} style={{ height: 6, borderRadius: 3, background: "#e3e3e3", overflow: "hidden" }}>
+      <div style={{ width: `${Math.min(100, Math.round((value / max) * 100))}%`, height: "100%", background: warn ? "#b98900" : "#1a1a1a", borderRadius: 3 }} />
+    </div>
+  );
   return (
-    <s-stack direction="block" gap="small">
+    <s-stack direction="block" gap="base">
       <s-stack direction="inline" gap="small" alignItems="center">
         <s-text type="strong">{plan.name}</s-text>
         {trialDays ? <s-badge tone="info">{`Trial, ${trialDays} day${trialDays === 1 ? "" : "s"} left`}</s-badge> : null}
@@ -85,15 +173,18 @@ function PlanCard() {
       {usage ? (
         <s-stack direction="block" gap="small-200">
           <s-text color="subdued">{`${usage.count.toLocaleString("en-GB")} of ${usage.limit.toLocaleString("en-GB")} completed quizzes this month`}</s-text>
-          <div role="progressbar" aria-valuemin={0} aria-valuemax={usage.limit} aria-valuenow={usage.count} aria-label="Completed quizzes this month" style={{ height: 6, borderRadius: 3, background: "#e3e3e3", overflow: "hidden" }}>
-            <div style={{ width: `${usage.pct}%`, height: "100%", background: usage.over ? "#b98900" : "#1a1a1a", borderRadius: 3 }} />
-          </div>
+          {meter(usage.count, usage.limit, "Completed quizzes this month", usage.over)}
         </s-stack>
       ) : null}
-      {app.quiz ? <s-text color="subdued">{`${app.quiz.count} of ${plan.quizzes || 1} quiz${(plan.quizzes || 1) === 1 ? "" : "zes"} used`}</s-text> : null}
+      <s-stack direction="block" gap="small-200">
+        <s-text color="subdued">{`${quizCount} of ${cap} quiz${cap === 1 ? "" : "zes"}`}</s-text>
+        {meter(quizCount, cap, "Quizzes used", quizCount >= cap)}
+      </s-stack>
       {plan.attribution ? <s-text color="subdued">Results show a small Powered by CraftFrame line. Paid plans remove it.</s-text> : null}
+      {planUrl
+        ? <s-box><s-button variant={up && usage && (usage.half || usage.near || usage.over || quizCount >= cap) ? "primary" : "secondary"} href={planUrl} target="_top">{up ? `See ${up.name} and other plans` : "Manage plan"}</s-button></s-box>
+        : <s-text color="subdued">Plans are chosen on Shopify's plan page in the live app. This development copy reads its plan from BCFG_PLAN.</s-text>}
       {!up ? <s-text color="subdued">{`Need more than Growth? Ask for a Custom plan at ${CUSTOM_PLAN_EMAIL}.`}</s-text> : null}
-      {planUrl ? <s-box><s-button variant={up && usage && (usage.near || usage.over) ? "primary" : "secondary"} href={planUrl} target="_top">{up ? `See ${up.name} and other plans` : "Manage plan"}</s-button></s-box> : null}
     </s-stack>
   );
 }
@@ -161,235 +252,169 @@ function Welcome() {
   );
 }
 
-/* One row of the setup guide: a tick or an open circle, the title, and, when
-   expanded, a sentence and the one action that moves it forward. */
-function Task({ task, open, onToggle }) {
-  const mark = { width: 22, height: 22, flex: "0 0 22px", borderRadius: "50%", display: "grid", placeItems: "center", fontSize: 13, fontWeight: 700, marginTop: 1,
-    ...(task.done ? { background: "#1a1a1a", color: "#fff" } : { border: "2px dashed #8a8a8a", color: "transparent" }) };
+export default function Index() {
+  const data = useLoaderData();
+  return data.welcome ? <Welcome /> : <Home {...data} />;
+}
+
+/* One quiz: what it is, how far its setup is, what it needs next, and the
+   doors into each editor page for it. */
+function QuizCard({ q, editing, paused, canAdd, busy, go, submit }) {
+  const [renaming, setRenaming] = useState(false);
+  const [name, setName] = useState(q.name);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const done = q.ready ? q.steps.filter((st) => st.done).length : 0;
+  const pages = q.ready
+    ? (q.simple
+      ? [["/app/start", "Products"], ["/app/grid", "Questions"], ["/app/look", "Look"], ["/app/copy", "Copy & cart"]]
+      : [["/app/questions", "Questions"], ["/app/rules", "Rules"], ["/app/products", "Products"], ["/app/look", "Look"], ["/app/copy", "Copy & cart"]])
+    : [];
+  const facts = q.ready ? [q.category, `${q.products} product${q.products === 1 ? "" : "s"}`, `${q.questions} question${q.questions === 1 ? "" : "s"}`, `${q.completions.toLocaleString("en-GB")} completed this month`].filter(Boolean) : ["Not set up yet"];
   return (
-    <s-box padding="small" borderRadius="base" background={open ? "subdued" : "transparent"}>
-      <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
-        <span style={mark} aria-hidden="true">{task.done ? "✓" : ""}</span>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <s-clickable onClick={onToggle} accessibilityLabel={`${task.title}, ${task.done ? "done" : "to do"}`}>
-            <s-stack direction="inline" gap="small" alignItems="center">
-              <s-text type={open ? "strong" : "generic"}>{task.title}</s-text>
-              {task.badge ? <s-badge tone={task.badgeTone || "neutral"}>{task.badge}</s-badge> : null}
+    <s-box padding="base" borderWidth="base" borderRadius="base" background="base">
+      <s-stack direction="block" gap="base">
+        <s-stack direction="block" gap="small-200">
+          <s-stack direction="inline" gap="small" alignItems="center">
+            <s-text color="subdued">{`Quiz ${q.id}`}</s-text>
+            {q.type ? <s-badge>{q.type}</s-badge> : null}
+            {paused ? <s-badge tone="warning">Paused on your plan</s-badge> : q.ready && !q.next ? <s-badge tone="success">Ready</s-badge> : <s-badge tone="attention">Setup in progress</s-badge>}
+            {editing ? <s-badge tone="info">Last edited</s-badge> : null}
+          </s-stack>
+          {renaming ? (
+            <s-stack direction="inline" gap="small" alignItems="end">
+              <s-text-field label="Quiz name" value={name} maxLength={60} onInput={(e) => setName(e.currentTarget.value)} />
+              <s-button variant="primary" onClick={() => { submit({ intent: "rename", id: q.id, name }); setRenaming(false); }}>Save name</s-button>
+              <s-button variant="tertiary" onClick={() => { setName(q.name); setRenaming(false); }}>Cancel</s-button>
             </s-stack>
-          </s-clickable>
-          {open ? (
-            <s-stack direction="block" gap="small" style={{ marginTop: 6 }}>
-              <s-paragraph color="subdued">{task.text}</s-paragraph>
-              <s-stack direction="inline" gap="small">
-                <s-button variant={task.done ? "secondary" : "primary"} href={task.href} {...(task.external ? { target: "_blank" } : {})}>{task.done ? task.editLabel : task.actionLabel}</s-button>
-                {task.secondary ? <s-button variant="tertiary" href={task.secondary.href} {...(task.secondary.external ? { target: "_blank" } : {})}>{task.secondary.label}</s-button> : null}
-              </s-stack>
+          ) : <s-heading>{q.name}</s-heading>}
+          <s-text color="subdued">{facts.join(" · ")}</s-text>
+        </s-stack>
+
+        {q.next ? (
+          <s-box padding="small" borderRadius="base" background="subdued">
+            <s-stack direction="inline" gap="base" alignItems="center">
+              <s-text>{q.ready ? `Setup: ${done} of ${q.steps.length} steps done. Next: ${q.steps.find((st) => !st.done).label.toLowerCase()}.` : "Pick the products this quiz recommends to get started."}</s-text>
+              <s-button variant="primary" onClick={() => go(q.id, q.next)} {...(busy ? { disabled: true } : {})}>{q.ready ? "Continue setup" : "Set it up"}</s-button>
             </s-stack>
-          ) : null}
-        </div>
-      </div>
+          </s-box>
+        ) : null}
+
+        {q.headline ? (
+          <s-stack direction="inline" gap="small" alignItems="center">
+            <s-text color="subdued">{`Headline: “${q.headline.title || "None yet"}”, the ${q.headline.state === "placeholder" ? "old placeholder" : "template's"}.`}</s-text>
+            <s-button variant="tertiary" onClick={() => go(q.id, "/app/copy")}>Write your own</s-button>
+            {q.headline.state === "placeholder" && q.headline.suggestion ? <s-button variant="tertiary" onClick={() => submit({ intent: "adopt-headline", id: q.id })}>{`Use “${q.headline.suggestion}”`}</s-button> : null}
+          </s-stack>
+        ) : null}
+
+        {pages.length ? (
+          <s-stack direction="inline" gap="small">
+            {pages.map(([href, label]) => <s-button key={href} onClick={() => go(q.id, href)} {...(busy ? { disabled: true } : {})}>{label}</s-button>)}
+          </s-stack>
+        ) : null}
+
+        <s-stack direction="inline" gap="small">
+          <s-button variant="tertiary" onClick={() => setRenaming(true)}>Rename</s-button>
+          {q.ready ? <s-button variant="tertiary" onClick={() => submit({ intent: "duplicate", id: q.id })} {...(!canAdd || busy ? { disabled: true } : {})}>Duplicate</s-button> : null}
+          {q.ready && (q.simple || q.canSimple) ? <s-button variant="tertiary" onClick={() => submit({ intent: q.simple ? "advanced" : "simple", id: q.id })}>{q.simple ? "Switch to the rules editor" : "Back to the simple setup"}</s-button> : null}
+          {confirmDelete ? (
+            <>
+              <s-button tone="critical" onClick={() => { submit({ intent: "delete", id: q.id }); setConfirmDelete(false); }}>{`Delete ${q.name} for good`}</s-button>
+              <s-button variant="tertiary" onClick={() => setConfirmDelete(false)}>Keep it</s-button>
+            </>
+          ) : <s-button variant="tertiary" tone="critical" onClick={() => setConfirmDelete(true)}>Delete</s-button>}
+        </s-stack>
+      </s-stack>
     </s-box>
   );
 }
 
-const isSimpleConfig = (config) => !!(config && config.simple && config.meta?.mode !== "advanced");
+const TOASTS = { rename: "Quiz renamed", delete: "Quiz deleted", duplicate: "Quiz duplicated", advanced: "Rules editor on", simple: "Back to the simple setup", "adopt-headline": "Headline updated" };
 
-export default function Index() {
-  const data = useLoaderData();
-  return data.config ? <Overview {...data} /> : <Welcome />;
-}
-
-function Overview({ config, current, editorUrl, storeUrl, block, headline, season }) {
-  const appData = useRouteLoaderData("routes/app") || {};
-  const quiz = appData.quiz;
+function Home({ quizzes, editing, block, editorUrl, storeUrl, season }) {
+  const app = useRouteLoaderData("routes/app") || {};
+  const plan = app.plan || PLANS.free;
+  const cap = plan.quizzes || 1;
+  const canAdd = quizzes.length < cap && quizzes.length < MAX_QUIZZES;
+  const up = nextPlan(plan);
   const fetcher = useFetcher();
   const shopify = useAppBridge();
+  const busy = fetcher.state !== "idle";
   useEffect(() => {
     if (!fetcher.data) return;
-    if (fetcher.data.ok) shopify.toast.show(fetcher.data.intent === "advanced" ? "Rules editor on" : fetcher.data.intent === "simple" ? "Back to the simple setup" : "Headline updated");
-    else shopify.toast.show(fetcher.data.error || "Something went wrong", { isError: true });
+    if (fetcher.data.ok) shopify.toast.show(TOASTS[fetcher.data.intent] || "Saved");
+    else shopify.toast.show(fetcher.data.error || "Something went wrong", { isError: true, duration: 8000 });
   }, [fetcher.data, shopify]);
-
-  const setup = config.meta?.setup || {};
-  const steps = (config.steps || []).length;
-  const products = productSlots(config);
-  const linked = products.filter(hasProduct).length;
-  const rules = (config.addonRules || []).length;
-  const live = block ? block.installed : !!setup.live;
-  const liveTask = { key: "live", done: live, title: "Add the block to your theme", text: "In the theme editor choose a section, then Add block, Apps, CraftFrame Bundle Quiz. Or Add section, Apps, for a full-width one. Save the theme.", href: editorUrl, external: true, actionLabel: "Open theme editor", editLabel: "Open theme editor", secondary: { href: storeUrl, label: "View storefront", external: true } };
-
-  const simple = isSimpleConfig(config);
-  const sp = simple ? config.simple.products || [] : [];
-  const simpleTasks = simple ? [
-    { key: "products", done: sp.length > 0, title: "Pick your products", badge: `${sp.length}`, text: `${config.simple.mode === "bundle" ? "A Bundle quiz" : "A Product finder"} recommending products from your store. Change the type, the products or what you sell.`, href: "/app/start", actionLabel: "Pick products", editLabel: "Edit products" },
-    { key: "questions", done: !!setup.questions, title: "Check your questions", badge: `${steps}`, text: "Rename anything and tick which products each answer points to.", href: "/app/grid", actionLabel: "Review questions", editLabel: "Edit questions" },
-  ] : null;
-  const tasks = simpleTasks ? [...simpleTasks, liveTask] : [
-    { key: "category", done: true, title: "Choose what you sell", text: `You started from ${current ? current.label : "a template"}. Changing it rebuilds the questions, rules and product links.`, href: "/app/category", actionLabel: "Choose a category", editLabel: "Change category" },
-    { key: "look", done: !!setup.look, title: "Match your store's look", text: "One click reads your theme's colours, type and corners. Your own choices always win over the match.", href: "/app/look", actionLabel: "Set the look", editLabel: "Edit the look" },
-    { key: "questions", done: !!setup.questions, title: "Check your questions", badge: `${steps}`, text: "Rename, reorder, add or remove. Show options as emoji rows or as picture cards with your product photos.", href: "/app/questions", actionLabel: "Review questions", editLabel: "Edit questions" },
-    { key: "products", done: products.length > 0 && linked === products.length, title: "Connect your products", badge: `${linked} of ${products.length}`, badgeTone: linked === products.length ? "success" : "warning", text: "Each bundle and add-on needs the product it puts in the cart. Rename them in Rules to match what you sell.", href: "/app/products", actionLabel: "Connect products", editLabel: "Edit product links" },
-    liveTask,
-  ];
-  const doneCount = tasks.filter((t) => t.done).length;
-  const firstOpen = tasks.find((t) => !t.done);
-  const [open, setOpen] = useState(firstOpen ? firstOpen.key : null);
-  const [guideHidden, setGuideHidden] = useState(doneCount === tasks.length);
-  const pct = Math.round((doneCount / tasks.length) * 100);
-
-  const actions = simple ? [
-    ["/app/start", "Products", `${sp.length} product${sp.length === 1 ? "" : "s"} from your store. ${config.simple.mode === "bundle" ? "Bundle quiz" : "Product finder"}.`],
-    ["/app/grid", "Questions", `${steps} question${steps === 1 ? "" : "s"}. Wording and which products each answer points to.`],
-    ["/app/look", "Look", `${config.brand?.preset === "base" ? "Base" : "Glass"}${config.brand?.matched ? ", matched to your theme" : ""}. Colours, corners, type.`],
-    ["/app/copy", "Copy & cart", "Every word shoppers read, promo code, how the cart opens."],
-  ] : [
-    ["/app/questions", "Questions", `${steps} question${steps === 1 ? "" : "s"}. Wording, order, icons and photos.`],
-    ["/app/rules", "Rules", `${(config.bundles || []).length} bundles, ${rules} add-on rule${rules === 1 ? "" : "s"}. What goes in the cart, and when.`],
-    ["/app/products", "Products", `${linked} of ${products.length} linked to your catalogue.`],
-    ["/app/look", "Look", `${config.brand?.preset === "base" ? "Base" : "Glass"}${config.brand?.matched ? ", matched to your theme" : ""}. Colours, corners, type.`],
-    ["/app/copy", "Copy & cart", "Every word shoppers read, promo code, how the cart opens."],
-    ["/app/category", "Category", `${current ? current.label : "Template"}. Start again from a different template.`],
-  ];
+  const submit = (data) => fetcher.submit(data, { method: "POST" });
+  const go = (id, to) => submit({ intent: "go", id, to });
 
   return (
     <s-page heading="CraftFrame Bundle Quiz">
-      <s-button slot="primary-action" href={editorUrl} target="_blank">Customize in theme editor</s-button>
+      <s-button slot="primary-action" onClick={() => submit({ intent: "new" })} {...(!canAdd || busy ? { disabled: true } : {})}>New quiz</s-button>
       <s-button slot="secondary-actions" href={storeUrl} target="_blank">View storefront</s-button>
-
-      {quiz ? (
-        <s-section>
-          <s-stack direction="inline" gap="small" alignItems="center">
-            <s-text type="strong">{`Editing Quiz ${quiz.id}: ${quiz.name}`}</s-text>
-            <s-text color="subdued">{`${quiz.count} quiz${quiz.count === 1 ? "" : "zes"} in this store. In the theme editor, the block's Quiz setting picks which one a page shows.`}</s-text>
-            <s-button variant="tertiary" href="/app/quizzes">{quiz.count > 1 ? "Switch quiz" : "Add a quiz"}</s-button>
-          </s-stack>
-        </s-section>
-      ) : null}
+      <s-button slot="secondary-actions" href={editorUrl} target="_blank">Theme editor</s-button>
 
       {block ? (
         block.installed ? (
-          <s-banner tone="success" heading={`Live on your store: ${block.where.join(", ")}`}>
-            {`The questionnaire is on the ${block.theme} theme. Edits you save here appear on the storefront straight away.`}
+          <s-banner tone="success" heading={`On your store: ${block.where.join(", ")}`}>
+            {`The quiz block is on the ${block.theme} theme. Saved changes appear on the storefront straight away. Each block's Quiz setting picks which quiz it shows.`}
           </s-banner>
         ) : (
-          <s-banner tone="info" heading="Not on your theme yet">
-            {`Everything is set up, but shoppers cannot see it until the block is on the ${block.theme} theme. `}
+          <s-banner tone="info" heading="Not on your store yet">
+            {`Shoppers see a quiz once its block is on the ${block.theme} theme: in the theme editor, add the CraftFrame Bundle Quiz block to a section and choose the quiz under Quiz. `}
             <s-link href={editorUrl} target="_blank">Open the theme editor</s-link>
-            , choose a section, then Add block, Apps, CraftFrame Bundle Quiz.
           </s-banner>
         )
       ) : null}
 
-      {!guideHidden ? (
-        <s-section>
-          <s-stack direction="block" gap="base">
-            <s-stack direction="inline" gap="small" alignItems="center">
-              <s-heading>Setup guide</s-heading>
-              <span style={{ marginLeft: "auto" }} />
-              {doneCount === tasks.length ? <s-button variant="tertiary" onClick={() => setGuideHidden(true)}>Hide</s-button> : null}
-            </s-stack>
-            <s-paragraph color="subdued">Use this guide to get your questionnaire in front of shoppers.</s-paragraph>
-            <s-stack direction="inline" gap="small" alignItems="center">
-              <s-text color="subdued">{`${doneCount} of ${tasks.length} tasks complete`}</s-text>
-              <div role="progressbar" aria-valuemin={0} aria-valuemax={tasks.length} aria-valuenow={doneCount} aria-label="Setup progress" style={{ flex: 1, maxWidth: 260, height: 6, borderRadius: 3, background: "#e3e3e3", overflow: "hidden" }}>
-                <div style={{ width: `${pct}%`, height: "100%", background: "#1a1a1a", borderRadius: 3, transition: "width .3s" }} />
-              </div>
-            </s-stack>
-            <s-stack direction="block" gap="small-200">
-              {tasks.map((t) => <Task key={t.key} task={t} open={open === t.key} onToggle={() => setOpen(open === t.key ? null : t.key)} />)}
-            </s-stack>
-          </s-stack>
-        </s-section>
-      ) : (
-        <s-section>
+      <s-section heading="Your quizzes">
+        <s-stack direction="block" gap="base">
           <s-stack direction="inline" gap="small" alignItems="center">
-            <s-badge tone="success">Setup complete</s-badge>
-            <s-text color="subdued">{`All ${tasks.length} tasks done.`}</s-text>
-            <span style={{ marginLeft: "auto" }} />
-            <s-button variant="tertiary" onClick={() => setGuideHidden(false)}>Show setup guide</s-button>
+            <s-text color="subdued">Choose what to work on. Each quiz has its own products, questions, look and copy.</s-text>
           </s-stack>
-        </s-section>
-      )}
-
-      {season ? (
-        <s-section>
-          <s-stack direction="block" gap="small">
-            <s-stack direction="inline" gap="small" alignItems="center">
-              <s-badge tone="info">Black Friday</s-badge>
-              <s-text type="strong">{season.label}</s-text>
-            </s-stack>
-            <s-paragraph color="subdued">Add an offer and every result shows the saving, with the code applied at checkout. Create the same code in Shopify, Discounts, first.</s-paragraph>
-            <s-box><s-button variant="secondary" href="/app/copy">Set up a Black Friday offer</s-button></s-box>
-          </s-stack>
-        </s-section>
-      ) : null}
-
-      {headline && headline.state !== "custom" ? (
-        <s-section>
-          <s-stack direction="block" gap="small">
-            <s-stack direction="inline" gap="small" alignItems="center">
-              <s-badge tone={headline.state === "placeholder" ? "warning" : "info"}>{headline.state === "placeholder" ? "Placeholder headline" : "Template headline"}</s-badge>
-              <s-text type="strong">{`“${headline.title || "No headline"}”`}</s-text>
-            </s-stack>
-            <s-paragraph color="subdued">
-              {headline.state === "placeholder"
-                ? "This is the first thing shoppers read, and right now it says nothing about your store."
-                : "This is the template's suggestion. It works, and one written in your own voice works better."}
-            </s-paragraph>
-            <s-stack direction="inline" gap="small">
-              <s-button variant="primary" href="/app/copy">Write your headline</s-button>
-              {headline.state === "placeholder" && headline.suggestion ? (
-                <s-button variant="secondary" onClick={() => fetcher.submit({ intent: "adopt-headline" }, { method: "POST" })} {...(fetcher.state !== "idle" ? { loading: true } : {})}>{`Use “${headline.suggestion}”`}</s-button>
-              ) : null}
-            </s-stack>
-          </s-stack>
-        </s-section>
-      ) : null}
-
-      <s-section heading={current ? `${current.icon} ${current.label}` : "Your questionnaire"}>
-        <s-paragraph color="subdued">Everything shoppers see and everything that decides their cart. Changes save to your store and go live at once.</s-paragraph>
-        <s-grid gridTemplateColumns="repeat(auto-fit, minmax(210px, 1fr))" gap="base">
-          {actions.map(([href, title, text]) => (
-            <s-clickable key={href} href={href} padding="base" borderWidth="base" borderRadius="base" background="base">
-              <s-stack direction="block" gap="small-200">
-                <s-heading>{title}</s-heading>
-                <s-paragraph color="subdued">{text}</s-paragraph>
+          {quizzes.map((q) => (
+            <QuizCard key={q.id} q={q} editing={q.id === editing && quizzes.length > 1} paused={Number(q.id) > cap} canAdd={canAdd} busy={busy} go={go} submit={submit} />
+          ))}
+          {canAdd ? (
+            <s-clickable onClick={() => submit({ intent: "new" })} padding="base" borderWidth="base" borderRadius="base" accessibilityLabel="Add a quiz">
+              <s-stack direction="inline" gap="small" alignItems="center">
+                <s-text type="strong">+ Add a quiz</s-text>
+                <s-text color="subdued">{`${quizzes.length} of ${cap} on ${plan.name}. A gift finder, a second product range, a seasonal offer.`}</s-text>
               </s-stack>
             </s-clickable>
-          ))}
-        </s-grid>
-      </s-section>
-
-      <s-section heading={simple ? "Advanced setup" : "Simple setup"}>
-        <s-stack direction="block" gap="small">
-          <s-paragraph color="subdued">
-            {simple
-              ? "Need quantities from answers, such as one per person, or conditions the grid cannot express? Switch to the rules editor. Your ticks become rules you can edit."
-              : config.simple
-                ? "Go back to products and ticks. Changes made in the rules editor since you switched are dropped."
-                : "Start a simple setup: pick products from your store and tick which answers point to them."}
-          </s-paragraph>
-          <s-box>
-            {simple || config.simple
-              ? <s-button variant="secondary" onClick={() => fetcher.submit({ intent: simple ? "advanced" : "simple" }, { method: "POST" })} {...(fetcher.state !== "idle" ? { loading: true } : {})}>{simple ? "Switch to the rules editor" : "Back to the simple setup"}</s-button>
-              : <s-button variant="secondary" href="/app/start">Start a simple setup</s-button>}
-          </s-box>
+          ) : (
+            <s-box padding="base" borderWidth="base" borderRadius="base" background="subdued">
+              <s-text color="subdued">{up ? `${plan.name} includes ${cap} quiz${cap === 1 ? "" : "zes"}. ${up.name} includes ${up.quizzes}. See the Plan card to upgrade.` : `Growth includes ${cap} quizzes. Ask for a Custom plan at ${CUSTOM_PLAN_EMAIL} for more.`}</s-text>
+            </s-box>
+          )}
         </s-stack>
       </s-section>
 
-      <s-section slot="aside" heading="Preview">
-        <WidgetPreview config={config} />
+      {season ? (
+        <s-section heading="Black Friday">
+          <s-stack direction="block" gap="small">
+            <s-text>{`${season.label}. Add an offer and every result shows the saving, with the code applied at checkout. Create the same code in Shopify, Discounts, first.`}</s-text>
+            <s-box><s-button variant="secondary" onClick={() => go(editing, "/app/copy")}>Set up a Black Friday offer</s-button></s-box>
+          </s-stack>
+        </s-section>
+      ) : null}
+
+      <s-section slot="aside" heading="Plan and usage">
+        <PlanCard quizCount={quizzes.length} />
       </s-section>
 
-      <s-section slot="aside" heading="Plan">
-        <PlanCard />
+      <s-section slot="aside" heading="Showing a quiz">
+        <s-stack direction="block" gap="small-200">
+          <s-paragraph color="subdued">In the theme editor, add the CraftFrame Bundle Quiz block to any page, then pick the quiz under Quiz. Different pages can show different quizzes.</s-paragraph>
+          <s-box><s-button variant="secondary" href={editorUrl} target="_blank">Open the theme editor</s-button></s-box>
+        </s-stack>
       </s-section>
 
       <s-section slot="aside" heading="Help">
         <s-stack direction="block" gap="small-200">
           <s-paragraph>{`Version ${VERSION}. We answer every email within two working days.`}</s-paragraph>
-          <s-link href={`mailto:${SUPPORT_EMAIL}?subject=Bundle%20Configurator`}>{SUPPORT_EMAIL}</s-link>
-          <s-paragraph color="subdued">The app reads your products and theme settings and writes one setting that holds your setup. It stores no customer data.</s-paragraph>
+          <s-link href={`mailto:${SUPPORT_EMAIL}?subject=Bundle%20Quiz`}>{SUPPORT_EMAIL}</s-link>
+          <s-paragraph color="subdued">The app reads your products and theme settings and writes your quiz setups to your store. It stores no customer data.</s-paragraph>
           <s-link href="https://bundle-configurator.netlify.app/privacy" target="_blank">Privacy policy</s-link>
         </s-stack>
       </s-section>

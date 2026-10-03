@@ -40,8 +40,7 @@ export default function App() {
     <AppProvider embedded apiKey={apiKey}>
       {simpleNav ? (
         <s-app-nav>
-          <s-link href="/app">Overview</s-link>
-          <s-link href="/app/quizzes">Quizzes</s-link>
+          <s-link href="/app">Home</s-link>
           <s-link href="/app/start">Products</s-link>
           <s-link href="/app/grid">Questions</s-link>
           <s-link href="/app/look">Look</s-link>
@@ -49,8 +48,7 @@ export default function App() {
         </s-app-nav>
       ) : (
         <s-app-nav>
-          <s-link href="/app">Overview</s-link>
-          <s-link href="/app/quizzes">Quizzes</s-link>
+          <s-link href="/app">Home</s-link>
           <s-link href="/app/questions">Questions</s-link>
           <s-link href="/app/rules">Rules</s-link>
           <s-link href="/app/products">Products</s-link>

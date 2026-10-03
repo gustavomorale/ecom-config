@@ -16,6 +16,7 @@ import { refreshLinked } from "../products.server";
 import { SetupRail, doneSteps } from "../components/SetupRail";
 import { money } from "../lib/money";
 import { hasProduct } from "../lib/links";
+import { QuizBar } from "../components/QuizBar";
 
 export const loader = async ({ request }) => {
   const { admin } = await authenticate.admin(request);
@@ -271,6 +272,7 @@ export default function Products() {
     <s-page heading="Connect your products.">
       <s-button slot="primary-action" onClick={() => submit(true)} {...(busy ? { loading: true } : {})}>Save and continue</s-button>
       <s-button slot="secondary-actions" href="/app/live" variant="tertiary">Skip for now</s-button>
+      <QuizBar />
 
       <s-section>
         <SetupRail current="products" done={done} />

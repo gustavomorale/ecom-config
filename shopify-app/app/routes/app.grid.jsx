@@ -14,6 +14,7 @@ import { authenticate } from "../shopify.server";
 import { readConfig, saveConfig, recompile, isSimple, simple as simpleApi } from "../config.server";
 import { SetupRail, doneSteps } from "../components/SetupRail";
 import { WidgetPreview } from "../components/WidgetPreview";
+import { QuizBar } from "../components/QuizBar";
 
 const MAX_QUESTIONS = 4, MAX_ANSWERS = 6, MIN_ANSWERS = 2;
 const cell = (q, a) => `${q.field}:${a.value}`;
@@ -147,6 +148,7 @@ export default function Questions() {
     <s-page heading="Check the questions">
       <s-button slot="primary-action" onClick={() => submit(true)} {...(busy ? { loading: true } : {})}>Save and continue</s-button>
       <s-button slot="secondary-actions" onClick={() => submit(false)} {...(!dirty || busy ? { disabled: true } : {})}>Save</s-button>
+      <QuizBar />
 
       <s-section>
         <SetupRail current="questions" done={done} simple />

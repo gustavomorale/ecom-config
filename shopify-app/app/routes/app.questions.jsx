@@ -14,6 +14,7 @@ import { authenticate } from "../shopify.server";
 import { readConfig, saveConfig, isSimple } from "../config.server";
 import { SetupRail, doneSteps } from "../components/SetupRail";
 import { WidgetPreview } from "../components/WidgetPreview";
+import { QuizBar } from "../components/QuizBar";
 
 const TYPES = ["choice", "boolean", "counters", "toggles", "multi"];
 
@@ -151,6 +152,7 @@ export default function Questions() {
     <s-page heading="Check the questions.">
       <s-button slot="primary-action" onClick={() => submit(true)} {...(busy ? { loading: true } : {})}>Save and continue</s-button>
       <s-button slot="secondary-actions" href="/app/products" variant="tertiary">Skip for now</s-button>
+      <QuizBar />
 
       <s-section>
         <SetupRail current="questions" done={done} />

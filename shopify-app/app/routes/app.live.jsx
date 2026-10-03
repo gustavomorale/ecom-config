@@ -13,6 +13,7 @@ import { authenticate } from "../shopify.server";
 import { readConfig, saveConfig, themeEditorUrl, listCategories, isSimple, simple as simpleApi } from "../config.server";
 import { SetupRail, doneSteps } from "../components/SetupRail";
 import { hasProduct, productSlots } from "../lib/links";
+import { QuizBar } from "../components/QuizBar";
 
 export const loader = async ({ request }) => {
   const { admin } = await authenticate.admin(request);
@@ -54,6 +55,7 @@ export default function Live() {
   return (
     <s-page heading="You are ready to go live.">
       <s-button slot="primary-action" onClick={() => fetcher.submit({}, { method: "POST" })} {...(busy ? { loading: true } : {})}>Finish setup</s-button>
+      <QuizBar />
 
       <s-section>
         <SetupRail current="live" done={done} simple={simple} />

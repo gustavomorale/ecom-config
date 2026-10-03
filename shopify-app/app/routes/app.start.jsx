@@ -16,6 +16,7 @@ import { readThemeLook } from "../theme.server";
 import { refreshLinked } from "../products.server";
 import { SetupRail, doneSteps } from "../components/SetupRail";
 import { money } from "../lib/money";
+import { QuizBar } from "../components/QuizBar";
 
 const MAX_PRODUCTS = 24;
 
@@ -302,6 +303,7 @@ export default function Start() {
   return (
     <s-page heading="Your products">
       <s-button slot="primary-action" onClick={save} {...(busy ? { loading: true } : {})} {...(!mains.length || !category ? { disabled: true } : {})}>Save and continue</s-button>
+      <QuizBar />
 
       <s-section>
         <SetupRail current="products" done={data.done} simple />

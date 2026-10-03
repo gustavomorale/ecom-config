@@ -19,6 +19,7 @@ import { fieldCatalog, toRows, fromRows, describe, validateQty, qtyToText } from
 import { money } from "../lib/money";
 import { ConditionBuilder } from "../components/ConditionBuilder";
 import { WidgetPreview } from "../components/WidgetPreview";
+import { QuizBar } from "../components/QuizBar";
 
 const clip = (s, n) => String(s ?? "").replace(/[<>]/g, "").slice(0, n);
 const slug = (s) => String(s || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 30);
@@ -137,6 +138,7 @@ export default function Rules() {
     <s-page heading="Rules">
       <s-button slot="primary-action" onClick={save} {...(busy ? { loading: true } : {})}>Save rules</s-button>
       <s-button slot="secondary-actions" href="/app" variant="tertiary">Back to overview</s-button>
+      <QuizBar />
 
       <s-section>
         <s-paragraph>Two decisions per shopper: which base bundle they get, and which add-ons go on top. Both follow from the answers.</s-paragraph>

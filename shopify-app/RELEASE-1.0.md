@@ -120,6 +120,23 @@ Out of 1.0: analytics funnel UI, price sync, AI draft.
 - Needs `npm run deploy` for production (the block changed) and `prisma migrate deploy`
   (Netlify build does it).
 
+**3 Oct: Home as the central place (Gustavo's feedback on the first click-through).**
+- Home (`app._index.jsx`) replaces the Overview and the separate Quizzes page: every quiz
+  is a card with its type, status (Ready, Setup in progress, Paused on your plan), facts
+  (category, products, questions, completions this month), its setup progress with one
+  "Continue setup" button, a headline hint, and buttons into its Products, Questions, Look
+  and Copy & cart. Rename, Duplicate, Switch to the rules editor and Delete sit under each
+  card. Choosing any of them makes that quiz the one the editor pages work on, so Home is
+  the router. "New quiz" is the page's primary action and an "Add a quiz" card, capped by
+  plan. Store-wide things around the cards: block on the theme, Black Friday, Plan and
+  usage (completions and quizzes, both with meters), Showing a quiz, Help.
+- `/app/quizzes` now redirects to Home. The menu reads Home, then the editor pages.
+- Editor pages show a small bar with the quiz being edited and "All quizzes" when the
+  store has more than one (`components/QuizBar.jsx`).
+- Fix: the plan link went to a 404 on the dev app, which has no plans on Shopify App
+  Pricing. The link now only appears when plans are read from Shopify (`BCFG_BILLING=on`,
+  production); in development the Plan card says the plan comes from `BCFG_PLAN`.
+
 ## Shopify side, before resubmitting
 
 1. Done 3 Oct: App Pricing has Free (USD 0), Starter (USD 9), Standard (USD 25) and Growth

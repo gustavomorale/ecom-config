@@ -148,47 +148,6 @@ export const action = async ({ request }) => {
 
 const priceLine = () => `Free for one quiz and up to ${PLANS.free.limit} completed quizzes a month. Starter USD ${PLANS.starter.price} (${PLANS.starter.quizzes} quizzes), Standard USD ${PLANS.standard.price} (${PLANS.standard.quizzes}) and Growth USD ${PLANS.growth.price} a month (${PLANS.growth.quizzes}), each with a ${TRIAL_DAYS}-day free trial. Custom plans on request.`;
 
-/* Plan, this month's completions, quizzes used and the way to a bigger plan.
-   planUrl is null when the app is not reading plans from Shopify (local
-   development with BCFG_PLAN): there is no plan page to link to then. */
-function PlanCard({ quizCount }) {
-  const app = useRouteLoaderData("routes/app") || {};
-  const { plan, usage, planUrl } = app;
-  if (!plan) return <s-paragraph color="subdued">{priceLine()}</s-paragraph>;
-  const up = nextPlan(plan);
-  const trialDays = plan.trialEndsAt ? Math.max(0, Math.ceil((Date.parse(plan.trialEndsAt) - Date.now()) / 864e5)) : 0;
-  const cap = plan.quizzes || 1;
-  const meter = (value, max, label, warn) => (
-    <div role="progressbar" aria-valuemin={0} aria-valuemax={max} aria-valuenow={value} aria-label={label} style={{ height: 6, borderRadius: 3, background: "#e3e3e3", overflow: "hidden" }}>
-      <div style={{ width: `${Math.min(100, Math.round((value / max) * 100))}%`, height: "100%", background: warn ? "#b98900" : "#1a1a1a", borderRadius: 3 }} />
-    </div>
-  );
-  return (
-    <s-stack direction="block" gap="base">
-      <s-stack direction="inline" gap="small" alignItems="center">
-        <s-text type="strong">{plan.name}</s-text>
-        {trialDays ? <s-badge tone="info">{`Trial, ${trialDays} day${trialDays === 1 ? "" : "s"} left`}</s-badge> : null}
-        {plan.price ? <s-text color="subdued">{`USD ${plan.price} a month`}</s-text> : null}
-      </s-stack>
-      {usage ? (
-        <s-stack direction="block" gap="small-200">
-          <s-text color="subdued">{`${usage.count.toLocaleString("en-GB")} of ${usage.limit.toLocaleString("en-GB")} completed quizzes this month`}</s-text>
-          {meter(usage.count, usage.limit, "Completed quizzes this month", usage.over)}
-        </s-stack>
-      ) : null}
-      <s-stack direction="block" gap="small-200">
-        <s-text color="subdued">{`${quizCount} of ${cap} quiz${cap === 1 ? "" : "zes"}`}</s-text>
-        {meter(quizCount, cap, "Quizzes used", quizCount >= cap)}
-      </s-stack>
-      {plan.attribution ? <s-text color="subdued">Results show a small Powered by CraftFrame line. Paid plans remove it.</s-text> : null}
-      {planUrl
-        ? <s-box><s-button variant={up && usage && (usage.half || usage.near || usage.over || quizCount >= cap) ? "primary" : "secondary"} href={planUrl} target="_top">{up ? `See ${up.name} and other plans` : "Manage plan"}</s-button></s-box>
-        : <s-text color="subdued">Plans are chosen on Shopify's plan page in the live app. This development copy reads its plan from BCFG_PLAN.</s-text>}
-      {!up ? <s-text color="subdued">{`Need more than Growth? Ask for a Custom plan at ${CUSTOM_PLAN_EMAIL}.`}</s-text> : null}
-    </s-stack>
-  );
-}
-
 function Welcome() {
   return (
     <s-page heading="Welcome to CraftFrame Bundle Quiz">
@@ -249,6 +208,108 @@ function Welcome() {
         <s-paragraph>Something broken or missing? <s-link href={`mailto:${SUPPORT_EMAIL}?subject=Bundle%20Configurator`}>{SUPPORT_EMAIL}</s-link>. Replies within two working days.</s-paragraph>
       </s-section>
     </s-page>
+  );
+}
+
+/* Headline figures for the store: big numbers on soft tinted tiles. Admin
+   pages are light, so the tints are fixed light colours with dark text. */
+const TINTS = {
+  blue: { bg: "#eef3ff", ink: "#1f3a8a", bar: "#3d5ee6" },
+  green: { bg: "#eaf7ef", ink: "#14532d", bar: "#1f7a45" },
+  violet: { bg: "#f3efff", ink: "#3b2a7a", bar: "#6d4fd8" },
+  amber: { bg: "#fff6e0", ink: "#6b4b00", bar: "#b98900" },
+  grey: { bg: "#f1f2f4", ink: "#30343b", bar: "#5c6170" },
+};
+function Kpi({ tint, label, value, sub, meter, children }) {
+  const t = TINTS[tint] || TINTS.grey;
+  return (
+    <div style={{ background: t.bg, color: t.ink, borderRadius: 12, padding: "16px 18px", display: "flex", flexDirection: "column", gap: 6, minHeight: 128 }}>
+      <span style={{ fontSize: 13, fontWeight: 600, letterSpacing: ".01em" }}>{label}</span>
+      <span style={{ fontSize: 34, lineHeight: 1.05, fontWeight: 700, fontVariantNumeric: "tabular-nums" }}>{value}</span>
+      {sub ? <span style={{ fontSize: 13, opacity: 0.85 }}>{sub}</span> : null}
+      {meter ? (
+        <div role="progressbar" aria-label={label} aria-valuemin={0} aria-valuemax={meter.max} aria-valuenow={meter.value} style={{ height: 6, borderRadius: 3, background: "rgba(0,0,0,.08)", overflow: "hidden", marginTop: "auto" }}>
+          <div style={{ width: `${Math.min(100, Math.round((meter.value / Math.max(1, meter.max)) * 100))}%`, height: "100%", background: meter.warn ? TINTS.amber.bar : t.bar, borderRadius: 3 }} />
+        </div>
+      ) : null}
+      {children}
+    </div>
+  );
+}
+
+function KpiRow({ quizCount, block }) {
+  const app = useRouteLoaderData("routes/app") || {};
+  const plan = app.plan || PLANS.free;
+  const usage = app.usage;
+  const cap = plan.quizzes || 1;
+  const trialDays = plan.trialEndsAt ? Math.max(0, Math.ceil((Date.parse(plan.trialEndsAt) - Date.now()) / 864e5)) : 0;
+  const live = block ? block.installed : null;
+  return (
+    <s-grid gridTemplateColumns="repeat(auto-fit, minmax(190px, 1fr))" gap="base">
+      <Kpi tint={usage && (usage.near || usage.over) ? "amber" : "blue"} label="Completed this month"
+        value={usage ? usage.count.toLocaleString("en-GB") : "0"}
+        sub={usage ? `of ${usage.limit.toLocaleString("en-GB")} on ${plan.name}` : `on ${plan.name}`}
+        meter={usage ? { value: usage.count, max: usage.limit, warn: usage.near || usage.over } : null} />
+      <Kpi tint={quizCount >= cap ? "amber" : "green"} label="Quizzes" value={`${quizCount} / ${cap}`}
+        sub={quizCount >= cap && nextPlan(plan) ? `${nextPlan(plan).name} includes ${nextPlan(plan).quizzes}` : `${cap - quizCount} more on ${plan.name}`}
+        meter={{ value: quizCount, max: cap, warn: quizCount >= cap }} />
+      <Kpi tint="violet" label="Plan" value={plan.name}
+        sub={trialDays ? `Trial, ${trialDays} day${trialDays === 1 ? "" : "s"} left` : plan.price ? `USD ${plan.price} a month` : "Free, with a Powered by line"}>
+        <a href="#plans" style={{ color: "inherit", fontSize: 13, fontWeight: 600, marginTop: "auto" }}>Compare and change plan</a>
+      </Kpi>
+      <Kpi tint={live === false ? "amber" : live ? "green" : "grey"} label="On your store"
+        value={live === null ? "Unknown" : live ? "Live" : "Not yet"}
+        sub={live ? block.where.join(", ") : live === false ? "Add the block in the theme editor" : "Could not read the theme"} />
+    </s-grid>
+  );
+}
+
+/* The four listed plans side by side, the current one marked, each with the
+   way to choose it: Shopify's own plan page (the app never charges). Custom
+   is not a listed plan: it is agreed by email. */
+function PlansSection() {
+  const app = useRouteLoaderData("routes/app") || {};
+  const current = (app.plan || PLANS.free).key;
+  const planUrl = app.planUrl;
+  const order = ["free", "starter", "standard", "growth"];
+  return (
+    <s-section id="plans" heading="Your plan">
+      <s-stack direction="block" gap="base">
+        <s-text color="subdued">{planUrl ? "Plans differ only in how many quizzes you run and how many shoppers finish them each month. Changing plan opens Shopify's plan page; the change applies straight away." : "Plans differ only in how many quizzes you run and how many shoppers finish them each month. In the live app, Choose opens Shopify's plan page. This development copy reads its plan from BCFG_PLAN."}</s-text>
+        <s-grid gridTemplateColumns="repeat(auto-fit, minmax(170px, 1fr))" gap="base">
+          {order.map((k) => {
+            const p = PLANS[k];
+            const isCurrent = k === current;
+            return (
+              <div key={k} style={{ border: isCurrent ? "2px solid #3d5ee6" : "1px solid #e1e3e5", background: isCurrent ? "#f5f7ff" : "#fff", borderRadius: 12, padding: 14, display: "flex", flexDirection: "column", gap: 6 }}>
+                <s-stack direction="inline" gap="small" alignItems="center">
+                  <s-text type="strong">{p.name}</s-text>
+                  {isCurrent ? <s-badge tone="info">Current</s-badge> : null}
+                </s-stack>
+                <span style={{ fontSize: 24, fontWeight: 700, fontVariantNumeric: "tabular-nums" }}>{p.price ? `USD ${p.price}` : "USD 0"}<span style={{ fontSize: 13, fontWeight: 400 }}> a month</span></span>
+                <s-text color="subdued">{`${p.quizzes} quiz${p.quizzes === 1 ? "" : "zes"}`}</s-text>
+                <s-text color="subdued">{`${p.limit.toLocaleString("en-GB")} completed a month`}</s-text>
+                <s-text color="subdued">{p.attribution ? "Powered by CraftFrame line" : p.price ? `No attribution line, ${TRIAL_DAYS}-day trial` : ""}</s-text>
+                <div style={{ marginTop: "auto", paddingTop: 6 }}>
+                  {isCurrent ? <s-text color="subdued">Your plan</s-text>
+                    : planUrl ? <s-button variant={order.indexOf(k) > order.indexOf(current) ? "primary" : "secondary"} href={planUrl} target="_top">{`Choose ${p.name}`}</s-button>
+                    : <s-button disabled>{`Choose ${p.name}`}</s-button>}
+                </div>
+              </div>
+            );
+          })}
+          <div style={{ border: "1px dashed #c9cccf", background: "#fafafa", borderRadius: 12, padding: 14, display: "flex", flexDirection: "column", gap: 6 }}>
+            <s-text type="strong">Custom</s-text>
+            <span style={{ fontSize: 24, fontWeight: 700 }}>Let's talk</span>
+            <s-text color="subdued">More than 25 quizzes or 15,000 completed a month</s-text>
+            <div style={{ marginTop: "auto", paddingTop: 6 }}>
+              <s-button variant="secondary" href={`mailto:${CUSTOM_PLAN_EMAIL}?subject=Bundle%20Quiz%20Custom%20plan`}>Email us</s-button>
+              <s-text color="subdued">{CUSTOM_PLAN_EMAIL}</s-text>
+            </div>
+          </div>
+        </s-grid>
+      </s-stack>
+    </s-section>
   );
 }
 
@@ -354,12 +415,12 @@ function Home({ quizzes, editing, block, editorUrl, storeUrl, season }) {
       <s-button slot="secondary-actions" href={storeUrl} target="_blank">View storefront</s-button>
       <s-button slot="secondary-actions" href={editorUrl} target="_blank">Theme editor</s-button>
 
+      <s-section>
+        <KpiRow quizCount={quizzes.length} block={block} />
+      </s-section>
+
       {block ? (
-        block.installed ? (
-          <s-banner tone="success" heading={`On your store: ${block.where.join(", ")}`}>
-            {`The quiz block is on the ${block.theme} theme. Saved changes appear on the storefront straight away. Each block's Quiz setting picks which quiz it shows.`}
-          </s-banner>
-        ) : (
+        block.installed ? null : (
           <s-banner tone="info" heading="Not on your store yet">
             {`Shoppers see a quiz once its block is on the ${block.theme} theme: in the theme editor, add the CraftFrame Bundle Quiz block to a section and choose the quiz under Quiz. `}
             <s-link href={editorUrl} target="_blank">Open the theme editor</s-link>
@@ -384,7 +445,7 @@ function Home({ quizzes, editing, block, editorUrl, storeUrl, season }) {
             </s-clickable>
           ) : (
             <s-box padding="base" borderWidth="base" borderRadius="base" background="subdued">
-              <s-text color="subdued">{up ? `${plan.name} includes ${cap} quiz${cap === 1 ? "" : "zes"}. ${up.name} includes ${up.quizzes}. See the Plan card to upgrade.` : `Growth includes ${cap} quizzes. Ask for a Custom plan at ${CUSTOM_PLAN_EMAIL} for more.`}</s-text>
+              <s-text color="subdued">{up ? `${plan.name} includes ${cap} quiz${cap === 1 ? "" : "zes"}. ${up.name} includes ${up.quizzes}. Compare plans under Your plan below.` : `Growth includes ${cap} quizzes. Ask for a Custom plan at ${CUSTOM_PLAN_EMAIL} for more.`}</s-text>
             </s-box>
           )}
         </s-stack>
@@ -399,9 +460,7 @@ function Home({ quizzes, editing, block, editorUrl, storeUrl, season }) {
         </s-section>
       ) : null}
 
-      <s-section slot="aside" heading="Plan and usage">
-        <PlanCard quizCount={quizzes.length} />
-      </s-section>
+      <PlansSection />
 
       <s-section slot="aside" heading="Showing a quiz">
         <s-stack direction="block" gap="small-200">

@@ -137,6 +137,18 @@ Out of 1.0: analytics funnel UI, price sync, AI draft.
   Pricing. The link now only appears when plans are read from Shopify (`BCFG_BILLING=on`,
   production); in development the Plan card says the plan comes from `BCFG_PLAN`.
 
+**3 Oct: Home figures and plan choice.**
+- A row of four figure tiles at the top of Home, big numbers on soft tinted backgrounds:
+  Completed this month (of the plan's limit, with a meter; amber from 80%), Quizzes (used
+  of the plan's number), Plan (name, price or trial days, "Compare and change plan") and
+  On your store (Live, Not yet). The block banner now only appears when the block is not
+  on the theme.
+- "Your plan" section: Free, Starter, Standard and Growth side by side (price, quizzes,
+  completions, attribution), the current plan marked, each with "Choose", which opens
+  Shopify's plan page (the app never charges; the change applies there). A Custom card
+  with "Email us". In development the Choose buttons are disabled with a note.
+  Replaces the Plan card in the side column.
+
 ## Shopify side, before resubmitting
 
 1. Done 3 Oct: App Pricing has Free (USD 0), Starter (USD 9), Standard (USD 25) and Growth

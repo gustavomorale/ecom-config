@@ -18,8 +18,8 @@ if (run('git tag -l app-' + version)) fail('tag app-' + version + ' already exis
 
 const edits = [
   ['shopify-app/app/components/SetupRail.jsx', /export const VERSION = "[^"]*";/, `export const VERSION = "${version}";`],
-  ['CLAUDE.md', /(Current version: engine v[\d.]+, app )[\d.]+(\.)/, `$1${version}$2`],
-  ['shopify-app/LISTING.md', /\(version [\d.]+\)/, `(version ${version})`],
+  ['CLAUDE.md', /(Current version: engine v[\d.]+, app )[\d.]+/, `$1${version}`],
+  ['shopify-app/LISTING.md', /\(version [\d.]+/, `(version ${version}`],
 ];
 for (const [file, re, to] of edits) {
   const p = path.join(root, file), s = fs.readFileSync(p, 'utf8');

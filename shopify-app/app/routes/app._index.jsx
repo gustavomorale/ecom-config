@@ -174,6 +174,8 @@ function QuizSketch() {
 const STEP_TINTS = [["#eef3ff", "#3d5ee6", "#1f3a8a"], ["#eaf7ef", "#1f7a45", "#14532d"], ["#f3efff", "#6d4fd8", "#3b2a7a"]];
 
 function Welcome() {
+  const appData = useRouteLoaderData("routes/app") || {};
+  const plan = appData.plan || PLANS.free;
   const steps = [
     ["Pick your products", "Choose a Product finder (one product per shopper) or a Bundle quiz (a main product plus extras), then pick products your store already sells."],
     ["Check the questions", "Questions are suggested for what you sell. Rename anything and tick which products each answer points to."],
@@ -194,7 +196,7 @@ function Welcome() {
       <s-section>
         <div style={{ background: "linear-gradient(135deg,#eef3ff 0%,#f4efff 100%)", borderRadius: 16, padding: "28px 24px", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 24, alignItems: "center" }}>
           <div style={{ display: "flex", flexDirection: "column", gap: 14, color: "#1a1a1a" }}>
-            <span style={{ alignSelf: "flex-start", background: "#fff", color: "#3d5ee6", borderRadius: 999, padding: "4px 10px", fontSize: 12, fontWeight: 600 }}>{`Free to start · Version ${VERSION}`}</span>
+            <span style={{ alignSelf: "flex-start", background: "#fff", color: "#3d5ee6", borderRadius: 999, padding: "4px 10px", fontSize: 12, fontWeight: 600 }}>{`${plan.key === "free" ? "Free to start" : `Your plan: ${plan.name}`} · Version ${VERSION}`}</span>
             <span style={{ fontSize: 28, lineHeight: 1.15, fontWeight: 750, letterSpacing: "-.01em" }}>Turn &ldquo;which one should I buy?&rdquo; into a full cart.</span>
             <span style={{ fontSize: 15, lineHeight: 1.5, color: "#3a3f4b" }}>A short quiz on your store. Shoppers answer a few questions and get the right product from your catalogue, or a main product with the extras that fit, ready in the cart.</span>
             <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
@@ -207,7 +209,7 @@ function Welcome() {
       </s-section>
 
       <s-section heading="Three steps to go live">
-        <s-grid gridTemplateColumns="repeat(auto-fit, minmax(200px, 1fr))" gap="base">
+        <s-grid gridTemplateColumns="repeat(auto-fit, minmax(130px, 1fr))" gap="base">
           {steps.map(([h, p], n) => {
             const [bg, dot, ink] = STEP_TINTS[n];
             return (
@@ -235,23 +237,7 @@ function Welcome() {
         </s-grid>
       </s-section>
 
-      <s-section heading="Plans">
-        <s-stack direction="block" gap="base">
-          <s-grid gridTemplateColumns="repeat(auto-fit, minmax(140px, 1fr))" gap="small">
-            {["free", "starter", "standard", "growth"].map((k) => {
-              const p = PLANS[k];
-              return (
-                <div key={k} style={{ border: k === "free" ? "2px solid #3d5ee6" : "1px solid #e1e3e5", background: k === "free" ? "#f5f7ff" : "#fff", borderRadius: 12, padding: 12, display: "flex", flexDirection: "column", gap: 4 }}>
-                  <s-text type="strong">{p.name}</s-text>
-                  <span style={{ fontSize: 20, fontWeight: 700 }}>{`USD ${p.price}`}<span style={{ fontSize: 12, fontWeight: 400 }}> a month</span></span>
-                  <s-text color="subdued">{`${p.quizzes} quiz${p.quizzes === 1 ? "" : "zes"}, ${p.limit.toLocaleString("en-GB")} completed a month`}</s-text>
-                </div>
-              );
-            })}
-          </s-grid>
-          <s-text color="subdued">{`Start free. Paid plans come with a ${TRIAL_DAYS}-day free trial and remove the Powered by CraftFrame line. Custom plans on request.`}</s-text>
-        </s-stack>
-      </s-section>
+      <PlansSection />
 
       <s-section slot="aside" heading="What the app can access">
         <s-unordered-list>
@@ -336,7 +322,7 @@ function PlansSection() {
     <s-section id="plans" heading="Your plan">
       <s-stack direction="block" gap="base">
         <s-text color="subdued">{planUrl ? "Plans differ only in how many quizzes you run and how many shoppers finish them each month. Changing plan opens Shopify's plan page; the change applies straight away." : "Plans differ only in how many quizzes you run and how many shoppers finish them each month. In the live app, Choose opens Shopify's plan page. This development copy reads its plan from BCFG_PLAN."}</s-text>
-        <s-grid gridTemplateColumns="repeat(auto-fit, minmax(170px, 1fr))" gap="base">
+            <s-grid gridTemplateColumns="repeat(auto-fit, minmax(130px, 1fr))" gap="base">
           {order.map((k) => {
             const p = PLANS[k];
             const isCurrent = k === current;
@@ -346,7 +332,8 @@ function PlansSection() {
                   <s-text type="strong">{p.name}</s-text>
                   {isCurrent ? <s-badge tone="info">Current</s-badge> : null}
                 </s-stack>
-                <span style={{ fontSize: 24, fontWeight: 700, fontVariantNumeric: "tabular-nums" }}>{p.price ? `USD ${p.price}` : "USD 0"}<span style={{ fontSize: 13, fontWeight: 400 }}> a month</span></span>
+                <span style={{ fontSize: 24, fontWeight: 700, fontVariantNumeric: "tabular-nums", lineHeight: 1.1 }}>{`USD ${p.price || 0}`}</span>
+                <span style={{ fontSize: 12, color: "#6b6b6b", marginTop: -4 }}>a month</span>
                 <s-text color="subdued">{`${p.quizzes} quiz${p.quizzes === 1 ? "" : "zes"}`}</s-text>
                 <s-text color="subdued">{`${p.limit.toLocaleString("en-GB")} completed a month`}</s-text>
                 <s-text color="subdued">{p.attribution ? "Powered by CraftFrame line" : p.price ? `No attribution line, ${TRIAL_DAYS}-day trial` : ""}</s-text>

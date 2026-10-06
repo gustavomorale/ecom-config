@@ -188,6 +188,12 @@ Out of 1.0: analytics funnel UI, price sync, AI draft.
   row starting on Free. Copy brought up to date (up to four questions; one saved setup per
   quiz).
 
+**6 Oct: 1.0.4, welcome page complete.**
+- The welcome page uses the same plan section as Home: four plans with Choose (Shopify's
+  plan page, live app only), the current plan marked, and the Custom card with Email us.
+  The hero label shows the current plan. Steps sit three in a row; plan prices no longer
+  wrap ("a month" on its own line).
+
 ## Shopify side, before resubmitting
 
 1. Done 3 Oct: App Pricing has Free (USD 0), Starter (USD 9), Standard (USD 25) and Growth

@@ -201,6 +201,9 @@ Out of 1.0: analytics funnel UI, price sync, AI draft.
   under the four cards with the email address and Email us, so the address never runs out
   of its box.
 
+**6 Oct: 1.0.6, plan cards never split 3 + 1.** The four cards follow the width of their
+section: four across, two by two, or one per row.
+
 ## Shopify side, before resubmitting
 
 1. Done 3 Oct: App Pricing has Free (USD 0), Starter (USD 9), Standard (USD 25) and Growth

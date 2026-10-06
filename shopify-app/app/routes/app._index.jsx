@@ -322,7 +322,10 @@ function PlansSection() {
     <s-section id="plans" heading="Your plan">
       <s-stack direction="block" gap="base">
         <s-text color="subdued">{planUrl ? "Plans differ only in how many quizzes you run and how many shoppers finish them each month. Changing plan opens Shopify's plan page; the change applies straight away." : "Plans differ only in how many quizzes you run and how many shoppers finish them each month. In the live app, Choose opens Shopify's plan page. This development copy reads its plan from BCFG_PLAN."}</s-text>
-        <s-grid gridTemplateColumns="repeat(auto-fit, minmax(160px, 1fr))" gap="base">
+        {/* Four cards split evenly by the space the section has (not the
+            window): 4 across, 2 by 2, or one per row. Never 3 + 1. */}
+        <style>{`.bcfg-plans{container-type:inline-size}.bcfg-plans-grid{display:grid;gap:16px;grid-template-columns:1fr}@container (min-width:360px){.bcfg-plans-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@container (min-width:720px){.bcfg-plans-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}`}</style>
+        <div className="bcfg-plans"><div className="bcfg-plans-grid">
           {order.map((k) => {
             const p = PLANS[k];
             const isCurrent = k === current;
@@ -354,7 +357,7 @@ function PlansSection() {
               </div>
             );
           })}
-        </s-grid>
+        </div></div>
         <div style={{ border: "1px dashed #c9cccf", background: "#fafafa", borderRadius: 12, padding: 16, display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
           <div style={{ minWidth: 0, flex: "1 1 260px" }}>
             <s-text type="strong">Custom plan</s-text>

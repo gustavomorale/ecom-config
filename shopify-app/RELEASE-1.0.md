@@ -159,6 +159,14 @@ Out of 1.0: analytics funnel UI, price sync, AI draft.
   embedded admin). It now opens the plan comparison right under the figure tiles, and
   closes it again. The four tiles fit on one row.
 
+**6 Oct: 1.0.1, plan approval 404.**
+- After approving Starter, Shopify opened the app at "/starter?charge_id=…&plan_handle=starter"
+  (the plan's welcome link in App Pricing) and the app answered 404. Other plans returned
+  to the app home, which is why it happened only sometimes. New catch-all route
+  `routes/$.jsx`: any unknown address opened from the admin goes to Home with the same
+  query; opened directly, it is still a 404. Also clear the Starter plan's welcome link in
+  the Partner Dashboard (App Pricing, Starter, Welcome link) so it matches the others.
+
 ## Shopify side, before resubmitting
 
 1. Done 3 Oct: App Pricing has Free (USD 0), Starter (USD 9), Standard (USD 25) and Growth

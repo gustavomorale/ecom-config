@@ -322,39 +322,49 @@ function PlansSection() {
     <s-section id="plans" heading="Your plan">
       <s-stack direction="block" gap="base">
         <s-text color="subdued">{planUrl ? "Plans differ only in how many quizzes you run and how many shoppers finish them each month. Changing plan opens Shopify's plan page; the change applies straight away." : "Plans differ only in how many quizzes you run and how many shoppers finish them each month. In the live app, Choose opens Shopify's plan page. This development copy reads its plan from BCFG_PLAN."}</s-text>
-            <s-grid gridTemplateColumns="repeat(auto-fit, minmax(130px, 1fr))" gap="base">
+        <s-grid gridTemplateColumns="repeat(auto-fit, minmax(160px, 1fr))" gap="base">
           {order.map((k) => {
             const p = PLANS[k];
             const isCurrent = k === current;
+            const rows = [
+              `${p.quizzes} quiz${p.quizzes === 1 ? "" : "zes"}`,
+              `${p.limit.toLocaleString("en-GB")} completed a month`,
+              p.attribution ? "Powered by CraftFrame line" : "No Powered by line",
+            ];
             return (
-              <div key={k} style={{ border: isCurrent ? "2px solid #3d5ee6" : "1px solid #e1e3e5", background: isCurrent ? "#f5f7ff" : "#fff", borderRadius: 12, padding: 14, display: "flex", flexDirection: "column", gap: 6 }}>
-                <s-stack direction="inline" gap="small" alignItems="center">
+              <div key={k} style={{ border: isCurrent ? "2px solid #3d5ee6" : "1px solid #e1e3e5", background: isCurrent ? "#f5f7ff" : "#fff", borderRadius: 12, padding: isCurrent ? 15 : 16, display: "flex", flexDirection: "column", gap: 12, minWidth: 0 }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, minHeight: 24 }}>
                   <s-text type="strong">{p.name}</s-text>
                   {isCurrent ? <s-badge tone="info">Current</s-badge> : null}
-                </s-stack>
-                <span style={{ fontSize: 24, fontWeight: 700, fontVariantNumeric: "tabular-nums", lineHeight: 1.1 }}>{`USD ${p.price || 0}`}</span>
-                <span style={{ fontSize: 12, color: "#6b6b6b", marginTop: -4 }}>a month</span>
-                <s-text color="subdued">{`${p.quizzes} quiz${p.quizzes === 1 ? "" : "zes"}`}</s-text>
-                <s-text color="subdued">{`${p.limit.toLocaleString("en-GB")} completed a month`}</s-text>
-                <s-text color="subdued">{p.attribution ? "Powered by CraftFrame line" : p.price ? `No attribution line, ${TRIAL_DAYS}-day trial` : ""}</s-text>
-                <div style={{ marginTop: "auto", paddingTop: 6 }}>
-                  {isCurrent ? <s-text color="subdued">Your plan</s-text>
-                    : planUrl ? <s-button variant={order.indexOf(k) > order.indexOf(current) ? "primary" : "secondary"} href={planUrl} target="_top">{`Choose ${p.name}`}</s-button>
-                    : <s-button disabled>{`Choose ${p.name}`}</s-button>}
+                </div>
+                <div>
+                  <div style={{ fontSize: 26, fontWeight: 700, fontVariantNumeric: "tabular-nums", lineHeight: 1.1 }}>{`USD ${p.price || 0}`}</div>
+                  <div style={{ fontSize: 12, color: "#6b6b6b", marginTop: 2 }}>{p.price ? `a month, ${TRIAL_DAYS}-day free trial` : "free for good"}</div>
+                </div>
+                <ul style={{ listStyle: "none", margin: 0, padding: "12px 0 0", borderTop: "1px solid #ebebeb", display: "flex", flexDirection: "column", gap: 6, fontSize: 13, color: "#4a4a4a", lineHeight: 1.35 }}>
+                  {rows.map((r) => (
+                    <li key={r} style={{ display: "flex", gap: 6 }}><span aria-hidden="true" style={{ color: "#1f7a45", fontWeight: 700 }}>✓</span><span>{r}</span></li>
+                  ))}
+                </ul>
+                <div style={{ marginTop: "auto" }}>
+                  {isCurrent ? <s-button disabled inlineSize="fill">Your plan</s-button>
+                    : planUrl ? <s-button inlineSize="fill" variant={order.indexOf(k) > order.indexOf(current) ? "primary" : "secondary"} href={planUrl} target="_top">{`Choose ${p.name}`}</s-button>
+                    : <s-button disabled inlineSize="fill">{`Choose ${p.name}`}</s-button>}
                 </div>
               </div>
             );
           })}
-          <div style={{ border: "1px dashed #c9cccf", background: "#fafafa", borderRadius: 12, padding: 14, display: "flex", flexDirection: "column", gap: 6 }}>
-            <s-text type="strong">Custom</s-text>
-            <span style={{ fontSize: 24, fontWeight: 700 }}>Let's talk</span>
-            <s-text color="subdued">More than 25 quizzes or 15,000 completed a month</s-text>
-            <div style={{ marginTop: "auto", paddingTop: 6 }}>
-              <s-button variant="secondary" href={`mailto:${CUSTOM_PLAN_EMAIL}?subject=Bundle%20Quiz%20Custom%20plan`}>Email us</s-button>
-              <s-text color="subdued">{CUSTOM_PLAN_EMAIL}</s-text>
-            </div>
-          </div>
         </s-grid>
+        <div style={{ border: "1px dashed #c9cccf", background: "#fafafa", borderRadius: 12, padding: 16, display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+          <div style={{ minWidth: 0, flex: "1 1 260px" }}>
+            <s-text type="strong">Custom plan</s-text>
+            <div style={{ fontSize: 13, color: "#4a4a4a", marginTop: 2 }}>{"More than 25 quizzes or 15,000 completed a month? We'll set up a plan that fits."}</div>
+          </div>
+          <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 12, minWidth: 0 }}>
+            <span style={{ fontSize: 13, color: "#6b6b6b", overflowWrap: "anywhere" }}>{CUSTOM_PLAN_EMAIL}</span>
+            <s-button variant="secondary" href={`mailto:${CUSTOM_PLAN_EMAIL}?subject=Bundle%20Quiz%20Custom%20plan`}>Email us</s-button>
+          </div>
+        </div>
       </s-stack>
     </s-section>
   );

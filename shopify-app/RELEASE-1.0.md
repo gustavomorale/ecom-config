@@ -194,6 +194,13 @@ Out of 1.0: analytics funnel UI, price sync, AI draft.
   The hero label shows the current plan. Steps sit three in a row; plan prices no longer
   wrap ("a month" on its own line).
 
+**6 Oct: 1.0.5, plan cards tidied.**
+- Each plan card has the same parts in the same place: name (and Current), price with
+  "a month, 21-day free trial" or "free for good", three ticked lines, and a full-width
+  button at the bottom ("Your plan" on the current one). Custom is a full-width strip
+  under the four cards with the email address and Email us, so the address never runs out
+  of its box.
+
 ## Shopify side, before resubmitting
 
 1. Done 3 Oct: App Pricing has Free (USD 0), Starter (USD 9), Standard (USD 25) and Growth

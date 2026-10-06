@@ -5,7 +5,7 @@
 import { hasProduct, productSlots } from "../lib/links";
 
 /* Version label shown in the app, and where merchants reach us. */
-export const VERSION = "1.0.1";
+export const VERSION = "1.0.2";
 export const SUPPORT_EMAIL = "contact@craftframe.agency";
 
 /* The 1.0 simple setup: three steps, the look is matched on the way. */

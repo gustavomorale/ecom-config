@@ -183,12 +183,41 @@ function normaliseIndex(raw, hasMain) {
   return index;
 }
 
+/* 1.0 starts clean (decided 2026-10-06). A quiz saved by 0.9 has no simple
+   setup inside (no config.simple): its names and "What's included" lists are
+   the old template's placeholders, not the store's products. The first time
+   1.0 reads a store, every such quiz is moved to an admin-only backup
+   (legacy_<key>) and removed, and the index records migrated: true so this
+   runs once. Quizzes made in 1.0 (simple, or switched to the rules editor)
+   always carry config.simple and are kept. */
+async function retireLegacy(admin, shopId, rawIndex) {
+  const all = await readAllQuizzes(admin);
+  const retired = [];
+  for (const [id, cfg] of Object.entries(all)) {
+    if (!cfg || cfg.simple) continue;
+    const key = slotKey(id);
+    await setJson(admin, shopId, `legacy_${key}`, { retiredAt: new Date().toISOString(), config: cfg });
+    await deleteConfig(admin, shopId, key);
+    retired.push(id);
+  }
+  const prev = rawIndex && Array.isArray(rawIndex.list) ? rawIndex.list : [];
+  const list = prev.filter((q) => q && !retired.includes(String(q.id)) && all[q.id]);
+  const editing = list.some((q) => q.id === String(rawIndex?.editing)) ? String(rawIndex.editing) : list[0]?.id || "1";
+  await saveIndex(admin, shopId, { editing, list, migrated: true });
+  if (retired.length) console.log("[migrate] retired 0.9 quizzes", retired.join(","));
+}
+
 /* The quiz being edited (or `quiz` when given), plus the index and status. */
-export async function readConfig(admin, { quiz } = {}) {
+export async function readConfig(admin, { quiz } = {}, retry = true) {
   const res = await admin.graphql(SHOP_QUERY);
   const { data } = await res.json();
   const shop = data.shop;
-  const index = normaliseIndex(parse(shop.idx?.value), !!shop.metafield?.value);
+  const rawIndex = parse(shop.idx?.value);
+  if (retry && !rawIndex?.migrated) {
+    await retireLegacy(admin, shop.id, rawIndex);
+    return readConfig(admin, { quiz }, false);
+  }
+  const index = normaliseIndex(rawIndex, !!shop.metafield?.value);
   const status = parse(shop.st?.value) || null;
   const editing = String(quiz || index.editing || "1");
   let mf = shop.metafield;
@@ -276,7 +305,7 @@ export async function deleteConfig(admin, shopId, key) {
 
 export async function saveIndex(admin, shopId, index) {
   await ensureDefinition(admin, INDEX_KEY, "Bundle Quiz list", false);
-  return setJson(admin, shopId, INDEX_KEY, { editing: String(index.editing || "1"), list: index.list });
+  return setJson(admin, shopId, INDEX_KEY, { editing: String(index.editing || "1"), list: index.list, migrated: index.migrated !== false });
 }
 
 /* Just the status metafield and the shop id (cheap; used by the app proxy). */

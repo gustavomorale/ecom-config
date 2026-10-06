@@ -167,6 +167,20 @@ Out of 1.0: analytics funnel UI, price sync, AI draft.
   query; opened directly, it is still a 404. Also clear the Starter plan's welcome link in
   the Partner Dashboard (App Pricing, Starter, Welcome link) so it matches the others.
 
+**6 Oct: 1.0.2, a clean 1.0 with no 0.9 setups.**
+- Decided by Gustavo: 1.0 shows nothing from 0.9. A quiz saved by 0.9 has no simple setup
+  (`config.simple`), so its names and "What's included" lists are the old template's
+  placeholders (Camp Kit, Tent) with store products linked underneath. The first time 1.0
+  reads a store, `readConfig` moves every such quiz to an admin-only backup metafield
+  (`legacy_config`, `legacy_quiz_N`), deletes it and saves the index with
+  `migrated: true`, so it runs once. A store left with no quiz starts at the welcome;
+  1.0 quizzes keep their numbers (a block set to Quiz 2 keeps working).
+- The 0.9 category template page (`/app/category`) now leads to Your products, and the
+  0.9 five-step rail is gone; rules-editor pages show only the version.
+- Known edge: a Free store whose only remaining quiz is number 2 or higher sees it paused
+  (the plan pauses by number). Only possible on test stores that mixed 0.9 and 1.0.
+- Verified with a simulated store (0.9 and 1.0 quiz, 0.9 only, fresh install).
+
 ## Shopify side, before resubmitting
 
 1. Done 3 Oct: App Pricing has Free (USD 0), Starter (USD 9), Standard (USD 25) and Growth

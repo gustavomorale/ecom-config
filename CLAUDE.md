@@ -68,9 +68,10 @@ commands: `/check`, `/build-extension`, `/sync-mvp`, `/next-blocker [n]`. Person
 
 ## Decisions (do not relitigate without a reason)
 
-1. **Category first.** The admin opens on "what are you building a configurator for" and
-   nothing else is visible until answered. Picking seeds a complete working template and
-   decides which scene ships. Nobody faces an empty questionnaire.
+1. **Products first (1.0, replaced "Category first").** Setup opens on "Your products":
+   quiz type, what you sell (the category only suggests questions and wording) and the
+   store's own products. Everything a shopper sees comes from linked products; nothing
+   made up is ever shown. 0.9 setups are retired to a backup on first load.
 2. **Glass is a preset, not a replacement.** `brand.preset: 'glass' | 'base'`. Theme
    resolution is three layers, each overridden by the next: preset skin, then
    `brand.inherited` (sniffed), then `brand.theme` (merchant's explicit choices, always wins).
@@ -91,12 +92,10 @@ commands: `/check`, `/build-extension`, `/sync-mvp`, `/next-blocker [n]`. Person
    top) instead of compact rows; tokens `--bcfg-card-media-ratio`, `--bcfg-card-min`.
    Works for single choice, multiple choice and toggles. No file upload in the app: that
    would need the `write_files` scope.
-6. **First access is a five-step setup, then the full editor.** Category, Look ("Match my
-   store" runs theme sync), Questions, Products (variant IDs; the only step that gates a
-   real checkout), Go live. One decision per step, one sentence of why, one primary
-   action, always a "Skip for now". Progress and the config in progress persist, so a
-   refresh resumes. The mock in `demo/harness.js` (`Setup`) is the spec for the React Router +
-   Polaris admin. The bar is a top-tier Shopify App Store listing.
+6. **Three setup steps, Home as the router (1.0, replaced the five-step setup).** Your
+   products, Questions (answer grid), Go live; the look is matched on save. Home lists
+   every quiz with its progress and leads into its pages. The bar is a top-tier Shopify
+   App Store listing.
 
 ## Conventions
 

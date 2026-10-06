@@ -1,18 +1,12 @@
-/* The five-step rail. One line per step, the current one highlighted, done
-   ones marked. Mirrors the mock in demo/harness.js. */
+/* The setup rail: the 1.0 simple setup's three steps, the current one
+   highlighted, done ones marked. Pages of the rules editor are editors, not
+   setup steps, so they show only the version (the 0.9 five-step rail is
+   retired with the 0.9 setup). */
 import { hasProduct, productSlots } from "../lib/links";
 
 /* Version label shown in the app, and where merchants reach us. */
 export const VERSION = "1.0.1";
 export const SUPPORT_EMAIL = "contact@craftframe.agency";
-
-export const STEPS = [
-  { n: 1, key: "category", label: "Category", href: "/app/category" },
-  { n: 2, key: "look", label: "Look", href: "/app/look" },
-  { n: 3, key: "questions", label: "Questions", href: "/app/questions" },
-  { n: 4, key: "products", label: "Products", href: "/app/products" },
-  { n: 5, key: "live", label: "Go live", href: "/app/live" },
-];
 
 /* The 1.0 simple setup: three steps, the look is matched on the way. */
 export const SIMPLE_STEPS = [
@@ -24,7 +18,7 @@ export const SIMPLE_STEPS = [
 export function SetupRail({ current, done = [], simple = false }) {
   return (
     <s-stack direction="inline" gap="small" alignItems="center">
-      {(simple ? SIMPLE_STEPS : STEPS).map((s) => {
+      {(simple ? SIMPLE_STEPS : []).map((s) => {
         const state = s.key === current ? "current" : done.includes(s.key) ? "done" : "todo";
         const tone = state === "current" ? "info" : state === "done" ? "success" : "neutral";
         return (

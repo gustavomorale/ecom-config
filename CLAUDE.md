@@ -117,11 +117,12 @@ commands: `/check`, `/build-extension`, `/sync-mvp`, `/next-blocker [n]`. Person
 - **v1.1:** analytics endpoint and drop-off funnel. Ajax cart.
 - **v1.2 (current):** answer persistence (`sessionStorage` + resumable link), done.
 - **v1.3:** price sync from the Storefront API. Metaobject-backed accessory catalogue.
-- **v1.4, AI draft (decided 2026-09-22, after approval):** an "AI draft" step at Category that
-  reads the catalogue (`read_products`, already granted), sends it with the chosen template to
-  an LLM and writes questions, bundles and add-on rules into the config for the merchant to
-  edit. Prompt spec in `shopify-app/AI-DRAFT.md`. Needs privacy policy and listing updates
-  (data sent to a model provider) before it ships; do not add during review.
+- **1.1.0, AI draft (core feature of the public release, decided 2026-10-06):** "Let AI set
+  it up" on Your products reads up to 150 products and the shop's name, asks Claude Opus 5.5
+  for a complete simple setup (type, products, questions, ticks, copy) in a fixed schema,
+  validates it with the editor's rules and saves it for the merchant to review. Runs as a
+  background job; drafts per month limited by plan. Spec: `shopify-app/AI-DRAFT.md`. Needs
+  an Anthropic API key in Netlify, the DPA, and privacy policy and listing updates.
 - **v2:** draft orders for high-value configs. Per-market/per-locale configs.
   Merchant-defined scenes.
 - **Not in v1:** multi-language, customer accounts, B2B price lists, anything needing an

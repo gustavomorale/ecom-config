@@ -146,66 +146,125 @@ export const action = async ({ request }) => {
   return { ok: false, error: "Unknown action" };
 };
 
-const priceLine = () => `Free for one quiz and up to ${PLANS.free.limit} completed quizzes a month. Starter USD ${PLANS.starter.price} (${PLANS.starter.quizzes} quizzes), Standard USD ${PLANS.standard.price} (${PLANS.standard.quizzes}) and Growth USD ${PLANS.growth.price} a month (${PLANS.growth.quizzes}), each with a ${TRIAL_DAYS}-day free trial. Custom plans on request.`;
+
+/* A small, still example of the quiz for the welcome page: one question,
+   three answers (one chosen) and the result. Neutral wording, no brand. */
+function QuizSketch() {
+  const chip = (label, on) => (
+    <div style={{ padding: "8px 10px", borderRadius: 10, fontSize: 13, background: "#fff", border: on ? "2px solid #3d5ee6" : "1px solid #e1e3e5", fontWeight: on ? 600 : 400, color: "#1a1a1a" }}>{label}</div>
+  );
+  return (
+    <div aria-hidden="true" style={{ background: "#fff", borderRadius: 16, padding: 16, boxShadow: "0 10px 30px rgba(31,58,138,.12)", display: "flex", flexDirection: "column", gap: 10, maxWidth: 300, width: "100%", justifySelf: "center" }}>
+      <div style={{ fontSize: 11, letterSpacing: ".06em", textTransform: "uppercase", color: "#6b6b6b" }}>Step 1 of 3</div>
+      <div style={{ height: 4, borderRadius: 2, background: "#e9ebf0" }}><div style={{ width: "33%", height: "100%", borderRadius: 2, background: "#3d5ee6" }} /></div>
+      <div style={{ fontWeight: 650, fontSize: 15, color: "#1a1a1a" }}>What are you shopping for?</div>
+      {chip("Just the essentials", false)}
+      {chip("Something for every day", true)}
+      {chip("The complete set", false)}
+      <div style={{ marginTop: 4, padding: 12, borderRadius: 12, background: "linear-gradient(135deg,#1f2a5c,#3d5ee6)", color: "#fff", display: "flex", flexDirection: "column", gap: 4 }}>
+        <span style={{ fontSize: 11, opacity: 0.8, letterSpacing: ".05em", textTransform: "uppercase" }}>Our pick for you</span>
+        <span style={{ fontWeight: 700, fontSize: 16 }}>Everyday Set</span>
+        <span style={{ fontSize: 12, opacity: 0.85 }}>Because you chose: something for every day</span>
+        <span style={{ marginTop: 6, alignSelf: "flex-start", background: "#fff", color: "#1f2a5c", borderRadius: 999, padding: "6px 12px", fontSize: 12, fontWeight: 700 }}>Add to cart</span>
+      </div>
+    </div>
+  );
+}
+
+const STEP_TINTS = [["#eef3ff", "#3d5ee6", "#1f3a8a"], ["#eaf7ef", "#1f7a45", "#14532d"], ["#f3efff", "#6d4fd8", "#3b2a7a"]];
 
 function Welcome() {
+  const steps = [
+    ["Pick your products", "Choose a Product finder (one product per shopper) or a Bundle quiz (a main product plus extras), then pick products your store already sells."],
+    ["Check the questions", "Questions are suggested for what you sell. Rename anything and tick which products each answer points to."],
+    ["Go live", "Add the block to any page in the theme editor. It wears your store's colours, fonts and corners."],
+  ];
+  const features = [
+    ["Only your products", "Names, photos and prices come from your catalogue. Nothing made up."],
+    ["Picture cards", "Show answers as cards with your product or collection photos."],
+    ["Bundles and extras", "One click puts the main product and the extras that fit in the cart."],
+    ["Matches your theme", "Your store's look is read and applied as you set up."],
+    ["Several quizzes", "A gift finder, a second range, a seasonal offer, each on its own page."],
+    ["No theme edits", "An app block you place and remove. No code, no customer data stored."],
+  ];
   return (
     <s-page heading="Welcome to CraftFrame Bundle Quiz">
       <s-button slot="primary-action" href="/app/start">Start setup</s-button>
 
       <s-section>
-        <s-stack direction="block" gap="base">
-          <s-stack direction="inline" gap="small" alignItems="center">
-            <s-text color="subdued">{`Version ${VERSION}. ${priceLine()}`}</s-text>
-          </s-stack>
-          <s-paragraph>
-            A short quiz on your storefront that turns a shopper's answers into the right product from your store, or a main product plus the extras that fit, ready in the cart. You pick the products, tick which answers point to them, and the quiz wears your store's colours.
-          </s-paragraph>
-          <s-stack direction="inline" gap="base">
-            <s-button variant="primary" href="/app/start">Start setup</s-button>
-            <s-text color="subdued">About five minutes. Nothing shows on your store until you add the block.</s-text>
-          </s-stack>
-        </s-stack>
+        <div style={{ background: "linear-gradient(135deg,#eef3ff 0%,#f4efff 100%)", borderRadius: 16, padding: "28px 24px", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 24, alignItems: "center" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 14, color: "#1a1a1a" }}>
+            <span style={{ alignSelf: "flex-start", background: "#fff", color: "#3d5ee6", borderRadius: 999, padding: "4px 10px", fontSize: 12, fontWeight: 600 }}>{`Free to start · Version ${VERSION}`}</span>
+            <span style={{ fontSize: 28, lineHeight: 1.15, fontWeight: 750, letterSpacing: "-.01em" }}>Turn &ldquo;which one should I buy?&rdquo; into a full cart.</span>
+            <span style={{ fontSize: 15, lineHeight: 1.5, color: "#3a3f4b" }}>A short quiz on your store. Shoppers answer a few questions and get the right product from your catalogue, or a main product with the extras that fit, ready in the cart.</span>
+            <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
+              <s-button variant="primary" href="/app/start">Start setup</s-button>
+              <span style={{ fontSize: 13, color: "#5c6170" }}>About five minutes. Nothing shows on your store until you add the block.</span>
+            </div>
+          </div>
+          <QuizSketch />
+        </div>
       </s-section>
 
-      <s-section heading="How it works">
+      <s-section heading="Three steps to go live">
+        <s-grid gridTemplateColumns="repeat(auto-fit, minmax(200px, 1fr))" gap="base">
+          {steps.map(([h, p], n) => {
+            const [bg, dot, ink] = STEP_TINTS[n];
+            return (
+              <div key={h} style={{ background: bg, borderRadius: 12, padding: 16, display: "flex", flexDirection: "column", gap: 8, color: ink }}>
+                <span style={{ width: 28, height: 28, borderRadius: "50%", background: dot, color: "#fff", display: "grid", placeItems: "center", fontWeight: 700, fontSize: 14 }}>{n + 1}</span>
+                <span style={{ fontWeight: 650, fontSize: 15 }}>{h}</span>
+                <span style={{ fontSize: 13, lineHeight: 1.5, color: "#3a3f4b" }}>{p}</span>
+              </div>
+            );
+          })}
+        </s-grid>
+      </s-section>
+
+      <s-section heading="What you get">
         <s-grid gridTemplateColumns="repeat(auto-fit, minmax(220px, 1fr))" gap="base">
-          {[
-            ["1", "Shoppers answer", "Four to six quick questions in a block you place on any page. Answers survive a refresh and can be shared as a link."],
-            ["2", "Answers pick the product", "Each answer points to products you chose. The best fit wins, and the extras that fit come with it."],
-            ["3", "Cart is ready", "The result shows the pick and why, then opens the cart with everything in it."],
-          ].map(([n, h, p]) => (
-            <s-box key={n} padding="base" borderWidth="base" borderRadius="base">
-              <s-stack direction="block" gap="small-200">
-                <s-badge>{`Step ${n}`}</s-badge>
-                <s-heading>{h}</s-heading>
-                <s-paragraph color="subdued">{p}</s-paragraph>
-              </s-stack>
-            </s-box>
+          {features.map(([h, p]) => (
+            <div key={h} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+              <span aria-hidden="true" style={{ flex: "0 0 22px", height: 22, borderRadius: "50%", background: "#eaf7ef", color: "#1f7a45", display: "grid", placeItems: "center", fontSize: 13, fontWeight: 700 }}>✓</span>
+              <span style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                <s-text type="strong">{h}</s-text>
+                <s-text color="subdued">{p}</s-text>
+              </span>
+            </div>
           ))}
         </s-grid>
       </s-section>
 
-      <s-section heading="What setup covers">
-        <s-ordered-list>
-          <s-list-item>Your products: choose a Product finder or a Bundle quiz and pick the products to recommend. Your theme's look is matched on the way.</s-list-item>
-          <s-list-item>Questions: suggested for what you sell. Rename anything and tick which products each answer points to.</s-list-item>
-          <s-list-item>Go live: add the block to your theme.</s-list-item>
-        </s-ordered-list>
+      <s-section heading="Plans">
+        <s-stack direction="block" gap="base">
+          <s-grid gridTemplateColumns="repeat(auto-fit, minmax(140px, 1fr))" gap="small">
+            {["free", "starter", "standard", "growth"].map((k) => {
+              const p = PLANS[k];
+              return (
+                <div key={k} style={{ border: k === "free" ? "2px solid #3d5ee6" : "1px solid #e1e3e5", background: k === "free" ? "#f5f7ff" : "#fff", borderRadius: 12, padding: 12, display: "flex", flexDirection: "column", gap: 4 }}>
+                  <s-text type="strong">{p.name}</s-text>
+                  <span style={{ fontSize: 20, fontWeight: 700 }}>{`USD ${p.price}`}<span style={{ fontSize: 12, fontWeight: 400 }}> a month</span></span>
+                  <s-text color="subdued">{`${p.quizzes} quiz${p.quizzes === 1 ? "" : "zes"}, ${p.limit.toLocaleString("en-GB")} completed a month`}</s-text>
+                </div>
+              );
+            })}
+          </s-grid>
+          <s-text color="subdued">{`Start free. Paid plans come with a ${TRIAL_DAYS}-day free trial and remove the Powered by CraftFrame line. Custom plans on request.`}</s-text>
+        </s-stack>
       </s-section>
 
       <s-section slot="aside" heading="What the app can access">
         <s-unordered-list>
-          <s-list-item>Read your products, to link them in setup.</s-list-item>
+          <s-list-item>Read your products, to recommend them.</s-list-item>
           <s-list-item>Read your theme's settings, to match its look.</s-list-item>
-          <s-list-item>Write one setting on your shop that holds your configuration.</s-list-item>
+          <s-list-item>Save your quiz setups on your store.</s-list-item>
         </s-unordered-list>
-        <s-paragraph color="subdued">It never edits your theme, your products or your orders, and it stores no customer data. Shoppers' answers stay in their own browser.</s-paragraph>
+        <s-paragraph color="subdued">It never edits your theme, products or orders, and stores no customer data. Shoppers' answers stay in their own browser.</s-paragraph>
       </s-section>
 
       <s-section slot="aside" heading="Help">
-        <s-paragraph>{`Version ${VERSION}. Coming next: live price sync and drop-off analytics.`}</s-paragraph>
-        <s-paragraph>Something broken or missing? <s-link href={`mailto:${SUPPORT_EMAIL}?subject=Bundle%20Configurator`}>{SUPPORT_EMAIL}</s-link>. Replies within two working days.</s-paragraph>
+        <s-paragraph>Something broken or missing? We answer every email within two working days.</s-paragraph>
+        <s-link href={`mailto:${SUPPORT_EMAIL}?subject=Bundle%20Quiz`}>{SUPPORT_EMAIL}</s-link>
       </s-section>
     </s-page>
   );

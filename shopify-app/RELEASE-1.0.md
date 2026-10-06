@@ -181,6 +181,13 @@ Out of 1.0: analytics funnel UI, price sync, AI draft.
   (the plan pauses by number). Only possible on test stores that mixed 0.9 and 1.0.
 - Verified with a simulated store (0.9 and 1.0 quiz, 0.9 only, fresh install).
 
+**6 Oct: 1.0.3, welcome page redesign.**
+- Hero on a soft blue-violet gradient: headline, one sentence, Start setup, and a still
+  example of the quiz (a question, three answers, the result with Add to cart). "Three
+  steps to go live" as tinted numbered cards, "What you get" (six points), a compact plan
+  row starting on Free. Copy brought up to date (up to four questions; one saved setup per
+  quiz).
+
 ## Shopify side, before resubmitting
 
 1. Done 3 Oct: App Pricing has Free (USD 0), Starter (USD 9), Standard (USD 25) and Growth

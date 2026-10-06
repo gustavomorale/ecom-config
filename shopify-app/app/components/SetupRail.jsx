@@ -3,7 +3,7 @@
 import { hasProduct, productSlots } from "../lib/links";
 
 /* Version label shown in the app, and where merchants reach us. */
-export const VERSION = "1.0.0";
+export const VERSION = "1.0.1";
 export const SUPPORT_EMAIL = "contact@craftframe.agency";
 
 export const STEPS = [

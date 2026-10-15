@@ -5,49 +5,59 @@ Production app in the Dev Dashboard: **bundle-configurator-2** (client ID `a1b72
 
 ## 1. Test instructions (paste into "Testing instructions" in the submission form)
 
-CraftFrame Bundle Quiz adds a questionnaire block to the storefront. A shopper answers a few
-questions, the app's rules choose a bundle and add-ons, and the result opens a pre-filled cart.
-No account or credentials are needed beyond installing the app.
+Rewritten 2026-10-15 for app 1.0 (three-step setup, four plans). Answers review items 4.5.3
+(product source) and 4.5.4 / 4.5.5 (credentials).
 
-**Install and billing**
-1. Install the app. You are asked to approve the plan: 14-day free trial, then USD 25 every
-   30 days. On a development store this is a test charge. Approve it.
-2. You land on the welcome page. Click **Start setup**.
+```
+LOGIN AND CREDENTIALS
+There is no separate account, login or password. The app is opened from the Shopify admin
+and uses Shopify's own install and authentication. Installing it gives full access to every
+feature on every plan; nothing else is needed.
 
-**Setup (about five minutes)**
-3. **Category**: choose *Cosmetics & skincare* (a full template). You are taken to Look.
-4. **Look**: click **Match my store**. The app reads the published theme's settings and reports
-   how good the match is. Optionally set a brand colour. The preview on the right has Mobile and
-   Desktop views. **Save and continue**.
-5. **Questions**: rename a question, set one question to *Picture cards*, and for an option
-   choose *Picture from my store* then **Choose a product**. **Save and continue**.
-6. **Products**: use **Choose product** on each row to link any product already in the store
-   (the app never creates products; any existing products will do for testing).
-   **Save and continue**.
-7. **Go live**: click **Open theme editor**. In any section choose Add block, Apps,
-   **CraftFrame Bundle Quiz** (or Add section, Apps). Save the theme. **Finish setup**.
+WHERE PRODUCTS COME FROM
+The app sells no products, holds no inventory and never creates, imports or edits
+products. It only reads the store's existing products (read_products). The merchant picks
+which of their own products the quiz recommends, with Shopify's product picker. Any active
+products in your test store will work; Shopify's test data (snowboards) is ideal.
 
-**Storefront**
-8. Open the storefront page with the block. Answer the questions and reach the result: a bundle,
-   add-ons with reasons, an order total and **Add to cart**, which opens the cart with those
-   variants. Refresh mid-way: answers are kept. **Copy a link to this bundle** reproduces the
-   result in another browser.
-9. Keyboard only: Tab into the questionnaire, use the arrow keys on a single-choice question,
-   Enter on Continue. Focus moves to each new question.
+INSTALL AND PLAN
+1. Install the app. Shopify's plan page opens: choose Free (or any plan; development stores
+   are not charged). You land on the welcome page. Click Start setup.
 
-**Editing after setup**
-10. In the app: **Rules** (change a condition or a quantity; an invalid quantity such as
-    `people + nonsense` is refused with an explanation), **Copy & cart** (headline, promo code,
-    cart mode). Saved changes appear on the storefront at once.
-11. The overview banner reports whether the block is on the published theme.
+SETUP, THREE STEPS (about five minutes)
+2. Your products: choose Product finder (one product per shopper) or Bundle quiz (a main
+   product plus extras). Under "What do you sell?" pick the closest match (it only suggests
+   question wording). Click Choose products and pick 3 to 6 products from your store with
+   Shopify's picker. Save and continue. The theme's colours and fonts are matched on save.
+3. Questions: each answer has a row of tick boxes, one per product. Rename a question or an
+   answer, tick which products each answer points to, and optionally set "Show answers as"
+   to Picture cards and choose a product photo. The preview on the right updates as you edit.
+   Save and continue.
+4. Go live: click Open theme editor. Add section (or Add block), Apps, CraftFrame Bundle
+   Quiz, then Save the theme. Back in the app click Finish setup. Home shows the quiz as live.
 
-**Uninstall**: removing the app deletes its session data. The block disappears from the
-storefront with the app. The app's configuration metafield remains in the store's custom data.
+STOREFRONT
+5. Open the page with the block. Answer the questions: the result shows the product that
+   best fits the answers (and extras, in a Bundle quiz) with their real Shopify names,
+   photos and prices. Add to cart opens the cart with exactly those products.
 
-**What the app accesses**: `read_products` (product picker, refreshing linked prices and pictures), `read_themes`
-(Match my store, block detection). It writes one shop metafield. No customer data.
-Privacy policy: https://bundle-configurator.netlify.app/privacy
+AFTER SETUP
+6. Home lists every quiz with its progress and this month's completions, and shows the plan
+   with a way to change it (Shopify's plan page). New quiz adds a second quiz (Starter and
+   above); its block is placed the same way, with the block's "Quiz" setting set to 2.
+7. Look and Copy & cart change the colours and every word shoppers read.
+
+UNINSTALL
+Removing the app removes the block from the storefront. Session data is deleted; shop data
+is deleted on Shopify's shop/redact request.
+
+ACCESS
+read_products (product picker, refreshing prices and photos), read_themes (matching the
+theme's look, checking the block is placed). Writes app metafields on the shop only. No
+customer data. Privacy policy: https://bundle-configurator.netlify.app/privacy
 Support: contact@craftframe.agency
+Screencast: <YouTube link>
+```
 
 ## 2. QA store for reviewers (do this before submitting)
 

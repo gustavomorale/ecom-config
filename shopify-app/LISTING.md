@@ -53,18 +53,25 @@ the two terms merchants search for.
 
 ## Pricing
 
-One plan, set in the Billing API (`shopify-app/app/shopify.server.js`): **14-day free
-trial, then USD 25 a month** on the merchant's Shopify bill, never per order. App charges
-are set in USD; Shopify shows merchants an approximate local amount (about GBP 19).
-Billing is on in production since 2026-09-18 (`BCFG_BILLING=on` in Netlify). Development
-stores, including reviewers', get a test charge automatically; real stores a real one. Register for Shopify's revenue share programme in the Partner
-dashboard: 0% on the first USD 1M a year.
+Four plans on **Shopify App Pricing** (set in the Partner Dashboard; the app never creates
+charges), all features on every plan, never per order:
+
+| Plan | Price | Quizzes | Completed quizzes a month |
+|---|---|---|---|
+| Free | USD 0 | 1 | 50, with a "Powered by CraftFrame" line |
+| Starter | USD 9 a month | 3 | 300 |
+| Standard | USD 25 a month | 10 | 2,000 |
+| Growth | USD 79 a month | 25 | 15,000 |
+
+Paid plans have a 21-day free trial. Custom plans by email (contact@craftframe.agency).
+Development stores, including reviewers', are not charged. Register for Shopify's revenue
+share programme in the Partner dashboard: 0% on the first USD 1M a year.
 
 ## Access scopes and why (privacy section)
 
 - read_products: to link bundles and add-ons to your products in setup.
 - read_themes: to read your published theme's colours, type and corners for "Match my store".
-- The app writes one shop metafield (bundle_configurator.config) that holds your setup.
+- The app writes shop metafields (namespace bundle_configurator) that hold your quiz setups.
 
 The app does not edit your theme, products or orders. It stores no customer data: shoppers'
 answers stay in their browser, and a shared link contains only the answers the shopper

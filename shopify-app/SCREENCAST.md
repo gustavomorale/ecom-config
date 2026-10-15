@@ -1,150 +1,106 @@
-# Review screencast (requirement 4.5.3)
+# Review screencast for app 1.0 (requirement 4.5.3)
 
-Feedback of 2026-09-25: the first screencast (3 min 20 s, 2026-09-22) did not give enough
-step-by-step detail to set up and test the app, and the reviewer saw "stock products" and
-asked for the source of the app's inventory. Their reference clip showed the products from
-our old sample CSV active and for sale on their storefront. We removed the sample catalogue
-(2026-09-26): the app never adds products to a store. This video shows setup step by step
-and makes the product source explicit: the merchant's own products, linked with the picker.
+Rewritten 2026-10-15. Shopify paused the review on 2026-10-13 (reference 137073) for the third
+time on the same item: the screencast must show setup **step by step**, in English or with
+English subtitles, and show **where the app's products come from** (the reviewer still reads
+"stock products"). The previous video showed the 0.9 five-step setup; this one shows 1.0.
 
-The video must show the version deployed on Netlify after the sample catalogue removal
-(released as bundle-configurator-2; the extension did not change). Do not record anything from the `q4-gifting` branch: no
-Gift finder, no gift sets, no Black Friday button.
+The message the video has to land, said and shown twice: **the app sells nothing and holds no
+inventory. Every product in the quiz is one the store already sells, picked from the store's
+own Products with Shopify's picker.**
 
-## The story
-
-A new development store created with Shopify's test data sells snowboards. The video sets
-up the app from scratch, links the store's own snowboards, rewords the Sports & outdoors
-template into a snowboard shop, and shows the shopper's side. Everything to type is in the
-tables at the end, so nothing is improvised on camera.
+Record the live app (1.0.7 or later) only. Nothing from `ai-draft` or `q4-gifting`: no
+"Let AI set it up" card, no gift sets, no Black Friday button.
 
 ## Before recording
 
-- **Store:** `bundle-quiz-screencast` (Basic plan, test data, Dawn). Its products are
-  Shopify's test snowboards. Nothing tagged `bundle-configurator-sample`, no stock photos.
-- **Window:** Chrome at 1760 x 990 (16:9), zoom 100%, bookmarks bar hidden, one tab plus the
-  storefront tab, notifications off. To reset the size:
+- **Store: a fresh one is best.** Dev Dashboard, Stores, Create store, with **test data**
+  (Shopify's snowboards), default theme. Name it e.g. `bundle-quiz-review-oct`. A fresh store
+  shows the real install and welcome page. To reuse `bundle-quiz-screencast` instead: in the
+  app's Home delete every quiz, uninstall the app, then record (the welcome page only shows
+  when the store has no quiz).
+- **Products to use:** The Complete Snowboard, The Collection Snowboard: Liquid, The
+  Collection Snowboard: Hydrogen, The Collection Snowboard: Oxygen, The Multi-managed
+  Snowboard. **Avoid** The Archived, The Hidden and The Minimal Snowboard (not on the Online
+  Store), Selling Plans Ski Wax (subscription only) and the gift card.
+- **Window:** Chrome at 1760 x 990 (16:9), zoom 100%, bookmarks bar hidden, notifications off.
   `osascript -e 'tell application "Google Chrome" to set bounds of front window to {0, 33, 1760, 1023}'`
   Record with Cmd+Shift+5, Record Selected Portion, fitted to the window.
-- **Voice:** record the screen silently and add the ElevenLabs clips from
-  `branding/screencast/voiceover-v3-review.txt` afterwards (one clip per scene), or narrate
-  live from the same text. Fit the voice to the picture: hold a frame where a clip runs long,
-  never speed the voice up. No music, no sound effects. Upload to YouTube as Unlisted with
-  English subtitles (Subtitles, English, Auto-sync, paste the voiceover text without the
-  break tags).
-- **Pace:** a second's pause on every screen before clicking. The final cut is about 4 minutes.
-- **Cuts:** where the script says CUT, stop recording (or trim later), do the repetitive
-  typing off camera, then resume on the finished result. The voiceover says so.
-- **Products that must not be linked:** The Archived, The Hidden and The Minimal Snowboard
-  (not on the Online Store, Add to cart would fail), Selling Plans Ski Wax (subscription
-  only) and the gift card.
+- **Voice:** narrate live from the table, or record silently and add the voiceover below
+  afterwards (ElevenLabs or your own voice). No music. Pause a second on each screen before
+  clicking. Final cut about 4 minutes.
+- **Typing:** where a shot says CUT, stop, do it off camera, resume on the result.
 
-## Script: short cut (about 4 minutes)
-
-Twelve shots, recorded in six parts. The times are where each shot sits in the final video;
-record each part a little long and trim to the time. Everything typed happens off camera
-(CUT or Prep), using tables A to D below. Voice clips are in
-`branding/screencast/voiceover-v3-review.txt` (clip names match the shot numbers).
+## Shot list (about 4 minutes)
 
 | Time | Shot | On screen | Narration |
 |---|---|---|---|
-| **Part 1** | | *one continuous take* | |
-| 0:00 to 0:22 | 01 | Install app screen. Open **View store data**. Click **Install**. | CraftFrame Bundle Quiz adds a short questionnaire to a Shopify store. Shoppers answer a few questions and get a bundle of the store's own products in their cart. The app sells no products and has no inventory. It asks to view products and the theme, and never edits them. |
-| 0:22 to 0:34 | 02 | Plan page, **Approve**, welcome page, **Start setup**. | Shopify shows the plan page: one plan, with a fourteen-day free trial, free on development stores. I approve it and start setup. |
-| 0:34 to 0:46 | 03 | Category grid, choose **Sports & outdoors**. | Step one: what does the store sell? Each category starts a working questionnaire. This store sells snowboards, so I choose Sports and outdoors. |
-| 0:46 to 1:00 | 04 | **Match my store**, the result, **Save and continue**. | Step two: Match my store reads the theme's colours, font and corners, and shows how close the match is. Save and continue. |
-| **Part 2** | | *CUT in the middle* | |
-| 1:00 to 1:25 | 05 | Questions. Type "How do you ride?" into question 1, set **Show options as** to **Picture cards**. CUT: finish table A off camera (labels, pictures, questions 2 and 3). Resume on the preview with the three snowboard cards, **Save and continue**. | Step three: the questions. I can reword any question and its answers, and show answers as picture cards with my own product photos. I've reworded these for a snowboard shop. Save and continue. |
-| **Part 3** | | *CUT in the middle* | |
-| 1:25 to 1:34 | 06 | Shopify **Products**: the store's snowboards. | These are the store's own snowboards. The app never creates or supplies products; it only reads these. |
-| 1:34 to 2:00 | 07 | App Products: **Choose product** on Trek Kit (picker opens, pick). On Camp Kit, pick The Complete Snowboard and open the variant dropdown. CUT: link the rest (table B). Resume on "All 8 products connected", **Save and continue**. | Step four links each bundle and add-on to one of them with Shopify's product picker, choosing the size where there are variants. Once all are linked, Add to cart fills the cart with real products. Save and continue. |
-| **Part 4** | | *one continuous take* | |
-| 2:00 to 2:35 | 08 | **Open theme editor**, Add section, Apps, **CraftFrame Bundle Quiz**, **Save**. Back in the app, **Finish setup**. The overview banner. | Step five: Open theme editor. I add a section, choose Apps, and pick CraftFrame Bundle Quiz. I save the theme, finish setup, and the overview confirms the block is live. |
-| **Prep** | | *off camera* | Rules and Copy & cart as in tables C and D. Save both. |
-| **Part 5** | | *one continuous take* | |
-| 2:35 to 2:57 | 09 | **Rules**: scroll slowly past the three renamed bundles (What's included) and the add-on rules. Then **Copy & cart**, the headline field. | After setup, everything stays editable. In Rules I choose which bundle each answer leads to, what it includes, and which add-ons follow and why. I've renamed them for this shop. In Copy and cart I change every word the shopper reads. |
-| **Part 6** | | *one continuous take* | |
-| 2:57 to 3:35 | 10 | Storefront. **All-mountain**, Continue, 2 nights and 2 riders, Continue, **Powder days** and **Park and tricks**, **See my setup**. Hold on the result. | Now, as a shopper. I pick all-mountain, the trip length, and powder days and park riding. The result recommends the All-Mountain Setup, adds a powder board and a park board with the reason for each, and shows the total. |
-| 3:35 to 3:45 | 11 | **Add to cart**: the cart with the snowboards. | Add to cart opens the cart with exactly those snowboards. |
-| 3:45 to 3:58 | 12 | The app's overview. | That's the full setup. The app reads products and themes, writes one setting to the store, and stores no customer data. Support: contact at craftframe dot agency. |
+| 0:00 | 01 Intro | Shopify admin, **Products** page of the store: the snowboards. Hold 3 seconds. | CraftFrame Bundle Quiz adds a short quiz to a Shopify store. Shoppers answer a few questions and get the right product, or a bundle, from the store's own catalogue. These are this store's own products. The app sells nothing, has no inventory, and never creates or edits products. It only recommends products like these. |
+| 0:20 | 02 Install | App listing or install link, **Install**. The permissions screen: point at "View products" and "View themes". | I install the app. It asks to view products and the theme, and nothing else. |
+| 0:32 | 03 Plan | Shopify's plan page: four plans. Choose **Free**, approve. | Shopify shows the plans. There is no separate account or login: everything runs inside the Shopify admin. I choose Free. |
+| 0:45 | 04 Welcome | The welcome page: scroll slowly past the three steps and the plans. Click **Start setup**. | The welcome page explains the three steps: pick your products, check the questions, go live. Start setup. |
+| 1:00 | 05 Quiz type | **Your products**: select **Product finder** (show both cards). "What do you sell?": choose **Sports & outdoors**. | Step one, your products. A product finder gives each shopper one product. A bundle quiz adds the extras that fit. I choose product finder. "What do you sell" only suggests the wording of the questions. |
+| 1:18 | 06 Product source | Click **Choose products**. Shopify's picker opens with the store's snowboards. Tick the five snowboards slowly, **Select**. The list shows them with their real photos and prices. | This is where every product in the quiz comes from: Shopify's own product picker, showing the products this store already sells. I pick five snowboards. Their names, photos and prices come straight from the catalogue. |
+| 1:45 | 07 Save | **Save and continue**. | Save and continue. The app also matches the theme's colours and fonts. |
+| 1:52 | 08 Questions | **Check the questions**: the grid of ticks. Rename question 1 to "How do you ride?" (type it on camera). CUT: reword answers per table A. Resume. Untick and tick one box. Set **Show answers as** to **Picture cards**. Point at the preview. | Step two: the questions. Each answer points to one or more of the products I picked: the product with the most ticks wins. I can rename everything, change which products each answer points to, and show answers as picture cards. The preview updates as I go. |
+| 2:35 | 09 Go live | **Save and continue**. **Go live**: **Open theme editor**. In the editor: Add section, Apps, **CraftFrame Bundle Quiz**, **Save**. Back in the app, **Finish setup**. Home shows the quiz as live. | Step three: go live. Open theme editor, add a section, choose Apps, and pick CraftFrame Bundle Quiz. Save the theme. Finish setup: Home now shows the quiz is live on the store. |
+| 3:10 | 10 Shopper | Storefront page with the quiz. Answer every question, reach the result. Hold on it. **Add to cart**: the cart with the snowboard. | Now as a shopper. I answer the questions and get my pick: a real snowboard from this store, with its real price. Add to cart puts exactly that product in the cart. |
+| 3:40 | 11 Home | Back in the app: Home with the quiz card, completions and the plan section. | Home lists every quiz, how many shoppers finished it this month, and the plan, which can be changed on Shopify's plan page. That is the full setup. The app reads products and the theme, stores no customer data, and support is at contact at craftframe dot agency. |
 
 YouTube chapters for the description:
 
 ```
-0:00 Install and plan
-0:34 Setup 1: Category
-0:46 Setup 2: Look
-1:00 Setup 3: Questions
-1:25 Setup 4: Products (the store's own products)
-2:00 Setup 5: Go live
-2:35 Editing rules and copy
-2:57 The shopper's side
-3:45 Summary
+0:00 The store's own products (the app has no inventory)
+0:20 Install, permissions and plan
+0:45 Welcome
+1:00 Step 1: Your products (Shopify's product picker)
+1:52 Step 2: Questions
+2:35 Step 3: Go live (theme editor)
+3:10 The shopper's view and the cart
+3:40 Home
 ```
 
 ## Text to type
 
-### A. Questions (scene 5)
+### A. Questions (shot 08)
 
-| Question | Change to |
+| Question | Answers |
 |---|---|
-| 1. Question | How do you ride? |
-| 1. Helper text | Your board follows from this. |
-| 1. Day hikes | Label: Learning. Description: First seasons, a forgiving board. Picture: The Multi-location Snowboard |
-| 1. Camping | Label: All-mountain. Description: Groomers, some powder, the odd park lap. Picture: The Complete Snowboard |
-| 1. Backpacking | Label: Backcountry. Description: Off-piste and long days. Picture: The Collection Snowboard: Liquid |
-| 2. Question | How long is the trip? |
-| 2. Helper text | This sizes the extras. |
-| 2. Counters | Nights out: Nights away. People: Riders |
-| 3. Question | Anything else? |
-| 3. Options | Wet weather: Powder days (emoji ❄️). Cold nights: Icy mornings (🧊). Ultralight: Travelling light (🎒). Cooking: Park and tricks (🛹) |
+| How do you ride? | Mostly groomed runs · Park and tricks · Deep powder |
+| How long have you been riding? | First season · A few seasons · Many years |
 
-### B. Products (scene 6)
+Tick so each snowboard is reached by at least one answer (the page warns otherwise).
 
-| Row | Link to |
-|---|---|
-| Trek Kit | The Collection Snowboard: Liquid |
-| Camp Kit | The Complete Snowboard (show the variant dropdown) |
-| Day Kit | The Multi-location Snowboard |
-| Waterproof shell | The Collection Snowboard: Oxygen |
-| Bag liner | The Collection Snowboard: Hydrogen |
-| Stove and pot | The 3p Fulfilled Snowboard |
-| Water filter | The Multi-managed Snowboard |
-| Trekking poles | The Complete Snowboard |
+## Voiceover (plain text, for ElevenLabs and for the English subtitles)
 
-### C. Rules (scene 8)
+CraftFrame Bundle Quiz adds a short quiz to a Shopify store. Shoppers answer a few questions and get the right product, or a bundle, from the store's own catalogue. These are this store's own products. The app sells nothing, has no inventory, and never creates or edits products. It only recommends products like these.
 
-| Bundle | Title | Subtitle | Why | What's included (one row) |
-|---|---|---|---|---|
-| Trek Kit | Backcountry Setup | Stiff, directional, built for long days | Off-piste days need a stiffer board that floats in powder and holds an edge on the way down. | Backcountry board, The Collection: Liquid, 1 |
-| Camp Kit | All-Mountain Setup | One board for the whole mountain | An all-mountain board handles groomers, powder and the odd park lap, so one board covers the trip. | All-mountain board, The Complete Snowboard, 1 |
-| Day Kit | Starter Setup | Soft and forgiving | A softer board forgives mistakes while you learn to link your turns. | Beginner board, The Multi-location Snowboard, 1 |
+I install the app. It asks to view products and the theme, and nothing else.
 
-| Add-on rule | Shopper sees | Reason | Quantity |
-|---|---|---|---|
-| Waterproof shell | Powder board | For your powder days | 1 |
-| Bag liner | Hardpack board | Holds an edge on icy mornings | 1 |
-| Stove and pot | Park board | You ride the park | 1 |
-| Water filter | Spare board | {nights} nights away is a lot of riding | 1 |
-| Trekking poles | Remove rule | | |
+Shopify shows the plans. There is no separate account or login: everything runs inside the Shopify admin. I choose Free.
 
-### D. Copy & cart (scene 8)
+The welcome page explains the three steps: pick your products, check the questions, go live. Start setup.
 
-| Field | Change to |
-|---|---|
-| Headline | Build your snowboard setup |
-| Words to colour in the headline | snowboard setup |
-| Sub-headline | Three questions and we will put your setup together. |
-| Last step button | See my setup |
-| After the price | complete setup |
+Step one, your products. A product finder gives each shopper one product. A bundle quiz adds the extras that fit. I choose product finder. "What do you sell" only suggests the wording of the questions.
+
+This is where every product in the quiz comes from: Shopify's own product picker, showing the products this store already sells. I pick five snowboards. Their names, photos and prices come straight from the catalogue.
+
+Save and continue. The app also matches the theme's colours and fonts.
+
+Step two: the questions. Each answer points to one or more of the products I picked: the product with the most ticks wins. I can rename everything, change which products each answer points to, and show answers as picture cards. The preview updates as I go.
+
+Step three: go live. Open theme editor, add a section, choose Apps, and pick CraftFrame Bundle Quiz. Save the theme. Finish setup: Home now shows the quiz is live on the store.
+
+Now as a shopper. I answer the questions and get my pick: a real snowboard from this store, with its real price. Add to cart puts exactly that product in the cart.
+
+Home lists every quiz, how many shoppers finished it this month, and the plan, which can be changed on Shopify's plan page. That is the full setup. The app reads products and the theme, stores no customer data, and support is at contact at craftframe dot agency.
 
 ## After recording
 
-1. Upload to YouTube as Unlisted, title "CraftFrame Bundle Quiz: setup and demo". Add English
-   subtitles. Check they are on in the player.
-2. Put the link in the listing's Screencast field (replace https://youtu.be/VPd381BuGe4) and in
-   `public/proof/4-5-3/index.html`, then deploy the proof page.
-3. In the review thread, choose Show resolved state and paste the proof page URL:
-   https://bundle-configurator.netlify.app/proof/4-5-3/
-4. On every demo or dev store we used, delete the old products tagged
-   `bundle-configurator-sample` (Products, filter by tag, select all, Delete).
+1. Upload to YouTube as **Unlisted**, title "CraftFrame Bundle Quiz: setup walkthrough (app review)",
+   chapters above in the description. Subtitles: English, Auto-sync, paste the voiceover text.
+2. Put the link in the testing instructions (`REVIEW.md` section 1, last line) and in the
+   submission's screencast field.
+3. Partner Dashboard, the app's submission: paste the testing instructions, the video link,
+   **Submit**. Reply in the review thread (if open) that the new screencast shows the product
+   source at 0:00 and 1:18.

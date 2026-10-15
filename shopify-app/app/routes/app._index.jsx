@@ -155,7 +155,10 @@ function QuizSketch() {
   );
   return (
     <div aria-hidden="true" style={{ background: "#fff", borderRadius: 16, padding: 16, boxShadow: "0 10px 30px rgba(31,58,138,.12)", display: "flex", flexDirection: "column", gap: 10, maxWidth: 300, width: "100%", justifySelf: "center" }}>
-      <div style={{ fontSize: 11, letterSpacing: ".06em", textTransform: "uppercase", color: "#6b6b6b" }}>Step 1 of 3</div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <span style={{ fontSize: 11, letterSpacing: ".06em", textTransform: "uppercase", color: "#6b6b6b" }}>Step 1 of 3</span>
+        <span style={{ fontSize: 11, fontWeight: 600, color: "#6b4b00", background: "#fff6e0", borderRadius: 999, padding: "2px 8px" }}>Example</span>
+      </div>
       <div style={{ height: 4, borderRadius: 2, background: "#e9ebf0" }}><div style={{ width: "33%", height: "100%", borderRadius: 2, background: "#3d5ee6" }} /></div>
       <div style={{ fontWeight: 650, fontSize: 15, color: "#1a1a1a" }}>What are you shopping for?</div>
       {chip("Just the essentials", false)}
@@ -163,10 +166,11 @@ function QuizSketch() {
       {chip("The complete set", false)}
       <div style={{ marginTop: 4, padding: 12, borderRadius: 12, background: "linear-gradient(135deg,#1f2a5c,#3d5ee6)", color: "#fff", display: "flex", flexDirection: "column", gap: 4 }}>
         <span style={{ fontSize: 11, opacity: 0.8, letterSpacing: ".05em", textTransform: "uppercase" }}>Our pick for you</span>
-        <span style={{ fontWeight: 700, fontSize: 16 }}>Everyday Set</span>
+        <span style={{ fontWeight: 700, fontSize: 16 }}>One of your products</span>
         <span style={{ fontSize: 12, opacity: 0.85 }}>Because you chose: something for every day</span>
         <span style={{ marginTop: 6, alignSelf: "flex-start", background: "#fff", color: "#1f2a5c", borderRadius: 999, padding: "6px 12px", fontSize: 12, fontWeight: 700 }}>Add to cart</span>
       </div>
+      <div style={{ fontSize: 11, color: "#6b6b6b", lineHeight: 1.4 }}>An illustration of the quiz. It only ever recommends products from your own catalogue; the app sells nothing itself.</div>
     </div>
   );
 }

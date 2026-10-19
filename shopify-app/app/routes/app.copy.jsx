@@ -12,6 +12,9 @@ import { authenticate } from "../shopify.server";
 import { readConfig, saveConfig } from "../config.server";
 import { WidgetPreview } from "../components/WidgetPreview";
 import { blackFriday } from "../lib/season";
+
+// The Black Friday shortcut is hidden while 1.0 stays simple (2026-10-19).
+const SHOW_SEASONAL = false;
 import { QuizBar } from "../components/QuizBar";
 
 const GROUPS = [
@@ -161,10 +164,12 @@ export default function Copy() {
 
       <s-section heading="Promo code">
         <s-paragraph color="subdued">Shown on the result and added to the checkout link. Create the matching discount code in Shopify, Discounts; this only displays and applies it.</s-paragraph>
-        <s-stack direction="inline" gap="small" alignItems="center">
-          <s-button variant="secondary" onClick={() => setPromo({ code: `BLACKFRIDAY${promo.pct || 20}`, pct: promo.pct || 20, startsAt: bf.start, endsAt: bf.end })}>Use a Black Friday offer</s-button>
-          <s-text color="subdued">{`Black Friday to Cyber Monday, ${bf.label}. Create the same code in Shopify, Discounts, before it starts.`}</s-text>
-        </s-stack>
+        {SHOW_SEASONAL ? (
+          <s-stack direction="inline" gap="small" alignItems="center">
+            <s-button variant="secondary" onClick={() => setPromo({ code: `BLACKFRIDAY${promo.pct || 20}`, pct: promo.pct || 20, startsAt: bf.start, endsAt: bf.end })}>Use a Black Friday offer</s-button>
+            <s-text color="subdued">{`Black Friday to Cyber Monday, ${bf.label}. Create the same code in Shopify, Discounts, before it starts.`}</s-text>
+          </s-stack>
+        ) : null}
         <s-grid gridTemplateColumns="2fr 1fr 1.4fr 1.4fr" gap="base">
           <s-text-field label="Code" value={promo.code} placeholder="WELCOME10" onInput={(e) => { const v = e.currentTarget.value; setPromo((p) => ({ ...p, code: v })); }} />
           <s-number-field label="Percent off" value={promo.pct} min="0" max="90" onInput={(e) => { const v = e.currentTarget.value; setPromo((p) => ({ ...p, pct: v })); }} />

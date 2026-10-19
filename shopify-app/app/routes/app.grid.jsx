@@ -74,80 +74,79 @@ export const action = async ({ request }) => {
   return { ok: true };
 };
 
-const th = { padding: "8px 6px", fontWeight: 500, fontSize: 12, textAlign: "center", borderBottom: "1px solid #e3e3e3", verticalAlign: "bottom", minWidth: 84 };
-const td = { padding: "6px", textAlign: "center", borderBottom: "1px solid #ebebeb", verticalAlign: "middle" };
+const decode = (s) => String(s || "").replace(/&#x([0-9a-f]+);/gi, (m, h) => String.fromCodePoint(parseInt(h, 16)));
+const EMOJI = ["🌱", "⭐", "🔥", "❄️", "🏔️", "🌊", "☀️", "🌙", "🎯", "💡", "❤️", "🎁", "👶", "🧒", "🧑", "👫", "🏠", "🌍", "💧", "⚡", "🛡️", "💪", "🧘", "🎨", "📦", "💰", "⏱️", "✨", "👍", "🙂"];
+const box = { border: "1px solid #e3e3e3", borderRadius: 10, background: "#fff" };
 
-/* An answer's picture: an emoji, the photo of one of this quiz's products, or
-   any product's or collection's photo through Shopify's picker. */
-function AnswerVisual({ a, quizProducts, onChange }) {
+/* An answer's picture: an emoji from a short grid, the photo of one of this
+   quiz's products, or any product's or collection's photo through Shopify's
+   picker. Opens under the answer when the picture button is clicked. */
+function PicturePanel({ a, quizProducts, onChange, onClose }) {
   const shopify = useAppBridge();
-  const withPhoto = quizProducts.filter((p) => p.image);
-  const current = a.image ? (withPhoto.find((p) => p.image === a.image) ? `p:${withPhoto.find((p) => p.image === a.image).key}` : "custom") : "";
   const pick = async (type) => {
     let picked = null;
     try { picked = await shopify.resourcePicker({ type, multiple: false }); } catch (e) { return; }
     const item = picked && picked[0];
     const url = item && ((item.images && item.images[0] && item.images[0].originalSrc) || (item.image && item.image.originalSrc) || "");
     if (!url) { shopify.toast.show(`That ${type} has no photo`, { isError: true }); return; }
-    onChange({ image: url, imageSource: type });
+    onChange({ image: url, imageSource: type, icon: "" }); onClose();
   };
-  const choose = (v) => {
-    if (v === "") onChange({ image: "", imageSource: "" });
-    else if (v === "pick-product") pick("product");
-    else if (v === "pick-collection") pick("collection");
-    else if (v.startsWith("p:")) { const p = withPhoto.find((x) => `p:${x.key}` === v); if (p) onChange({ image: p.image, imageSource: "product" }); }
-  };
+  const chip = (on) => ({ all: "unset", cursor: "pointer", width: 40, height: 40, display: "grid", placeItems: "center", fontSize: 22, borderRadius: 8, border: on ? "2px solid #3d5ee6" : "1px solid #e3e3e3", background: on ? "#eef3ff" : "#fff", overflow: "hidden" });
   return (
-    <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 6 }}>
-      <div style={{ width: 40, height: 40, flex: "0 0 40px", borderRadius: 8, border: "1px solid #e3e3e3", background: "#f6f6f7", display: "grid", placeItems: "center", overflow: "hidden", fontSize: 20 }} aria-hidden="true">
-        {a.image ? <img src={a.image} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : (a.icon || "").replace(/&#x([0-9a-f]+);/gi, (m, h) => String.fromCodePoint(parseInt(h, 16)))}
+    <div style={{ ...box, padding: 12, display: "flex", flexDirection: "column", gap: 10, background: "#fafafa" }}>
+      <s-text color="subdued">Pick an emoji</s-text>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+        {EMOJI.map((e) => (
+          <button key={e} type="button" style={chip(!a.image && decode(a.icon) === e)} aria-label={`Use ${e}`} onClick={() => { onChange({ icon: e, image: "", imageSource: "" }); onClose(); }}>{e}</button>
+        ))}
+        <button type="button" style={{ ...chip(!a.image && !a.icon), width: "auto", padding: "0 10px", fontSize: 13 }} onClick={() => { onChange({ icon: "", image: "", imageSource: "" }); onClose(); }}>None</button>
       </div>
-      <s-select label={`Picture for ${a.label}`} labelAccessibilityVisibility="exclusive" value={current} onChange={(e) => choose(e.currentTarget.value)}>
-        <s-option value="">Emoji</s-option>
-        {withPhoto.map((p) => <s-option key={p.key} value={`p:${p.key}`}>{`Photo: ${p.productTitle}`}</s-option>)}
-        {current === "custom" ? <s-option value="custom">Photo chosen from your store</s-option> : null}
-        <s-option value="pick-product">Another product's photo...</s-option>
-        <s-option value="pick-collection">A collection's photo...</s-option>
-      </s-select>
-      {!a.image ? <div style={{ width: 70 }}><s-text-field label={`Emoji for ${a.label}`} labelAccessibilityVisibility="exclusive" value={(a.icon || "").replace(/&#x([0-9a-f]+);/gi, (m, h) => String.fromCodePoint(parseInt(h, 16)))} maxLength={8} onInput={(e) => onChange({ icon: e.currentTarget.value })} /></div> : null}
+      <s-text color="subdued">Or use a photo</s-text>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, alignItems: "center" }}>
+        {quizProducts.filter((p) => p.image).map((p) => (
+          <button key={p.key} type="button" title={p.productTitle} aria-label={`Use the photo of ${p.productTitle}`} style={chip(a.image === p.image)} onClick={() => { onChange({ image: p.image, imageSource: "product", icon: "" }); onClose(); }}>
+            <img src={p.image} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          </button>
+        ))}
+        <s-button variant="tertiary" onClick={() => pick("product")}>Another product</s-button>
+        <s-button variant="tertiary" onClick={() => pick("collection")}>A collection</s-button>
+      </div>
     </div>
   );
 }
 
-function Grid({ q, products, quizProducts, grid, onTick, onLabel, onVisual, onRemoveAnswer }) {
+/* One answer: picture, words, and the products it recommends as clickable
+   chips (no sideways table). */
+function AnswerRow({ a, products, quizProducts, ticked, onTick, onChange, onRemove, canRemove, placeholder }) {
+  const [open, setOpen] = useState(false);
+  const icon = decode(a.icon);
   return (
-    <div style={{ overflowX: "auto", border: "1px solid #e3e3e3", borderRadius: 8 }}>
-      <table style={{ borderCollapse: "collapse", width: "100%" }}>
-        <thead>
-          <tr>
-            <th style={{ ...th, textAlign: "left", minWidth: 260 }}>Answer and picture</th>
-            {products.map((p) => <th key={p.key} style={th} scope="col">{p.productTitle}</th>)}
-            <th style={{ ...th, minWidth: 40 }}><span style={{ position: "absolute", left: -9999 }}>Remove</span></th>
-          </tr>
-        </thead>
-        <tbody>
-          {q.answers.map((a) => {
-            const ticked = grid[cell(q, a)] || [];
-            return (
-              <tr key={a.value}>
-                <td style={{ ...td, textAlign: "left" }}>
-                  <s-text-field label="Answer" labelAccessibilityVisibility="exclusive" value={a.label} onInput={(e) => onLabel(a.value, e.currentTarget.value)} />
-                  <AnswerVisual a={a} quizProducts={quizProducts} onChange={(patch) => onVisual(a.value, patch)} />
-                </td>
-                {products.map((p) => (
-                  <td key={p.key} style={td}>
-                    <input type="checkbox" style={{ width: 18, height: 18 }} checked={ticked.includes(p.key)}
-                      aria-label={`${a.label} points to ${p.productTitle}`} onChange={(e) => onTick(cell(q, a), p.key, e.currentTarget.checked)} />
-                  </td>
-                ))}
-                <td style={td}>
-                  {q.answers.length > MIN_ANSWERS ? <s-button variant="tertiary" icon="delete" accessibilityLabel={`Remove answer ${a.label}`} onClick={() => onRemoveAnswer(a.value)} /> : null}
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+    <div style={{ ...box, padding: 12, display: "flex", flexDirection: "column", gap: 10 }}>
+      <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+        <button type="button" onClick={() => setOpen(!open)} aria-expanded={open} aria-label={`Picture for ${a.label || "this answer"}`}
+          style={{ all: "unset", cursor: "pointer", width: 44, height: 44, flex: "0 0 44px", borderRadius: 10, border: open ? "2px solid #3d5ee6" : "1px dashed #b5b5b5", background: "#f6f6f7", display: "grid", placeItems: "center", fontSize: 22, overflow: "hidden", color: "#6b6b6b" }}>
+          {a.image ? <img src={a.image} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : icon || <span style={{ fontSize: 12 }}>+ Pic</span>}
+        </button>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <s-text-field label="Answer" labelAccessibilityVisibility="exclusive" value={a.label} placeholder={placeholder} maxLength={80} onInput={(e) => onChange({ label: e.currentTarget.value })} />
+        </div>
+        {canRemove ? <s-button variant="tertiary" icon="delete" accessibilityLabel={`Remove answer ${a.label}`} onClick={onRemove} /> : null}
+      </div>
+      {open ? <PicturePanel a={a} quizProducts={quizProducts} onChange={onChange} onClose={() => setOpen(false)} /> : null}
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, alignItems: "center" }}>
+        <span style={{ fontSize: 12, color: ticked.length ? "#6b6b6b" : "#8a5a00", marginRight: 4 }}>{ticked.length ? "Recommends:" : "Recommends nothing yet. Click a product:"}</span>
+        {products.map((p) => {
+          const on = ticked.includes(p.key);
+          return (
+            <button key={p.key} type="button" aria-pressed={on} onClick={() => onTick(p.key, !on)}
+              style={{ all: "unset", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 10px 4px 4px", borderRadius: 999, fontSize: 13, maxWidth: 240, border: on ? "2px solid #3d5ee6" : "1px solid #d4d4d4", background: on ? "#eef3ff" : "#fff", color: on ? "#1f3a8a" : "#4a4a4a", fontWeight: on ? 600 : 400 }}>
+              {p.image ? <img src={p.image} alt="" style={{ width: 24, height: 24, borderRadius: 999, objectFit: "cover" }} /> : <span style={{ width: 24, height: 24, borderRadius: 999, background: "#eee" }} />}
+              <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.productTitle}</span>
+              {on ? <span aria-hidden="true">✓</span> : null}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -173,10 +172,10 @@ export default function Questions() {
   const edit = (fn) => { setDirty(true); fn(); };
   const updateQ = (i, patch) => edit(() => setQuestions((qs) => qs.map((q, j) => (j === i ? { ...q, ...patch } : q))));
   const updateA = (i, value, patch) => edit(() => setQuestions((qs) => qs.map((q, j) => (j === i ? { ...q, answers: q.answers.map((a) => (a.value === value ? { ...a, ...patch } : a)) } : q))));
-  const addA = (i) => edit(() => setQuestions((qs) => qs.map((q, j) => (j === i && q.answers.length < MAX_ANSWERS ? { ...q, answers: [...q.answers, { value: newId("a"), label: "New answer", icon: "", desc: "" }] } : q))));
+  const addA = (i) => edit(() => setQuestions((qs) => qs.map((q, j) => (j === i && q.answers.length < MAX_ANSWERS ? { ...q, answers: [...q.answers, { value: newId("a"), label: "", icon: "", desc: "" }] } : q))));
   const removeA = (i, value) => edit(() => setQuestions((qs) => qs.map((q, j) => (j === i ? { ...q, answers: q.answers.filter((a) => a.value !== value) } : q))));
-  const addQ = () => edit(() => setQuestions((qs) => [...qs, { id: "", field: newId("q"), title: "New question", sub: "", multi: false, target: "main",
-    answers: [{ value: newId("a"), label: "First answer", icon: "", desc: "" }, { value: newId("a"), label: "Second answer", icon: "", desc: "" }] }].map((q) => ({ ...q, id: q.field }))));
+  const addQ = () => edit(() => setQuestions((qs) => [...qs, { id: "", field: newId("q"), title: "", sub: "", multi: false, target: "main",
+    answers: [{ value: newId("a"), label: "", icon: "", desc: "" }, { value: newId("a"), label: "", icon: "", desc: "" }] }].map((q) => ({ ...q, id: q.field }))));
   const removeQ = (i) => edit(() => setQuestions((qs) => qs.filter((q, j) => j !== i)));
   const moveQ = (i, d) => edit(() => setQuestions((qs) => { const n = [...qs]; const t = n[i + d]; if (!t) return qs; n[i + d] = n[i]; n[i] = t; return n; }));
   const tick = (k, key, on) => edit(() => setGrid((g) => {
@@ -196,15 +195,15 @@ export default function Questions() {
         <SetupRail current="questions" done={done} simple />
         <s-paragraph>
           {bundle
-            ? "Rename anything. Tick which main product each answer points to: the one with the most ticks wins. Extras go in the cart when a shopper picks an answer that points to them."
-            : "Rename anything. Tick which product each answer points to: the one with the most ticks among the shopper's answers wins, and ties go to the product listed first."}
+            ? "Write each answer in your words and click the products it recommends. The main product recommended most often wins; extras go in the cart when an answer that recommends them is picked."
+            : "Write each answer in your words and click the products it recommends. The product recommended most often across a shopper's answers wins."}
         </s-paragraph>
         {problems.length && !dirty ? (
           <s-banner tone="warning" heading="Worth a look">
             <s-unordered-list>{problems.map((p) => <s-list-item key={p}>{p}</s-list-item>)}</s-unordered-list>
           </s-banner>
         ) : null}
-        <s-text color="subdued">The first ticks were suggested from your product names, types and tags. Check them before going live.</s-text>
+        <s-text color="subdued">The first recommendations were suggested from your product names, types and tags. Check them before going live.</s-text>
       </s-section>
 
       {questions.map((q, i) => {
@@ -212,25 +211,30 @@ export default function Questions() {
         return (
           <s-section key={q.field} heading={`Question ${i + 1}${bundle ? (q.target === "extra" ? ", picks extras" : ", picks the main product") : ""}`}>
             <s-stack direction="block" gap="base">
-              <s-text-field label="Question" value={q.title} onInput={(e) => updateQ(i, { title: e.currentTarget.value })} />
-              <s-text-field label="Helper text" value={q.sub || ""} onInput={(e) => updateQ(i, { sub: e.currentTarget.value })} />
-              <s-stack direction="inline" gap="base" alignItems="center">
-                <s-checkbox label="Shoppers can pick several answers" checked={!!q.multi} onChange={(e) => updateQ(i, { multi: e.currentTarget.checked })} />
-                <s-select label="Show answers as" value={q.display === "cards" ? "cards" : "rows"} onChange={(e) => updateQ(i, { display: e.currentTarget.value })} details="Picture cards suit product photos; rows suit emoji.">
-                  <s-option value="rows">Rows with an emoji or picture</s-option>
-                  <s-option value="cards">Picture cards</s-option>
-                </s-select>
-                {bundle ? (
-                  <s-select label="Answers point to" value={q.target} onChange={(e) => updateQ(i, { target: e.currentTarget.value })}>
-                    <s-option value="main">Main products</s-option>
-                    <s-option value="extra">Extras</s-option>
+              <s-text-field label="Question" value={q.title} maxLength={160} placeholder="e.g. How do you ride?" onInput={(e) => updateQ(i, { title: e.currentTarget.value })} />
+              {cols.length ? q.answers.map((a, ai) => (
+                <AnswerRow key={a.value} a={a} products={cols} quizProducts={simple.products} ticked={grid[cell(q, a)] || []}
+                  placeholder={ai === 0 ? "e.g. Park and tricks" : "Another answer"}
+                  onTick={(key, on) => tick(cell(q, a), key, on)} onChange={(patch) => updateA(i, a.value, patch)}
+                  onRemove={() => removeA(i, a.value)} canRemove={q.answers.length > MIN_ANSWERS} />
+              )) : <s-banner tone="info">No extras yet. Add them in step 1, or point this question at the main products.</s-banner>}
+              <details>
+                <summary style={{ cursor: "pointer", fontSize: 13, color: "#4a4a4a" }}>More options</summary>
+                <div style={{ display: "flex", flexDirection: "column", gap: 12, paddingTop: 12 }}>
+                  <s-text-field label="Helper text under the question (optional)" value={q.sub || ""} maxLength={200} placeholder="e.g. Pick the one closest to you" onInput={(e) => updateQ(i, { sub: e.currentTarget.value })} />
+                  <s-checkbox label="Shoppers can pick several answers" checked={!!q.multi} onChange={(e) => updateQ(i, { multi: e.currentTarget.checked })} />
+                  <s-select label="Show answers as" value={q.display === "cards" ? "cards" : "rows"} onChange={(e) => updateQ(i, { display: e.currentTarget.value })} details="Picture cards suit product photos; rows suit emoji.">
+                    <s-option value="rows">Rows with an emoji or picture</s-option>
+                    <s-option value="cards">Picture cards</s-option>
                   </s-select>
-                ) : null}
-              </s-stack>
-              {cols.length ? (
-                <Grid q={q} products={cols} quizProducts={simple.products} grid={grid}
-                  onTick={tick} onLabel={(value, label) => updateA(i, value, { label })} onVisual={(value, patch) => updateA(i, value, patch)} onRemoveAnswer={(value) => removeA(i, value)} />
-              ) : <s-banner tone="info">No extras yet. Add them in step 1, or point this question at the main products.</s-banner>}
+                  {bundle ? (
+                    <s-select label="Answers point to" value={q.target} onChange={(e) => updateQ(i, { target: e.currentTarget.value })}>
+                      <s-option value="main">Main products</s-option>
+                      <s-option value="extra">Extras</s-option>
+                    </s-select>
+                  ) : null}
+                </div>
+              </details>
               <s-stack direction="inline" gap="small">
                 <s-button variant="secondary" onClick={() => addA(i)} {...(q.answers.length >= MAX_ANSWERS ? { disabled: true } : {})}>Add an answer</s-button>
                 <s-button variant="tertiary" onClick={() => moveQ(i, -1)} {...(i === 0 ? { disabled: true } : {})}>Move up</s-button>

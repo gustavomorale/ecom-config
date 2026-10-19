@@ -19,6 +19,8 @@ import { money } from "../lib/money";
 import { QuizBar } from "../components/QuizBar";
 
 const MAX_PRODUCTS = 24;
+// Gift sets are built but hidden while 1.0 stays simple (2026-10-19). Existing sets still show.
+const SHOW_GIFT_SETS = false;
 
 /* A gift set's price is the sum of its products when every one has a price. */
 const setItem = (p) => ({
@@ -336,9 +338,9 @@ export default function Start() {
           {mains.length ? list(mains) : null}
           <s-stack direction="inline" gap="small">
             <s-button variant={mains.length ? "secondary" : "primary"} onClick={() => pick("main")}>{mains.some((p) => !p.set) ? "Change products" : "Choose products"}</s-button>
-            <s-button variant="secondary" onClick={addSet}>Add a gift set</s-button>
+            {SHOW_GIFT_SETS ? <s-button variant="secondary" onClick={addSet}>Add a gift set</s-button> : null}
           </s-stack>
-          <s-text color="subdued">A gift set is several of your products sold together under one name, without creating a bundle product in Shopify.</s-text>
+          {SHOW_GIFT_SETS ? <s-text color="subdued">A gift set is several of your products sold together under one name, without creating a bundle product in Shopify.</s-text> : null}
         </s-stack>
       </s-section>
 

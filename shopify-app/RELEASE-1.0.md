@@ -204,6 +204,13 @@ Out of 1.0: analytics funnel UI, price sync, AI draft.
 **6 Oct: 1.0.6, plan cards never split 3 + 1.** The four cards follow the width of their
 section: four across, two by two, or one per row.
 
+**19 Oct: 1.0.8, simpler Questions page.** Each answer is one row: a picture button (a grid
+of emoji, a quiz product's photo, or any product or collection photo) and the answer text,
+with the products it recommends as clickable chips under it, so there is no sideways table.
+Helper text, several answers, display and target sit under "More options". New questions
+and answers start empty with an example placeholder. Gift sets and the Black Friday offer
+are hidden (built, kept for later).
+
 ## Shopify side, before resubmitting
 
 1. Done 3 Oct: App Pricing has Free (USD 0), Starter (USD 9), Standard (USD 25) and Growth

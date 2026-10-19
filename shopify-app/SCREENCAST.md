@@ -30,6 +30,9 @@ Record the live app (1.0.7 or later) only. Nothing from `ai-draft` or `q4-giftin
   afterwards (ElevenLabs or your own voice). No music. Pause a second on each screen before
   clicking. Final cut about 4 minutes.
 - **Typing:** where a shot says CUT, stop, do it off camera, resume on the result.
+- **Headline:** the Sports & outdoors wording starts as "Pack for your trip". Before shot 10,
+  off camera, set the headline in **Copy & cart** to "Find your snowboard" so the storefront
+  matches the snowboards.
 
 ## Shot list (about 4 minutes)
 
@@ -42,7 +45,7 @@ Record the live app (1.0.7 or later) only. Nothing from `ai-draft` or `q4-giftin
 | 1:00 | 05 Quiz type | **Your products**: select **Product finder** (show both cards). "What do you sell?": choose **Sports & outdoors**. | Step one, your products. A product finder gives each shopper one product. A bundle quiz adds the extras that fit. I choose product finder. "What do you sell" only suggests the wording of the questions. |
 | 1:18 | 06 Product source | Click **Choose products**. Shopify's picker opens with the store's snowboards. Tick the five snowboards slowly, **Select**. The list shows them with their real photos and prices. | This is where every product in the quiz comes from: Shopify's own product picker, showing the products this store already sells. I pick five snowboards. Their names, photos and prices come straight from the catalogue. |
 | 1:45 | 07 Save | **Save and continue**. | Save and continue. The app also matches the theme's colours and fonts. |
-| 1:52 | 08 Questions | **Check the questions**: the grid of ticks. Rename question 1 to "How do you ride?" (type it on camera). CUT: reword answers per table A. Resume. Untick and tick one box. Set **Show answers as** to **Picture cards**. Point at the preview. | Step two: the questions. Each answer points to one or more of the products I picked: the product with the most ticks wins. I can rename everything, change which products each answer points to, and show answers as picture cards. The preview updates as I go. |
+| 1:52 | 08 Questions | **Check the questions**. Rename question 1 to "How do you ride?" (type it on camera). CUT: reword the answers per table A. Resume. Click an answer's picture button and pick an emoji. Under an answer, click a product chip off and another on ("Recommends"). Point at the preview. | Step two: the questions. Each answer recommends one or more of the products I picked: I just click them. The product recommended most often wins. Each answer can have an emoji or a product photo. The preview shows what shoppers see. |
 | 2:35 | 09 Go live | **Save and continue**. **Go live**: **Open theme editor**. In the editor: Add section, Apps, **CraftFrame Bundle Quiz**, **Save**. Back in the app, **Finish setup**. Home shows the quiz as live. | Step three: go live. Open theme editor, add a section, choose Apps, and pick CraftFrame Bundle Quiz. Save the theme. Finish setup: Home now shows the quiz is live on the store. |
 | 3:10 | 10 Shopper | Storefront page with the quiz. Answer every question, reach the result. Hold on it. **Add to cart**: the cart with the snowboard. | Now as a shopper. I answer the questions and get my pick: a real snowboard from this store, with its real price. Add to cart puts exactly that product in the cart. |
 | 3:40 | 11 Home | Back in the app: Home with the quiz card, completions and the plan section. | Home lists every quiz, how many shoppers finished it this month, and the plan, which can be changed on Shopify's plan page. That is the full setup. The app reads products and the theme, stores no customer data, and support is at contact at craftframe dot agency. |
@@ -69,7 +72,7 @@ YouTube chapters for the description:
 | How do you ride? | Mostly groomed runs · Park and tricks · Deep powder |
 | How long have you been riding? | First season · A few seasons · Many years |
 
-Tick so each snowboard is reached by at least one answer (the page warns otherwise).
+Make sure each snowboard is recommended by at least one answer (the page warns otherwise).
 
 ## Voiceover (plain text, for ElevenLabs and for the English subtitles)
 
@@ -87,7 +90,7 @@ This is where every product in the quiz comes from: Shopify's own product picker
 
 Save and continue. The app also matches the theme's colours and fonts.
 
-Step two: the questions. Each answer points to one or more of the products I picked: the product with the most ticks wins. I can rename everything, change which products each answer points to, and show answers as picture cards. The preview updates as I go.
+Step two: the questions. Each answer recommends one or more of the products I picked: I just click them. The product recommended most often wins. Each answer can have an emoji or a product photo. The preview shows what shoppers see.
 
 Step three: go live. Open theme editor, add a section, choose Apps, and pick CraftFrame Bundle Quiz. Save the theme. Finish setup: Home now shows the quiz is live on the store.
 

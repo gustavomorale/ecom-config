@@ -23,6 +23,9 @@ import { VERSION, SUPPORT_EMAIL } from "../components/SetupRail";
 import { hasProduct, productSlots } from "../lib/links";
 import { blackFridayNudge } from "../lib/season";
 
+// The Black Friday card is hidden while 1.0 stays simple (2026-10-19).
+const SHOW_SEASONAL = false;
+
 const isSimpleConfig = (config) => !!(config && config.simple && config.meta?.mode !== "advanced");
 
 /* What a quiz card shows: type, progress and the one next step. */
@@ -57,7 +60,7 @@ export const loader = async ({ request }) => {
   return {
     welcome: false, quizzes, editing: index.editing, block,
     editorUrl: themeEditorUrl(domain), storeUrl: `https://${domain}/`,
-    season: blackFridayNudge(config?.promo),
+    season: SHOW_SEASONAL ? blackFridayNudge(config?.promo) : null,
   };
 };
 

@@ -211,6 +211,9 @@ Helper text, several answers, display and target sit under "More options". New q
 and answers start empty with an example placeholder. Gift sets and the Black Friday offer
 are hidden (built, kept for later).
 
+**19 Oct: 1.0.9, no Black Friday card on Home.** The seasonal card on Home is hidden like the
+offer button in Copy & cart.
+
 ## Shopify side, before resubmitting
 
 1. Done 3 Oct: App Pricing has Free (USD 0), Starter (USD 9), Standard (USD 25) and Growth

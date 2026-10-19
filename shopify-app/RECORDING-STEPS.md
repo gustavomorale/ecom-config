@@ -1,6 +1,6 @@
 # Recording steps (follow this while recording)
 
-Store: **bundle-quiz-review-oct** · App 1.0.8 · Chrome window 1760 x 990 · About 4 minutes in the
+Store: **bundle-quiz-review-oct** · App 1.0.9 · Chrome window 1760 x 990 · About 4 minutes in the
 final cut. Narration is in `SCREENCAST.md` (record the voice later or read it live).
 
 Rules while recording: move the mouse slowly, pause about 1 second before every click, never
@@ -15,7 +15,9 @@ do the work off camera, then start a new recording.
    and enter the password.
 2. Copy this install link (you will paste it in step 6):
    `https://admin.shopify.com/store/bundle-quiz-review-oct/oauth/install?client_id=a1b72ae7a95a6312f1f0587db9042df4`
-3. Open https://admin.shopify.com/store/bundle-quiz-review-oct/products
+3. Open https://admin.shopify.com/store/bundle-quiz-review-oct/products and check the store
+   name at the top right says **bundle-quiz-review-oct** (not MySuperStore, whose catalogue has
+   a sample bundle product that must never appear in the video).
 4. Close every other tab in this window. Notifications off (Focus mode).
 
 ---
@@ -29,7 +31,8 @@ do the work off camera, then start a new recording.
 6. Click the address bar, paste the install link, press **Enter**.
 7. **Install screen.** Hover over the permissions ("View products", "View themes") for 2 seconds.
    Click **Install**.
-8. **Plan page.** Pause 2 seconds on the four plans. Choose **Free**, then approve.
+8. **Plan page (only if Shopify shows it).** Pause 2 seconds on the four plans. Choose
+   **Free**, then approve. If the store already has a plan, Shopify skips this page.
 9. **Welcome page.** Pause. Scroll down slowly past the example, the three steps, "What you get"
    and the plans. Scroll back to the top. Click **Start setup**.
 10. Wait until **Your products** has loaded. **STOP.**

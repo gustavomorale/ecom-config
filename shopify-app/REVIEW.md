@@ -5,7 +5,7 @@ Production app in the Dev Dashboard: **bundle-configurator-2** (client ID `a1b72
 
 ## 1. Test instructions (paste into "Testing instructions" in the submission form)
 
-Rewritten 2026-10-15 for app 1.0 (three-step setup, four plans). Answers review items 4.5.3
+Rewritten 2026-10-15 for app 1.0, updated 2026-10-20 for 1.0.12 (three-step setup, four plans). Answers review items 4.5.3
 (product source) and 4.5.4 / 4.5.5 (credentials).
 
 ```
@@ -29,17 +29,17 @@ SETUP, THREE STEPS (about five minutes)
    product plus extras). Under "What do you sell?" pick the closest match (it only suggests
    question wording). Click Choose products and pick 3 to 6 products from your store with
    Shopify's picker. Save and continue. The theme's colours and fonts are matched on save.
-3. Questions: each answer has a row of tick boxes, one per product. Rename a question or an
-   answer, tick which products each answer points to, and optionally set "Show answers as"
-   to Picture cards and choose a product photo. The preview on the right updates as you edit.
-   Save and continue.
+3. Questions: rename a question or an answer. Under each answer, click the product chips to
+   choose which products it recommends (selected chips turn blue). Click the picture button
+   left of an answer to give it an emoji or a product photo. The preview on the right shows
+   the quiz as shoppers see it. Save and continue.
 4. Go live: click Open theme editor. Add section (or Add block), Apps, CraftFrame Bundle
    Quiz, then Save the theme. Back in the app click Finish setup. Home shows the quiz as live.
 
 STOREFRONT
 5. Open the page with the block. Answer the questions: the result shows the product that
    best fits the answers (and extras, in a Bundle quiz) with their real Shopify names,
-   photos and prices. Add to cart opens the cart with exactly those products.
+   photos and prices. Add to cart opens the cart (or checkout) with exactly those products.
 
 AFTER SETUP
 6. Home lists every quiz with its progress and this month's completions, and shows the plan
@@ -56,7 +56,7 @@ read_products (product picker, refreshing prices and photos), read_themes (match
 theme's look, checking the block is placed). Writes app metafields on the shop only. No
 customer data. Privacy policy: https://bundle-configurator.netlify.app/privacy
 Support: contact@craftframe.agency
-Screencast: <YouTube link>
+Screencast (3 min, English narration and subtitles): <YouTube link>
 ```
 
 ## 2. QA store for reviewers (do this before submitting)

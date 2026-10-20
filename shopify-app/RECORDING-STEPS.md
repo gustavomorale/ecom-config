@@ -1,6 +1,6 @@
 # Recording steps (follow this while recording)
 
-Store: **bundle-quiz-review-oct** · App 1.0.11 · Chrome window 1760 x 990 · About 4 minutes in the
+Store: **bundle-quiz-review-oct** · App 1.0.12 · Chrome window 1760 x 990 · About 4 minutes in the
 final cut. Narration is in `SCREENCAST.md` (record the voice later or read it live).
 
 Rules while recording: move the mouse slowly, pause about 1 second before every click, never
@@ -91,6 +91,11 @@ The five products, by their short names (the chips always appear in this order):
 | Ultralight | **Many years** | 💪 | Oxygen, Multi |
 | Cooking | *delete it with the bin icon* | | |
 
+Also remove the template's camping text: under each question, click **Remove** next to the
+**helper text** ("Shelter, footwear and pack size..."), and under each answer click **Remove**
+next to its **small text** ("Out and back, no overnight", "Car or short walk-in"...). The
+preview on the right then shows only your words.
+
 Then:
 1. Click **Save** (top right). The "Worth a look" box must not appear; if it does, a product is
    not recommended by any answer: check the tables.
@@ -103,6 +108,8 @@ Result to expect on the storefront: **Park and tricks** + **A few seasons** reco
 ---
 
 ## Recording 3: Questions (about 40 seconds)
+
+Reload the page once (Cmd + R) before you start, so it runs the latest version.
 
 **Start recording.**
 

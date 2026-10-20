@@ -1,6 +1,6 @@
 # Recording steps (follow this while recording)
 
-Store: **bundle-quiz-review-oct** · App 1.0.9 · Chrome window 1760 x 990 · About 4 minutes in the
+Store: **bundle-quiz-review-oct** · App 1.0.11 · Chrome window 1760 x 990 · About 4 minutes in the
 final cut. Narration is in `SCREENCAST.md` (record the voice later or read it live).
 
 Rules while recording: move the mouse slowly, pause about 1 second before every click, never
@@ -59,28 +59,46 @@ do the work off camera, then start a new recording.
 
 ## Off camera: write the questions
 
-On **Check the questions**, make it exactly this. Click a product chip to turn it on (blue with ✓)
-or off. Remove any question beyond the second with **Remove question**.
+The page opens with the template's camping wording. Change it as below: **type over** the
+question and answer text, click the **picture button** (left of each answer) to pick the emoji,
+and click the **product chips** under each answer so that **only** the listed products are blue
+with a ✓ (click a blue chip to turn it off).
 
-**Question 1: How do you ride?**
+The five products, by their short names (the chips always appear in this order):
 
-| Answer | Emoji | Recommends |
-|---|---|---|
-| Mostly groomed runs | 🏔️ | The Complete Snowboard, The Collection Snowboard: Hydrogen |
-| Park and tricks | 🔥 | The Collection Snowboard: Liquid, The Collection Snowboard: Oxygen |
-| Deep powder | ❄️ | The Multi-managed Snowboard |
+| Short name | Full name on the chip |
+|---|---|
+| **Hydrogen** | The Collection Snowboard: Hydrogen |
+| **Liquid** | The Collection Snowboard: Liquid |
+| **Oxygen** | The Collection Snowboard: Oxygen |
+| **Complete** | The Complete Snowboard (Ice) |
+| **Multi** | The Multi-managed Snowboard |
 
-**Question 2: How long have you been riding?**
+**Question 1.** Replace "What are you doing?" with **How do you ride?**
 
-| Answer | Emoji | Recommends |
-|---|---|---|
-| First season | 🌱 | The Complete Snowboard |
-| A few seasons | ⭐ | The Collection Snowboard: Hydrogen, The Collection Snowboard: Liquid |
-| Many years | 💪 | The Collection Snowboard: Oxygen, The Multi-managed Snowboard |
+| Now says | Type instead | Emoji | Products ON (blue ✓) |
+|---|---|---|---|
+| Day hikes | **Mostly groomed runs** | 🏔️ | Complete, Hydrogen |
+| Camping | **Park and tricks** | 🔥 | Liquid, Oxygen |
+| Backpacking | **Deep powder** | ❄️ | Multi |
 
-Then: in question 1, type over the question with something else (for example "How do you
-ride") and leave the cursor there, ready to retype it on camera. Click **Save** (top right).
-The "Worth a look" box must not show.
+**Question 2.** Replace "Conditions?" with **How long have you been riding?**
+
+| Now says | Type instead | Emoji | Products ON (blue ✓) |
+|---|---|---|---|
+| Wet weather | **First season** | 🌱 | Complete (turn Hydrogen off) |
+| Cold nights | **A few seasons** | ⭐ | Hydrogen, Liquid |
+| Ultralight | **Many years** | 💪 | Oxygen, Multi |
+| Cooking | *delete it with the bin icon* | | |
+
+Then:
+1. Click **Save** (top right). The "Worth a look" box must not appear; if it does, a product is
+   not recommended by any answer: check the tables.
+2. For recording 3, click in question 1's text and delete the last word ("ride?"), so you can
+   type it back on camera.
+
+Result to expect on the storefront: **Park and tricks** + **A few seasons** recommends
+**Liquid** (it is the only product both answers point to).
 
 ---
 
@@ -88,11 +106,11 @@ The "Worth a look" box must not show.
 
 **Start recording.**
 
-17. Click in question 1's text and finish typing **How do you ride?**
+17. Click at the end of question 1's text and type **ride?** so it reads **How do you ride?**
 18. Click the **picture button** of "Park and tricks" (left of the answer). The emoji grid opens:
-    pause, then click **🔥**.
-19. Under "Deep powder", click **The Collection Snowboard: Oxygen** to turn it on, pause, click it
-    again to turn it off. *(Shows how answers recommend products.)*
+    pause, then click **🔥** again (it stays the same, the point is to show the picker).
+19. Under "Deep powder", click the **Oxygen** chip to turn it on, pause, click it again to turn
+    it off. *(Shows how answers recommend products.)*
 20. Move the pointer to the **Preview** on the right and hold 3 seconds.
 21. Click **Save and continue**. Wait for **Go live**. **STOP.**
 

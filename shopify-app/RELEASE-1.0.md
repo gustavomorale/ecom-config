@@ -217,6 +217,8 @@ offer button in Copy & cart.
 **20 Oct: 1.0.10.** Welcome step 2 describes the new Questions page (click the products each
 answer recommends).
 
+**20 Oct: 1.0.11.** Product chips on Questions show the full product name (no cut-off at 240 px).
+
 ## Shopify side, before resubmitting
 
 1. Done 3 Oct: App Pricing has Free (USD 0), Starter (USD 9), Standard (USD 25) and Growth

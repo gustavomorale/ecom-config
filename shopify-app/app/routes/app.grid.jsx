@@ -139,7 +139,7 @@ function AnswerRow({ a, products, quizProducts, ticked, onTick, onChange, onRemo
           const on = ticked.includes(p.key);
           return (
             <button key={p.key} type="button" aria-pressed={on} onClick={() => onTick(p.key, !on)}
-              style={{ all: "unset", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 10px 4px 4px", borderRadius: 999, fontSize: 13, maxWidth: 240, border: on ? "2px solid #3d5ee6" : "1px solid #d4d4d4", background: on ? "#eef3ff" : "#fff", color: on ? "#1f3a8a" : "#4a4a4a", fontWeight: on ? 600 : 400 }}>
+              style={{ all: "unset", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 10px 4px 4px", borderRadius: 999, fontSize: 13, maxWidth: "100%", border: on ? "2px solid #3d5ee6" : "1px solid #d4d4d4", background: on ? "#eef3ff" : "#fff", color: on ? "#1f3a8a" : "#4a4a4a", fontWeight: on ? 600 : 400 }}>
               {p.image ? <img src={p.image} alt="" style={{ width: 24, height: 24, borderRadius: 999, objectFit: "cover" }} /> : <span style={{ width: 24, height: 24, borderRadius: 999, background: "#eee" }} />}
               <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.productTitle}</span>
               {on ? <span aria-hidden="true">✓</span> : null}

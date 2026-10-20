@@ -1,51 +1,67 @@
 1
-00:00:00,200 --> 00:00:09,000
+00:00:00,300 --> 00:00:09,910
 These are this store's own products. CraftFrame Bundle Quiz sells nothing and has no inventory. It only recommends products like these.
 
 2
-00:00:09,200 --> 00:00:20,000
+00:00:09,800 --> 00:00:19,540
 I install the app. It asks only to view products and the theme. There is no separate account or login: everything runs inside the Shopify admin.
 
 3
-00:00:22,200 --> 00:00:31,800
+00:00:22,500 --> 00:00:32,070
 The welcome page explains the three steps to go live, what is included, and the plans. This store is on the Free plan.
 
 4
-00:00:34,200 --> 00:00:37,800
+00:00:34,500 --> 00:00:37,200
 I click Start setup. Step one: your products.
 
 5
-00:00:42,200 --> 00:00:52,200
+00:00:42,500 --> 00:00:51,840
 A product finder gives each shopper one product. What do you sell only suggests the wording of the questions. I choose Sports and outdoors.
 
 6
-00:00:54,200 --> 00:01:08,600
-This is where every product in the quiz comes from: Shopify's own product picker, listing the products this store already sells. I pick five snowboards. Their names, photos and prices come straight from the catalogue.
+00:00:54,800 --> 00:01:02,890
+This is where every product in the quiz comes from: Shopify's own product picker, listing the products this store already sells.
 
 7
-00:01:20,200 --> 00:01:35,000
-Save and continue. Step two: the questions. Each answer recommends one or more of my products: I just click them. The product recommended most often wins. Each answer can show an emoji or a product photo.
+00:01:03,500 --> 00:01:05,550
+I pick five snowboards.
 
 8
-00:01:40,200 --> 00:01:47,400
-A second question: how long have you been riding? The preview shows exactly what shoppers will see.
+00:01:14,300 --> 00:01:19,940
+Their names, photos and prices come straight from the catalogue.
 
 9
-00:01:52,200 --> 00:01:53,800
-Save and continue.
+00:01:20,500 --> 00:01:33,540
+Save and continue. Step two: the questions. Each answer recommends one or more of my products: I just click them. The product recommended most often wins. Each answer can show an emoji or a product photo.
 
 10
-00:01:58,200 --> 00:02:09,400
-Step three: go live. In the theme editor, I add the CraftFrame Bundle Quiz block as a section and save. The app never edits the theme itself.
+00:01:40,500 --> 00:01:46,850
+A second question: how long have you been riding? The preview shows exactly what shoppers will see.
 
 11
-00:02:13,200 --> 00:02:16,000
-Home shows the quiz is live.
+00:01:52,500 --> 00:01:54,080
+Save and continue.
 
 12
-00:02:17,200 --> 00:02:34,000
-Now, as a shopper. I pick park and tricks, then a few seasons, and see my pick: a real snowboard from this store, with its real price and why it was chosen. Add to cart opens checkout with exactly that product.
+00:01:58,500 --> 00:02:09,110
+Step three: go live. In the theme editor, I add the CraftFrame Bundle Quiz block as a section and save. The app never edits the theme itself.
 
 13
-00:02:45,200 --> 00:02:50,000
+00:02:13,300 --> 00:02:15,420
+Home shows the quiz is live.
+
+14
+00:02:17,500 --> 00:02:19,060
+Now, as a shopper.
+
+15
+00:02:25,000 --> 00:02:34,600
+I pick park and tricks, then a few seasons, and see my pick: a real snowboard from this store, with its real price and why it was chosen.
+
+16
+00:02:38,500 --> 00:02:44,150
+Add to cart opens checkout with exactly that product.
+
+17
+00:02:45,800 --> 00:02:49,800
 That is the full setup. Support: contact at craftframe dot agency.

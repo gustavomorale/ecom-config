@@ -54,8 +54,10 @@ Screencast (3 min, English narration and subtitles): https://youtu.be/VPd381BuGe
 
 ## Screenshots (replace all five; files in ~/Desktop/Bundle Quiz listing screenshots)
 
-1. `screenshot-1.png`: A short quiz on the storefront, styled to match the theme (57 characters)
-2. `screenshot-2.png`: The shopper's pick from the store's own products, with why (58 characters)
-3. `screenshot-3.png`: Click which of your products each answer recommends (51 characters)
-4. `screenshot-4.png`: Choose the quiz's products from your catalogue with Shopify (59 characters)
-5. `screenshot-5.png`: Home shows each quiz, completions this month and your plan (58 characters)
+No app pricing on any image; storefront shots cropped to the quiz only (Shopify's listing check of 2026-10-20).
+
+1. `screenshot-1.png`: A short quiz on the storefront, styled to match the theme
+2. `screenshot-2.png`: A second question, with the shopper's answers so far
+3. `screenshot-3.png`: Click which of your products each answer recommends
+4. `screenshot-4.png`: Choose the quiz's products from your catalogue with Shopify
+5. `screenshot-5.png`: A summary of the setup before the quiz goes live

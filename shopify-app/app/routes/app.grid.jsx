@@ -129,6 +129,14 @@ function AnswerRow({ a, products, quizProducts, ticked, onTick, onChange, onRemo
         </button>
         <div style={{ flex: 1, minWidth: 0 }}>
           <s-text-field label="Answer" labelAccessibilityVisibility="exclusive" value={a.label} placeholder={placeholder} maxLength={80} onInput={(e) => onChange({ label: e.currentTarget.value })} />
+          {a.desc ? (
+            <div style={{ display: "flex", gap: 6, alignItems: "center", marginTop: 6 }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <s-text-field label="Small text under the answer" labelAccessibilityVisibility="exclusive" value={a.desc} maxLength={120} onInput={(e) => onChange({ desc: e.currentTarget.value })} />
+              </div>
+              <s-button variant="tertiary" onClick={() => onChange({ desc: "" })} accessibilityLabel="Remove the small text under this answer">Remove</s-button>
+            </div>
+          ) : null}
         </div>
         {canRemove ? <s-button variant="tertiary" icon="delete" accessibilityLabel={`Remove answer ${a.label}`} onClick={onRemove} /> : null}
       </div>
@@ -212,6 +220,14 @@ export default function Questions() {
           <s-section key={q.field} heading={`Question ${i + 1}${bundle ? (q.target === "extra" ? ", picks extras" : ", picks the main product") : ""}`}>
             <s-stack direction="block" gap="base">
               <s-text-field label="Question" value={q.title} maxLength={160} placeholder="e.g. How do you ride?" onInput={(e) => updateQ(i, { title: e.currentTarget.value })} />
+              {q.sub ? (
+                <div style={{ display: "flex", gap: 6, alignItems: "end" }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <s-text-field label="Helper text under the question" value={q.sub} maxLength={200} onInput={(e) => updateQ(i, { sub: e.currentTarget.value })} />
+                  </div>
+                  <s-button variant="tertiary" onClick={() => updateQ(i, { sub: "" })} accessibilityLabel="Remove the helper text">Remove</s-button>
+                </div>
+              ) : null}
               {cols.length ? q.answers.map((a, ai) => (
                 <AnswerRow key={a.value} a={a} products={cols} quizProducts={simple.products} ticked={grid[cell(q, a)] || []}
                   placeholder={ai === 0 ? "e.g. Park and tricks" : "Another answer"}
@@ -221,7 +237,7 @@ export default function Questions() {
               <details>
                 <summary style={{ cursor: "pointer", fontSize: 13, color: "#4a4a4a" }}>More options</summary>
                 <div style={{ display: "flex", flexDirection: "column", gap: 12, paddingTop: 12 }}>
-                  <s-text-field label="Helper text under the question (optional)" value={q.sub || ""} maxLength={200} placeholder="e.g. Pick the one closest to you" onInput={(e) => updateQ(i, { sub: e.currentTarget.value })} />
+                  {!q.sub ? <s-text-field label="Helper text under the question (optional)" value="" maxLength={200} placeholder="e.g. Pick the one closest to you" onInput={(e) => updateQ(i, { sub: e.currentTarget.value })} /> : null}
                   <s-checkbox label="Shoppers can pick several answers" checked={!!q.multi} onChange={(e) => updateQ(i, { multi: e.currentTarget.checked })} />
                   <s-select label="Show answers as" value={q.display === "cards" ? "cards" : "rows"} onChange={(e) => updateQ(i, { display: e.currentTarget.value })} details="Picture cards suit product photos; rows suit emoji.">
                     <s-option value="rows">Rows with an emoji or picture</s-option>

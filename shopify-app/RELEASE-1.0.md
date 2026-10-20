@@ -214,6 +214,9 @@ are hidden (built, kept for later).
 **19 Oct: 1.0.9, no Black Friday card on Home.** The seasonal card on Home is hidden like the
 offer button in Copy & cart.
 
+**20 Oct: 1.0.10.** Welcome step 2 describes the new Questions page (click the products each
+answer recommends).
+
 ## Shopify side, before resubmitting
 
 1. Done 3 Oct: App Pricing has Free (USD 0), Starter (USD 9), Standard (USD 25) and Growth

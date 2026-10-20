@@ -185,7 +185,7 @@ function Welcome() {
   const plan = appData.plan || PLANS.free;
   const steps = [
     ["Pick your products", "Choose a Product finder (one product per shopper) or a Bundle quiz (a main product plus extras), then pick products your store already sells."],
-    ["Check the questions", "Questions are suggested for what you sell. Rename anything and tick which products each answer points to."],
+    ["Check the questions", "Questions are suggested for what you sell. Reword anything and click the products each answer recommends."],
     ["Go live", "Add the block to any page in the theme editor. It wears your store's colours, fonts and corners."],
   ];
   const features = [

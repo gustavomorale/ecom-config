@@ -1,0 +1,29 @@
+Any Shopify store can use this app to help shoppers build the right cart. <break time="0.6s" /> A few simple questions bring together the products that solve one real need, so a bigger decision becomes simple. <break time="1.0s" />
+
+These are this store's own products. CraftFrame Bundle Quiz sells nothing and has no inventory. It only recommends products like these. <break time="0.4s" />
+
+I install the app. It asks only to view products and the theme. There is no separate account or login: everything runs inside the Shopify admin. <break time="2.4s" />
+
+The welcome page explains the three steps to go live, what is included, and the plans. This store is on the Free plan. <break time="2.6s" />
+
+I click Start setup. <break time="2.2s" /> Step one: your products. <break time="2.2s" />
+
+A product finder gives each shopper one product. What do you sell only suggests the wording of the questions. I choose Sports and outdoors. <break time="2.2s" />
+
+This is where every product in the quiz comes from: <break time="2.0s" /> Shopify's own product picker, listing the products this store already sells. <break time="3.0s" /> I pick five snowboards. <break time="3.0s" /> <break time="1.0s" /> Their names, photos and prices come straight from the catalogue. <break time="3.0s" />
+
+Save and continue. <break time="1.2s" /> Step two: the questions. <break time="1.0s" /> Each answer recommends one or more of my products: I just click them. <break time="1.0s" /> The product recommended most often wins. <break time="1.0s" /> Each answer can show an emoji or a product photo. <break time="1.4s" />
+
+A second question: how long have you been riding? <break time="2.5s" /> The preview shows exactly what shoppers will see. <break time="2.6s" />
+
+Save and continue. <break time="3.0s" /> <break time="1.6s" />
+
+Step three: go live. <break time="1.4s" /> In the theme editor, I add the CraftFrame Bundle Quiz block as a section and save. <break time="1.4s" /> The app never edits the theme itself. <break time="1.2s" />
+
+Home shows the quiz is live. <break time="1.4s" />
+
+Now, as a shopper. <break time="2.9s" /> I pick park and tricks, then a few seasons, and see my pick: <break time="2.9s" /> a real snowboard from this store, with its real price and why it was chosen. <break time="2.9s" /> Add to cart opens checkout with exactly that product. <break time="2.9s" />
+
+That is the full setup. Support: contact at craftframe dot agency. <break time="1.2s" />
+
+This is just one example. <break time="0.6s" /> Stores with a wider range of products benefit the most, because the quiz brings the right products together in one cart, which is built to help raise the average order value.

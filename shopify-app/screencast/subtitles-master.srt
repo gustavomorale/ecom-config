@@ -1,0 +1,75 @@
+1
+00:00:00,300 --> 00:00:12,890
+Any Shopify store can use this app to help shoppers build the right cart. A few simple questions bring together the products that solve one real need, so a bigger decision becomes simple.
+
+2
+00:00:13,390 --> 00:00:22,580
+These are this store's own products. CraftFrame Bundle Quiz sells nothing and has no inventory. It only recommends products like these.
+
+3
+00:00:23,080 --> 00:00:32,970
+I install the app. It asks only to view products and the theme. There is no separate account or login: everything runs inside the Shopify admin.
+
+4
+00:00:36,080 --> 00:00:46,150
+The welcome page explains the three steps to go live, what is included, and the plans. This store is on the Free plan.
+
+5
+00:00:48,280 --> 00:00:50,650
+I click Start setup. Step one: your products.
+
+6
+00:00:56,180 --> 00:01:05,880
+A product finder gives each shopper one product. What do you sell only suggests the wording of the questions. I choose Sports and outdoors.
+
+7
+00:01:08,280 --> 00:01:16,520
+This is where every product in the quiz comes from: Shopify's own product picker, listing the products this store already sells.
+
+8
+00:01:16,780 --> 00:01:18,850
+I pick five snowboards.
+
+9
+00:01:28,080 --> 00:01:33,860
+Their names, photos and prices come straight from the catalogue.
+
+10
+00:01:34,560 --> 00:01:48,090
+Save and continue. Step two: the questions. Each answer recommends one or more of my products: I just click them. The product recommended most often wins. Each answer can show an emoji or a product photo.
+
+11
+00:01:54,560 --> 00:02:00,990
+A second question: how long have you been riding? The preview shows exactly what shoppers will see.
+
+12
+00:02:06,560 --> 00:02:08,160
+Save and continue.
+
+13
+00:02:12,560 --> 00:02:23,380
+Step three: go live. In the theme editor, I add the CraftFrame Bundle Quiz block as a section and save. The app never edits the theme itself.
+
+14
+00:02:27,360 --> 00:02:29,660
+Home shows the quiz is live.
+
+15
+00:02:31,360 --> 00:02:32,890
+Now, as a shopper.
+
+16
+00:02:38,060 --> 00:02:48,120
+I pick park and tricks, then a few seasons, and see my pick: a real snowboard from this store, with its real price and why it was chosen.
+
+17
+00:02:51,560 --> 00:02:55,310
+Add to cart opens checkout with exactly that product.
+
+18
+00:02:58,360 --> 00:03:04,400
+That is the full setup. Support: contact at craftframe dot agency.
+
+19
+00:03:05,000 --> 00:03:17,770
+This is just one example. Stores with a wider range of products benefit the most, because the quiz brings the right products together in one cart, which is built to help raise the average order value.

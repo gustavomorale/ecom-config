@@ -168,10 +168,11 @@ commands: `/check`, `/build-extension`, `/sync-mvp`, `/next-blocker [n]`. Person
 
 ## Commercials
 
-One plan, Standard: 14-day free trial, then USD 25 a month (about GBP 19), never per
-order. Decided for after approval (2026-09-28, `shopify-app/LAUNCH-PLAN.md` section 2):
-a 21-day trial, then Free (50 completions a month, "Powered by" line), Standard USD 25 or
-Growth USD 79; both quiz types on every plan. Do not change plans while in review. Since the listing was created (2026-09-22) the app is on **Shopify App Pricing**: the
+Four plans (revised 2026-11-05, `shopify-app/COMPETE-PLAN.md`), 14-day trial on paid plans,
+never per order: Free (100 completed quizzes a month, 1 quiz, "Powered by" line; the quiz
+pauses at the limit until the 1st or an upgrade), Starter USD 9 (300, 3 quizzes), Standard
+USD 25 (1,000, 10 quizzes), Growth USD 79 (5,000, 25 quizzes), yearly at ten months' price,
+Custom by email. Paying stores are never paused. All features on every plan. Since the listing was created (2026-09-22) the app is on **Shopify App Pricing**: the
 plan lives in the listing, Shopify creates the subscription on its hosted plan page
 (`/store/<handle>/charges/<app handle>/pricing_plans`), and the app must never call
 `billing.request` or `appSubscriptionCreate` (the API refuses; the first review failed on a

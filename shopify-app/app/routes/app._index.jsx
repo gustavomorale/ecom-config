@@ -296,6 +296,7 @@ function KpiRow({ quizCount, block, plansOpen, onPlans }) {
   const cap = plan.quizzes || 1;
   const trialDays = plan.trialEndsAt ? Math.max(0, Math.ceil((Date.parse(plan.trialEndsAt) - Date.now()) / 864e5)) : 0;
   const live = block ? block.installed : null;
+  const atLimit = !!(plan.attribution && usage?.over);
   return (
     <s-grid gridTemplateColumns="repeat(auto-fit, minmax(140px, 1fr))" gap="base">
       <Kpi tint={usage && (usage.near || usage.over) ? "amber" : "blue"} label="Completed this month"
@@ -306,13 +307,13 @@ function KpiRow({ quizCount, block, plansOpen, onPlans }) {
         sub={quizCount >= cap && nextPlan(plan) ? `${nextPlan(plan).name} includes ${nextPlan(plan).quizzes}` : `${cap - quizCount} more on ${plan.name}`}
         meter={{ value: quizCount, max: cap, warn: quizCount >= cap }} />
       <Kpi tint="violet" label="Plan" value={plan.name}
-        sub={trialDays ? `Trial, ${trialDays} day${trialDays === 1 ? "" : "s"} left` : plan.price ? `USD ${plan.price} a month` : "Free, with a Powered by line"}>
+        sub={trialDays ? `Trial, ${trialDays} day${trialDays === 1 ? "" : "s"} left` : plan.price ? `${plan.limit.toLocaleString("en-GB")} completed a month` : "Free, with a Powered by line"}>
         <button type="button" onClick={onPlans} aria-expanded={plansOpen} aria-controls="plans"
           style={{ all: "unset", cursor: "pointer", color: "inherit", fontSize: 13, fontWeight: 600, textDecoration: "underline", marginTop: "auto" }}>{plansOpen ? "Hide plans" : "Compare and change plan"}</button>
       </Kpi>
-      <Kpi tint={live === false ? "amber" : live ? "green" : "grey"} label="On your store"
-        value={live === null ? "Unknown" : live ? "Live" : "Not yet"}
-        sub={live ? block.where.join(", ") : live === false ? "Add the block in the theme editor" : "Could not read the theme"} />
+      <Kpi tint={live === false || (live && atLimit) ? "amber" : live ? "green" : "grey"} label="On your store"
+        value={live === null ? "Unknown" : live ? (atLimit ? "Paused" : "Live") : "Not yet"}
+        sub={live ? (atLimit ? "Until the 1st, or a bigger plan" : block.where.join(", ")) : live === false ? "Add the block in the theme editor" : "Could not read the theme"} />
     </s-grid>
   );
 }
@@ -338,7 +339,7 @@ function PlansSection() {
             const isCurrent = k === current;
             const rows = [
               `${p.quizzes} quiz${p.quizzes === 1 ? "" : "zes"}`,
-              `${p.limit.toLocaleString("en-GB")} completed a month`,
+              p.attribution ? `${p.limit.toLocaleString("en-GB")} completed a month, then paused until the 1st` : `${p.limit.toLocaleString("en-GB")} completed a month`,
               p.attribution ? "Powered by CraftFrame line" : "No Powered by line",
             ];
             return (
@@ -349,7 +350,7 @@ function PlansSection() {
                 </div>
                 <div>
                   <div style={{ fontSize: 26, fontWeight: 700, fontVariantNumeric: "tabular-nums", lineHeight: 1.1 }}>{`USD ${p.price || 0}`}</div>
-                  <div style={{ fontSize: 12, color: "#6b6b6b", marginTop: 2 }}>{p.price ? `a month, ${TRIAL_DAYS}-day free trial` : "free for good"}</div>
+                  <div style={{ fontSize: 12, color: "#6b6b6b", marginTop: 2 }}>{p.price ? `a month or USD ${p.yearly} a year, ${TRIAL_DAYS}-day free trial` : "free for good"}</div>
                 </div>
                 <ul style={{ listStyle: "none", margin: 0, padding: "12px 0 0", borderTop: "1px solid #ebebeb", display: "flex", flexDirection: "column", gap: 6, fontSize: 13, color: "#4a4a4a", lineHeight: 1.35 }}>
                   {rows.map((r) => (
@@ -368,7 +369,7 @@ function PlansSection() {
         <div style={{ border: "1px dashed #c9cccf", background: "#fafafa", borderRadius: 12, padding: 16, display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
           <div style={{ minWidth: 0, flex: "1 1 260px" }}>
             <s-text type="strong">Custom plan</s-text>
-            <div style={{ fontSize: 13, color: "#4a4a4a", marginTop: 2 }}>{"More than 25 quizzes or 15,000 completed a month? We'll set up a plan that fits."}</div>
+            <div style={{ fontSize: 13, color: "#4a4a4a", marginTop: 2 }}>{"More than 25 quizzes or 5,000 completed a month? We'll set up a plan that fits."}</div>
           </div>
           <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 12, minWidth: 0 }}>
             <span style={{ fontSize: 13, color: "#6b6b6b", overflowWrap: "anywhere" }}>{CUSTOM_PLAN_EMAIL}</span>
@@ -387,7 +388,7 @@ export default function Index() {
 
 /* One quiz: what it is, how far its setup is, what it needs next, and the
    doors into each editor page for it. */
-function QuizCard({ q, editing, paused, canAdd, busy, go, submit }) {
+function QuizCard({ q, editing, paused, atLimit, canAdd, busy, go, submit }) {
   const [renaming, setRenaming] = useState(false);
   const [name, setName] = useState(q.name);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -405,7 +406,7 @@ function QuizCard({ q, editing, paused, canAdd, busy, go, submit }) {
           <s-stack direction="inline" gap="small" alignItems="center">
             <s-text color="subdued">{`Quiz ${q.id}`}</s-text>
             {q.type ? <s-badge>{q.type}</s-badge> : null}
-            {paused ? <s-badge tone="warning">Paused on your plan</s-badge> : q.ready && !q.next ? <s-badge tone="success">Ready</s-badge> : <s-badge tone="attention">Setup in progress</s-badge>}
+            {paused ? <s-badge tone="warning">{atLimit ? "Paused until the 1st" : "Paused on your plan"}</s-badge> : q.ready && !q.next ? <s-badge tone="success">Ready</s-badge> : <s-badge tone="attention">Setup in progress</s-badge>}
             {editing ? <s-badge tone="info">Last edited</s-badge> : null}
           </s-stack>
           {renaming ? (
@@ -463,6 +464,7 @@ function Home({ quizzes, editing, block, editorUrl, storeUrl, season }) {
   const app = useRouteLoaderData("routes/app") || {};
   const plan = app.plan || PLANS.free;
   const cap = plan.quizzes || 1;
+  const atLimit = !!(plan.attribution && app.usage?.over);
   const canAdd = quizzes.length < cap && quizzes.length < MAX_QUIZZES;
   const up = nextPlan(plan);
   const fetcher = useFetcher();
@@ -504,7 +506,7 @@ function Home({ quizzes, editing, block, editorUrl, storeUrl, season }) {
             <s-text color="subdued">Choose what to work on. Each quiz has its own products, questions, look and copy.</s-text>
           </s-stack>
           {quizzes.map((q) => (
-            <QuizCard key={q.id} q={q} editing={q.id === editing && quizzes.length > 1} paused={Number(q.id) > cap} canAdd={canAdd} busy={busy} go={go} submit={submit} />
+            <QuizCard key={q.id} q={q} editing={q.id === editing && quizzes.length > 1} paused={Number(q.id) > cap || atLimit} atLimit={atLimit} canAdd={canAdd} busy={busy} go={go} submit={submit} />
           ))}
           {canAdd ? (
             <s-clickable onClick={() => submit({ intent: "new" })} padding="base" borderWidth="base" borderRadius="base" accessibilityLabel="Add a quiz">

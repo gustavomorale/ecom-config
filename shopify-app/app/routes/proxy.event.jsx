@@ -4,9 +4,9 @@
    One event today: a shopper reached a result ("complete"), with the quiz
    number. It is a count only. The body carries nothing about the shopper and
    their answers are never sent. Plan limits read the store's monthly total.
-   A Free store stops counting at its limit: when the total reaches it, the
-   status metafield gets stopMonth and the theme block stops sending until the
-   1st, so a busy free store costs nothing past its limit.
+   A Free store pauses at its limit: when the total reaches it, the status
+   metafield gets stopMonth and the theme block hides the quiz until the 1st or
+   an upgrade (syncPlan clears it). Paying stores are never paused.
    ============================================================ */
 import { authenticate } from "../shopify.server";
 import { countCompletion } from "../usage.server";
@@ -23,10 +23,11 @@ export const action = async ({ request }) => {
   if (body.type !== "complete") return ok();
   let total = 0;
   try { total = await countCompletion(session.shop, String(body.quiz || "1")); } catch (e) { console.log("[usage] count failed", session.shop, e.message); return ok(); }
-  // Reaching the Free limit: check the plan once (a short window covers
-  // simultaneous requests) and tell the block to stop sending this month.
+  // Reaching the Free limit: check the plan (a short window covers simultaneous
+  // requests, every 25th retries if a write failed or a store moved down to Free
+  // already past the limit) and tell the block to pause this month.
   const limit = PLANS.free.limit;
-  if (admin && total >= limit && total <= limit + 5) {
+  if (admin && total >= limit && (total <= limit + 5 || total % 25 === 0)) {
     try {
       const { shopId, status } = await readStatus(admin);
       const month = monthKey();

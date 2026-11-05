@@ -12,14 +12,14 @@
    customers/redact:       nothing to delete; acknowledge.
    shop/redact:            48 hours after uninstall; drop the shop's sessions and counts.
                            The metafield goes with the app uninstall itself.
-   authenticate.webhook verifies the HMAC and rejects anything else with 401.
+   verifyWebhook checks the HMAC and rejects anything else with 401.
    ============================================================ */
-import { authenticate } from "../shopify.server";
+import { verifyWebhook } from "../webhook.server";
 import db from "../db.server";
 import { deleteUsage } from "../usage.server";
 
 export const action = async ({ request }) => {
-  const { shop, topic, payload } = await authenticate.webhook(request);
+  const { shop, topic, payload } = await verifyWebhook(request);
 
   switch (topic) {
     case "CUSTOMERS_DATA_REQUEST":

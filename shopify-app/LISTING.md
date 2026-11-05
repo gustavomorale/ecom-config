@@ -35,10 +35,10 @@ Turn "which one should I buy?" into a cart. Pick a Product finder or a Bundle qu
 
 ## Plans (Pricing details: display name max 18, each feature max 40)
 
-- Free: 1 quiz / 50 completed quizzes a month / Both quiz types, all features / Small Powered by CraftFrame line
+- Free: 1 quiz / 100 completed quizzes a month / Quiz pauses at the limit until the 1st / Both quiz types, all features / Small Powered by CraftFrame line
 - Starter: 3 quizzes / 300 completed quizzes a month / No attribution line
-- Standard: 10 quizzes / 2,000 completed quizzes a month / No attribution line
-- Growth: 25 quizzes / 15,000 completed quizzes a month / Priority support
+- Standard: 10 quizzes / 1,000 completed quizzes a month / No attribution line
+- Growth: 25 quizzes / 5,000 completed quizzes a month / Priority support
 
 Custom (above Growth) is not a listed plan: Shopify App Pricing allows four public plans.
 Merchants ask by email (contact@craftframe.agency) and get a private plan made for their
@@ -58,14 +58,14 @@ charges), all features on every plan, never per order:
 
 | Plan | Price | Quizzes | Completed quizzes a month |
 |---|---|---|---|
-| Free | USD 0 | 1 | 50, with a "Powered by CraftFrame" line |
-| Starter | USD 9 a month | 3 | 300 |
-| Standard | USD 25 a month | 10 | 2,000 |
-| Growth | USD 79 a month | 25 | 15,000 |
+| Free | USD 0 | 1 | 100, with a "Powered by CraftFrame" line; the quiz pauses at the limit until the 1st |
+| Starter | USD 9 a month or USD 90 a year | 3 | 300 |
+| Standard | USD 25 a month or USD 250 a year | 10 | 1,000 |
+| Growth | USD 79 a month or USD 790 a year | 25 | 5,000 |
 
-Paid plans have a 21-day free trial. Custom plans by email (contact@craftframe.agency).
+Paid plans have a 14-day free trial. Custom plans by email (contact@craftframe.agency).
 Development stores, including reviewers', are not charged. Register for Shopify's revenue
-share programme in the Partner dashboard: 0% on the first USD 1M a year.
+share programme in the Partner dashboard: 0% on the first USD 1M of lifetime app revenue.
 
 ## Access scopes and why (privacy section)
 

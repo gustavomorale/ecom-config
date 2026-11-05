@@ -58,15 +58,17 @@ export default function App() {
       )}
       {usage && plan && plan.attribution && usage.half ? (
         <s-banner tone="info">
-          {`You have used ${usage.count} of the ${usage.limit} free quiz completions this month, half your allowance.`}
+          {`You have used ${usage.count} of ${usage.limit} free completed quizzes this month. At ${usage.limit}, your quiz pauses until the 1st.`}
           {nextPlan(plan) ? ` ${nextPlan(plan).name} includes ${nextPlan(plan).limit.toLocaleString("en-GB")} a month and removes the Powered by CraftFrame line.` : ""}
           {planUrl && nextPlan(plan) ? <s-button slot="secondary-actions" href={planUrl} target="_top">{`See ${nextPlan(plan).name}`}</s-button> : null}
         </s-banner>
       ) : null}
       {usage && plan && (usage.over || usage.near) ? (
         <s-banner tone={usage.over ? "warning" : "info"}>
-          {`You have used ${usage.count.toLocaleString("en-GB")} of ${usage.limit.toLocaleString("en-GB")} quiz completions this month on the ${plan.name} plan.`}
-          {usage.over ? (plan.attribution ? " Your quizzes keep working, but completions are no longer counted until the 1st. Choose a bigger plan to keep counting." : " Your quizzes keep working; choose a bigger plan to stay within your limit.") : " The count starts again on the 1st."}
+          {plan.attribution && usage.over
+            ? `Your quiz is paused: you have used all ${usage.limit.toLocaleString("en-GB")} completed quizzes on the Free plan this month. It comes back on the 1st, or straight away on a bigger plan.`
+            : `You have used ${usage.count.toLocaleString("en-GB")} of ${usage.limit.toLocaleString("en-GB")} completed quizzes this month on the ${plan.name} plan.`}
+          {plan.attribution && usage.over ? "" : plan.attribution ? ` At ${usage.limit.toLocaleString("en-GB")}, your quiz pauses until the 1st.` : usage.over ? " Your quizzes keep working; choose a bigger plan to stay within your limit." : " The count starts again on the 1st."}
           {planUrl && nextPlan(plan) ? <s-button slot="secondary-actions" href={planUrl} target="_top">{`See ${nextPlan(plan).name}`}</s-button> : null}
         </s-banner>
       ) : null}
